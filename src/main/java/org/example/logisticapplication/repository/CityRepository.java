@@ -14,4 +14,11 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
 
     @Query("SELECT c FROM CityEntity c WHERE c.id IN (:cityIds)")
     List<CityEntity> findCitiesByIds(@Param("cityIds") List<Long> cityIds);
+
+    @Query("SELECT COUNT(d) > 0 FROM DistanceEntity d WHERE d.fromCity = :fromCity AND d.toCity = :toCity")
+    boolean existsByCities(
+            @Param("fromCity") CityEntity fromCity,
+            @Param("toCity") CityEntity toCity
+    );
+
 }

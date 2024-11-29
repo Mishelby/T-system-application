@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.CountryMap.CountryMap;
 import org.example.logisticapplication.domain.CountryMap.CountryMapDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapDtoConverter;
+import org.example.logisticapplication.domain.Distance.Distance;
 import org.example.logisticapplication.domain.Distance.DistanceDto;
+import org.example.logisticapplication.domain.Distance.DistanceDtoConverter;
 import org.example.logisticapplication.service.CountryMapService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class CountryMapController {
     private final CountryMapService countryMapService;
     private final CountryMapDtoConverter countryMapDtoConverter;
+    private final DistanceDtoConverter distanceDtoConverter;
 
     @PostMapping
     public ResponseEntity<CountryMapDto> addCountryMap(
@@ -39,7 +42,12 @@ public class CountryMapController {
             @PathVariable("id") final Long id,
             @RequestBody final DistanceDto distanceDto
     ) {
-        countryMapService.addDistances(id, distanceDto);
+        var newDistance = countryMapService.addDistances(id, distanceDto);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        distanceDtoConverter.toDto(newDistance)
+                );
     }
 
     @PutMapping("/{id}/add-city/{cityId}")

@@ -31,7 +31,12 @@ public class DistanceEntity {
     private CountryMapEntity countryMap;
 
 
-    public DistanceEntity(Long id, CityEntity fromCity, CityEntity toCity, Double  distance) {
+    public DistanceEntity(
+            Long id,
+            CityEntity fromCity,
+            CityEntity toCity,
+            Double  distance
+    ) {
         this.id = id;
         this.fromCity = fromCity;
         this.toCity = toCity;

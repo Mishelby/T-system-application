@@ -109,6 +109,12 @@ public class CountryMapService {
                 .findFirst()
                 .orElseThrow();
 
+        if (cityRepository.existsByCities(cityFrom, cityTo)) {
+            throw new IllegalArgumentException(
+                    "Distance between these cities already exists, cities: %s and %s"
+                            .formatted(cityFrom.getName(), cityTo.getName())
+            );
+        }
 
         var distanceEntity = distanceEntityConverter.toEntity(
                 distanceDtoConverter.toDomain(distanceDto),
@@ -116,6 +122,7 @@ public class CountryMapService {
                 cityTo
         );
 
+        distanceEntity.setCountryMap(countryMapEntity);
         countryMapEntity.getDistances().add(distanceEntity);
         countryMapRepository.save(countryMapEntity);
 
