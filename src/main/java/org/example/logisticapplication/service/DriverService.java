@@ -21,8 +21,6 @@ public class DriverService {
     private final DriverRepository driverRepository;
     private final DriverEntityConverter entityConverter;
     private final TruckRepository truckRepository;
-    private final TruckDtoConverter truckDtoConverter;
-    private final DriverConverter driverConverter;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Driver createDriver(

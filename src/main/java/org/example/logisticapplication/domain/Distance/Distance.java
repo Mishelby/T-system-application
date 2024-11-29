@@ -6,10 +6,10 @@ public record Distance(
         @Null
         Long id,
 
-        Integer fromCityId,
+        Long fromCityId,
 
-        Integer toCityId,
+        Long toCityId,
 
-        Integer distance
+        Double distance
 ) {
 }
