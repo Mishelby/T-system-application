@@ -17,6 +17,6 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
 
     Optional<TruckEntity> findTruckEntityByRegistrationNumber(String registrationNumber);
 
-    @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:currentDriver")
-    List<DriverEntity> findAllByCurrentDriver(DriverEntity currentDriver);
+    @Query("SELECT d FROM TruckEntity d WHERE d.drivers =:currentDriver")
+    List<TruckEntity> findAllByCurrentDriver(DriverEntity currentDriver);
 }

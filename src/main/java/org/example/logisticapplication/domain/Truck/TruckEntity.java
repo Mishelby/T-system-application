@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 
+import java.util.List;
+
 @Entity
 @Table(name = "trucks")
 @Getter
@@ -30,6 +32,9 @@ public class TruckEntity {
 
     @Column(name = "capacity")
     private Double capacity;
+
+    @OneToMany(mappedBy = "currentTruck", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DriverEntity> drivers;
 
     public TruckEntity(
             Long id,

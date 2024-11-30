@@ -2,9 +2,13 @@ package org.example.logisticapplication.domain.Cargo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "cargos")
+@Getter
+@Setter
 public class CargoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +24,7 @@ public class CargoEntity {
     private Integer cargoMass;
 
     @Column(name = "cargo_status")
-    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid driver status")
+//    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid driver status")
     private String cargoStatus;
 
     public CargoEntity(

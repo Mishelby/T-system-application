@@ -89,6 +89,9 @@ public class DriverService {
 
         var allByCurrentDriver = truckRepository.findAllByCurrentDriver(driverEntity);
 
+        for (TruckEntity truckEntity : allByCurrentDriver) {
+            truckEntity.getDrivers().remove(driverEntity);
+        }
 
         driverEntity.setCurrentTruck(null);
         driverRepository.delete(driverEntity);

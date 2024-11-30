@@ -11,8 +11,9 @@ public record OrderDto(
         @Null
         Long id,
         String uniqueNumber,
-        RoutePointDto routePoint,
-        Integer truckId,
-        List<Integer> driversId
+        String orderStatus,
+        List<Long> routePoints,
+        Long truckId,
+        List<Long> driversId
 ) {
 }

@@ -1,5 +1,6 @@
 package org.example.logisticapplication.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMap;
@@ -51,15 +52,15 @@ public class CountryMapService {
             Long countryId,
             Long cityId
     ) {
-        if (countryMapRepository.existsCountryMapEntitiesById(countryId)) {
-            throw new IllegalArgumentException(
+        if (!countryMapRepository.existsCountryMapEntitiesById(countryId)) {
+            throw new EntityNotFoundException(
                     "Country map with id=%s does not exist"
                             .formatted(countryId)
             );
         }
 
         var cityEntity = cityRepository.findById(cityId).orElseThrow(
-                () -> new IllegalArgumentException(
+                () -> new EntityNotFoundException(
                         "City with id=%s does not exist"
                                 .formatted(cityId)
                 )
@@ -80,7 +81,7 @@ public class CountryMapService {
             DistanceDto distanceDto
     ) {
         if (!countryMapRepository.existsCountryMapEntitiesById(countryMapId)) {
-            throw new IllegalArgumentException(
+            throw new EntityNotFoundException(
                     "Country map with id=%s does not exist"
                             .formatted(countryMapId)
             );

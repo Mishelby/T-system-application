@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.CountryMap.CountryMap;
 import org.example.logisticapplication.domain.CountryMap.CountryMapDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapDtoConverter;
-import org.example.logisticapplication.domain.Distance.Distance;
 import org.example.logisticapplication.domain.Distance.DistanceDto;
 import org.example.logisticapplication.domain.Distance.DistanceDtoConverter;
 import org.example.logisticapplication.service.CountryMapService;
@@ -27,7 +26,6 @@ public class CountryMapController {
             @RequestBody final CountryMap countryMap
     ) {
         log.info("Get request for adding CountryMap: {}", countryMap);
-
         var newCountryMap = countryMapService.addNewCountryMap(countryMap);
 
         return ResponseEntity
@@ -42,6 +40,7 @@ public class CountryMapController {
             @PathVariable("id") final Long id,
             @RequestBody final DistanceDto distanceDto
     ) {
+        log.info("Get request for adding Distance: {}", distanceDto);
         var newDistance = countryMapService.addDistances(id, distanceDto);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -56,7 +55,9 @@ public class CountryMapController {
             @PathVariable("cityId") Long cityId
 
     ) {
+        log.info("Get request for adding CityToCountryMap: {}", countryId);
         countryMapService.addNewCity(countryId, cityId);
+
         return ResponseEntity
                 .ok()
                 .build();

@@ -1,12 +1,17 @@
 package org.example.logisticapplication.domain.RoutePoint;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 
 import java.util.List;
 
 @Entity
 @Table(name = "route_points")
+@Getter
+@Setter
 public class RoutePointEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,19 +20,26 @@ public class RoutePointEntity {
     @Column(name = "city")
     private String city;
 
-    @Enumerated(EnumType.STRING)
-    private OperationType operationType;
+    @Column(name = "operation_type")
+    private String operationType;
 
-    @ManyToMany(mappedBy = "routePoints")
-    private List<OrderEntity> orders;
+    @OneToOne(cascade = CascadeType.ALL)
+    private CargoEntity cargo;
 
-    public RoutePointEntity(Long id, String city, OperationType operationType, List<OrderEntity> orders) {
+//    @ManyToMany(mappedBy = "routePoints")
+//    private List<OrderEntity> orders;
+
+    public RoutePointEntity(
+            Long id,
+            String city,
+            String operationType
+    ) {
         this.id = id;
         this.city = city;
         this.operationType = operationType;
-        this.orders = orders;
     }
 
-    public RoutePointEntity() {}
+    public RoutePointEntity() {
+    }
 
 }

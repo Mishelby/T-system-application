@@ -12,7 +12,6 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 @Getter
 @Setter
 public class DriverEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,7 +36,8 @@ public class DriverEntity {
     @JoinColumn(name = "current_city_id")
     private CityEntity currentCity;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "truck_id")
     private TruckEntity currentTruck;
 
     public DriverEntity(

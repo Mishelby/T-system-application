@@ -1,12 +1,17 @@
 package org.example.logisticapplication.domain.Order;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 
 import java.util.List;
 
 @Entity
 @Table(name = "orders")
+@Getter
+@Setter
 public class OrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,10 +20,10 @@ public class OrderEntity {
     @Column(name = "unique_number")
     private String uniqueNumber;
 
-    @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
+    @Column(name = "order_status")
+    private String orderStatus;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "orders_route_points",
             joinColumns = @JoinColumn(
@@ -30,11 +35,30 @@ public class OrderEntity {
     )
     private List<RoutePointEntity> routePoints;
 
-    public OrderEntity(Long id, String uniqueNumber, OrderStatus orderStatus, List<RoutePointEntity> routePoints) {
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "driver_orders",
+            joinColumns = @JoinColumn(
+                    name = "order_id"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "driver_id"
+            )
+    )
+    public List<DriverEntity> drivers;
+
+    public OrderEntity(
+            Long id,
+            String uniqueNumber,
+            String orderStatus,
+            List<RoutePointEntity> routePoints,
+            List<DriverEntity> drivers
+    ) {
         this.id = id;
         this.uniqueNumber = uniqueNumber;
         this.orderStatus = orderStatus;
         this.routePoints = routePoints;
+        this.drivers = drivers;
     }
 
     public OrderEntity() {}
