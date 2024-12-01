@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.example.logisticapplication.domain.Truck.TruckEntity;
 
 import java.util.List;
 
@@ -47,18 +48,24 @@ public class OrderEntity {
     )
     public List<DriverEntity> drivers;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "truck_id")
+    public TruckEntity truck;
+
     public OrderEntity(
             Long id,
             String uniqueNumber,
             String orderStatus,
             List<RoutePointEntity> routePoints,
-            List<DriverEntity> drivers
+            List<DriverEntity> drivers,
+            TruckEntity truck
     ) {
         this.id = id;
         this.uniqueNumber = uniqueNumber;
         this.orderStatus = orderStatus;
         this.routePoints = routePoints;
         this.drivers = drivers;
+        this.truck = truck;
     }
 
     public OrderEntity() {}

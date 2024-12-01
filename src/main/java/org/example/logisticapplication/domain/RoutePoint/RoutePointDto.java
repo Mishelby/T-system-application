@@ -9,7 +9,7 @@ public record RoutePointDto(
         @Null
         Long id,
         String city,
-        Integer cargoId,
+        Long cargoId,
         String operationType
 ) {
 }

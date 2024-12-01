@@ -6,13 +6,13 @@ import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
 
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public record OrderDto(
         @Null
         Long id,
         String uniqueNumber,
         String orderStatus,
-        List<Long> routePoints,
+        List<RoutePointDto> routePoints,
         Long truckId,
         List<Long> driversId
 ) {

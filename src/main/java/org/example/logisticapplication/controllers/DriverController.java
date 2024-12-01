@@ -22,10 +22,12 @@ public class DriverController {
     private final DriverConverter driverConverter;
 
     @GetMapping
-    public ResponseEntity<List<DriverDto>> findAll() {
+    public ResponseEntity<List<DriverDto>> findAll(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "cityName", required = false) String cityName
+    ) {
         log.info("Find all drivers");
-
-        var allDrivers = driverService.findAll();
+        var allDrivers = driverService.findAll(status, cityName);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
@@ -40,7 +42,6 @@ public class DriverController {
             @RequestBody DriverDto driver
     ) {
         log.info("Get request for save driver driver: {}", driver);
-
         var savedDriver = driverService.createDriver(
                 driverConverter.toDomain(driver)
         );
@@ -57,7 +58,6 @@ public class DriverController {
             @RequestBody Driver driver
     ) {
         log.info("Get request for update driver driver: {}", driver);
-
         var updatedDriver = driverService.updateDriver(id, driver);
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -71,7 +71,6 @@ public class DriverController {
             @PathVariable Long id
     ) {
         log.info("Get request for get driver by id: {}", id);
-
         var foundedDriver = driverService.findById(id);
 
         return ResponseEntity

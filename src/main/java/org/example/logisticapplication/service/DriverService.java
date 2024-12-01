@@ -2,7 +2,6 @@ package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.*;
-import org.example.logisticapplication.domain.Truck.TruckDtoConverter;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +39,8 @@ public class DriverService {
     }
 
     @Transactional(readOnly = true)
-    public List<Driver> findAll() {
-        var allDrivers = driverRepository.findAll();
+    public List<Driver> findAll(String status, String cityName) {
+        var allDrivers = driverRepository.findAllDrivers(status, cityName);
 
         if (allDrivers.isEmpty()) {
             return new ArrayList<>();

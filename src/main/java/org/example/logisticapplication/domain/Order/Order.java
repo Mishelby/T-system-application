@@ -1,6 +1,7 @@
 package org.example.logisticapplication.domain.Order;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
 
 import java.util.List;
@@ -10,7 +11,7 @@ public record Order(
         Long id,
         String uniqueNumber,
         String orderStatus,
-        List<Long> routePoints,
+        List<RoutePoint> routePoints,
         Long truckId,
         List<Long> driversId
 ) {

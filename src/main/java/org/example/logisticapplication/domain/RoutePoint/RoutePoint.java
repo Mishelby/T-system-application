@@ -1,12 +1,12 @@
 package org.example.logisticapplication.domain.RoutePoint;
 
-import jakarta.validation.constraints.Null;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record RoutePoint(
-        @Null
         Long id,
         String city,
-        Integer cargoId,
+        Long cargoId,
         String operationType
 ) {
 }

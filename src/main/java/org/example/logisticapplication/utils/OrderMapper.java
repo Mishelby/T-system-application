@@ -1,20 +1,25 @@
 package org.example.logisticapplication.utils;
 
+import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderDto;
 import org.example.logisticapplication.domain.Order.OrderEntity;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+
+import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import java.util.Collections;
+
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
+
     @Mapping(target = "orderStatus", defaultValue = "NOT_COMPLETE")
-    @Mapping(target = "routePoints", expression = "java(emptyRoutePoints())")
-    OrderEntity toEntity(Order order);
+    @Mapping(target = "id", source = "order.id")
+    @Mapping(target = "drivers", source = "drivers")
+    @Mapping(target = "truck", source = "truck")
+    OrderEntity toEntity(Order order, List<DriverEntity> drivers, TruckEntity truck);
 
     Order toDomain(OrderDto orderDto);
 
@@ -22,20 +27,5 @@ public interface OrderMapper {
 
     Order toDomain(OrderEntity entity);
 
-    default List<Long> mapRoutePointsToIds(List<RoutePointEntity> routePoints) {
-        if(routePoints == null) {
-            return Collections.emptyList();
-        }
-
-        return routePoints
-                .stream()
-                .map(RoutePointEntity::getId)
-                .collect(Collectors
-                        .toList());
-    }
-
-    default List<RoutePointEntity> emptyRoutePoints() {
-        return Collections.emptyList();
-    }
 
 }

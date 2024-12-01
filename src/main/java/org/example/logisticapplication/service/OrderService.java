@@ -5,10 +5,13 @@ import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.OrderRepository;
 import org.example.logisticapplication.repository.RoutePointRepository;
+import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.utils.OrderMapper;
+import org.example.logisticapplication.utils.RoutePointMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,13 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final TruckRepository truckRepository;
     private final RoutePointRepository routePointRepository;
     private final DriverRepository driverRepository;
+    private final RoutePointMapper routePointMapper;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Order createOrder(
@@ -35,33 +41,28 @@ public class OrderService {
             );
         }
 
-        var entity = orderMapper.toEntity(order);
-
-        if (entity.getRoutePoints() != null && !entity.getRoutePoints().isEmpty()) {
-            List<RoutePointEntity> allById = routePointRepository.findAllById(order.routePoints());
-            entity.setRoutePoints(allById);
+        if (order.routePoints().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No route points found for order=%s"
+                            .formatted(order)
+            );
         }
 
+        var truckEntity = truckRepository.findById(order.truckId()).orElseThrow(
+                () -> new IllegalArgumentException(
+                        "No truck found for order=%s"
+                                .formatted(order)
+                )
+        );
 
-        if (order.driversId() != null && !order.driversId().isEmpty()) {
-            List<DriverEntity> newDrivers = driverRepository.findAllById(order.driversId());
+        var allDriversById = driverRepository.findAllById(order.driversId());
+        var orderEntity = orderMapper.toEntity(order, allDriversById, truckEntity);
 
-            List<DriverEntity> existingDrivers = entity.getDrivers()
-                    .stream()
-                    .filter(existingDriver -> !newDrivers.contains(existingDriver))
-                    .toList();
-
-            if (newDrivers.size() != existingDrivers.size()) {
-                entity.setDrivers(newDrivers);
-            } else {
-                throw new IllegalArgumentException(
-                        "There are duplicate drivers in this order %s"
-                                .formatted(order.uniqueNumber())
-                );
-            }
+        if (!allDriversById.isEmpty()) {
+            orderEntity.setDrivers(allDriversById);
         }
 
-        var savedOrder = orderRepository.save(entity);
+        var savedOrder = orderRepository.save(orderEntity);
 
         return orderMapper.toDomain(savedOrder);
     }

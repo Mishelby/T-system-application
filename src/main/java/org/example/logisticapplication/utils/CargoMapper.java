@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public interface CargoMapper {
 
     @Mapping(target = "cargoMass", defaultValue = "0")
+    @Mapping(target = "cargoStatus", defaultValue = "NOT_READY")
     CargoEntity toEntity(Cargo cargo);
 
     Cargo toDomain(CargoEntity entity);
