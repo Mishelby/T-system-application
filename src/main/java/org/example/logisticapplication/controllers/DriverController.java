@@ -6,6 +6,7 @@ import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverConverter;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.service.DriverService;
+import org.example.logisticapplication.utils.DriverMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,20 +20,20 @@ import java.util.List;
 @Slf4j
 public class DriverController {
     private final DriverService driverService;
-    private final DriverConverter driverConverter;
+    private final DriverMapper driverMapper;
 
     @GetMapping
     public ResponseEntity<List<DriverDto>> findAll(
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "cityName", required = false) String cityName
     ) {
-        log.info("Find all drivers");
+        log.info("Get request for find all drivers");
         var allDrivers = driverService.findAll(status, cityName);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         allDrivers.stream()
-                                .map(driverConverter::toDto)
+                                .map(driverMapper::toDto)
                                 .toList()
                 );
     }
@@ -43,12 +44,12 @@ public class DriverController {
     ) {
         log.info("Get request for save driver driver: {}", driver);
         var savedDriver = driverService.createDriver(
-                driverConverter.toDomain(driver)
+                driverMapper.toDomain(driver)
         );
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
-                        driverConverter.toDto(savedDriver)
+                        driverMapper.toDto(savedDriver)
                 );
     }
 
@@ -62,7 +63,7 @@ public class DriverController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
-                        driverConverter.toDto(updatedDriver)
+                        driverMapper.toDto(updatedDriver)
                 );
     }
 
@@ -76,7 +77,7 @@ public class DriverController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                        driverConverter.toDto(foundedDriver)
+                        driverMapper.toDto(foundedDriver)
                 );
     }
 

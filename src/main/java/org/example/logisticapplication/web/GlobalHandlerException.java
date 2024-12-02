@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -46,6 +47,19 @@ public class GlobalHandlerException {
     @ExceptionHandler(value = NoSuchElementException.class)
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             NoSuchElementException ex
+    ){
+        ErrorMessageResponse response = new ErrorMessageResponse(
+                "Entity not found!",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = NoResourceFoundException.class)
+    public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
+            NoResourceFoundException ex
     ){
         ErrorMessageResponse response = new ErrorMessageResponse(
                 "Entity not found!",

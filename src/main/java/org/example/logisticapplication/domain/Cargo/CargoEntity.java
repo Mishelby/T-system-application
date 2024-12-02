@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+
+import java.util.List;
 
 @Entity
 @Table(name = "cargos")
@@ -26,6 +29,9 @@ public class CargoEntity {
     @Column(name = "cargo_status")
 //    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid driver status")
     private String cargoStatus;
+
+    @OneToMany(mappedBy = "cargo",fetch = FetchType.LAZY)
+    private List<RoutePointEntity> routePointEntity;
 
     public CargoEntity(
             Long id,

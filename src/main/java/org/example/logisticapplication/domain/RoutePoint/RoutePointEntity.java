@@ -23,7 +23,8 @@ public class RoutePointEntity {
     @Column(name = "operation_type")
     private String operationType;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "cargo_id")
     private CargoEntity cargo;
 
     public RoutePointEntity(

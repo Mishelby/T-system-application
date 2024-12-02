@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface RoutePointMapper {
+
     RoutePoint toDomain(RoutePointDto routePoint);
 
     RoutePointDto toDto(RoutePoint routePoint);
@@ -14,4 +15,6 @@ public interface RoutePointMapper {
     RoutePointEntity toEntity(RoutePoint routePoint);
 
     RoutePoint toDomain(RoutePointEntity entity);
+
+
 }

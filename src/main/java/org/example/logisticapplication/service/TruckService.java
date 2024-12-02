@@ -3,8 +3,10 @@ package org.example.logisticapplication.service;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.*;
+import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
+import org.example.logisticapplication.utils.TruckMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,9 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TruckService {
     private final TruckRepository truckRepository;
-    private final TruckEntityConverter entityConverter;
-    private final TruckDtoConverter dtoConverter;
+    private final TruckMapper truckMapper;
     private final DriverRepository driverRepository;
+    private final CityRepository cityRepository;
 
     // Create new truck
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -33,10 +35,19 @@ public class TruckService {
         }
 
         var newTruck = truckRepository.save(
-                entityConverter.toTruckEntity(truck)
+                truckMapper.toEntity(truck)
         );
 
-        return entityConverter.toDomain(newTruck);
+        newTruck.setCurrentCity(
+                cityRepository.findById(truck.currentCityId()).orElseThrow(
+                        () -> new IllegalArgumentException(
+                                "City does not exist with id=%s"
+                                        .formatted(truck.currentCityId())
+                        )
+                )
+        );
+
+        return truckMapper.toDomain(newTruck);
     }
 
     // Find truck by id
@@ -51,7 +62,7 @@ public class TruckService {
                 )
         );
 
-        return entityConverter.toDomain(truckEntity);
+        return truckMapper.toDomain(truckEntity);
     }
 
     // Find all trucks
@@ -64,7 +75,7 @@ public class TruckService {
 
         return allTrucks
                 .stream()
-                .map(entityConverter::toDomain)
+                .map(truckMapper::toDomain)
                 .toList();
     }
 
@@ -114,7 +125,7 @@ public class TruckService {
         );
 
         truckRepository.save(
-                entityConverter.toTruckEntity(updatedTruck)
+                truckMapper.toEntity(updatedTruck)
         );
 
         return updatedTruck;

@@ -16,7 +16,6 @@ public record DriverDto(
         String personNumber,
 
         @JsonProperty("numOfHoursWorked")
-        @Null
         Integer numberOfHoursWorked,
 
         String status,

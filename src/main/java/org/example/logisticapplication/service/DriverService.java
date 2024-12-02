@@ -3,8 +3,10 @@ package org.example.logisticapplication.service;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
+import org.example.logisticapplication.utils.DriverMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,8 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DriverService {
     private final DriverRepository driverRepository;
-    private final DriverEntityConverter entityConverter;
     private final TruckRepository truckRepository;
+    private final DriverMapper driverMapper;
+    private final CityRepository cityRepository;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Driver createDriver(
@@ -32,10 +35,20 @@ public class DriverService {
         }
 
         var savedDriver = driverRepository.save(
-                entityConverter.toEntity(driver)
+                driverMapper.toEntity(driver)
         );
 
-        return entityConverter.toDomain(savedDriver);
+
+        savedDriver.setCurrentCity(
+                cityRepository.findById(driver.currentCityId()).orElseThrow(
+                        () -> new IllegalArgumentException(
+                                "No City found with id=%s"
+                                        .formatted(driver.currentCityId())
+                        )
+                )
+        );
+
+        return driverMapper.toDomain(savedDriver);
     }
 
     @Transactional(readOnly = true)
@@ -48,11 +61,11 @@ public class DriverService {
 
         return allDrivers
                 .stream()
-                .map(entityConverter::toDomain)
+                .map(driverMapper::toDomain)
                 .toList();
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(readOnly = true)
     public Driver findById(
             Long id
     ) {
@@ -67,7 +80,7 @@ public class DriverService {
                 )
         );
 
-        return entityConverter.toDomain(driverEntity);
+        return driverMapper.toDomain(driverEntity);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -114,7 +127,7 @@ public class DriverService {
         );
 
         driverRepository.save(
-                entityConverter.toEntity(updatedDriver)
+                driverMapper.toEntity(updatedDriver)
         );
 
         return updatedDriver;

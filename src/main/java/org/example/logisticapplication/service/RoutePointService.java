@@ -2,6 +2,7 @@ package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
 import org.example.logisticapplication.repository.RoutePointRepository;
 import org.example.logisticapplication.utils.RoutePointMapper;
 import org.springframework.stereotype.Service;

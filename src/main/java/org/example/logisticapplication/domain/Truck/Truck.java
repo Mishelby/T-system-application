@@ -5,7 +5,6 @@ import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 
 public record Truck(
-        @Null
         Long id,
 
         String registrationNumber,
@@ -16,8 +15,8 @@ public record Truck(
 
         Double capacity,
 
-        Integer currentCityId,
+        Long currentCityId,
 
-        Integer currentDriverId
+        Long currentDriverId
 ) {
 }

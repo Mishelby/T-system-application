@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverConverter;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.service.BusinessLogicService;
+import org.example.logisticapplication.utils.DriverMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class DriverLogisticController {
     private final BusinessLogicService businessLogicService;
-    private final DriverConverter driverConverter;
+    private final DriverMapper driverMapper;
 
-    @PutMapping("/{driverId}/truck/{truckId}")
+    @PutMapping("/{driverId}/add-truck/{truckId}")
     public ResponseEntity<DriverDto> addTruck(
             @PathVariable("driverId") Long driverId,
             @PathVariable("truckId") Long truckId
@@ -28,7 +29,7 @@ public class DriverLogisticController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(
-                        driverConverter.toDto(driver)
+                        driverMapper.toDto(driver)
                 );
     }
 }
