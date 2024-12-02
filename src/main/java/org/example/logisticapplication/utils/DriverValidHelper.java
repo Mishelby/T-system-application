@@ -14,7 +14,7 @@ public class DriverValidHelper {
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public TruckEntity findTruckById(Long truckId) {
         return truckRepository.findById(truckId).orElseThrow(
                 () -> new IllegalArgumentException(
@@ -24,7 +24,7 @@ public class DriverValidHelper {
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public DriverEntity findDriverById(Long driverId) {
         return driverRepository.findById(driverId).orElseThrow(
                 () -> new IllegalArgumentException(

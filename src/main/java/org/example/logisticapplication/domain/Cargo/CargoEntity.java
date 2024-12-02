@@ -27,7 +27,7 @@ public class CargoEntity {
     private Integer cargoMass;
 
     @Column(name = "cargo_status")
-//    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid driver status")
+    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid driver status")
     private String cargoStatus;
 
     @OneToMany(mappedBy = "cargo",fetch = FetchType.LAZY)
