@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/countries")
+@RequestMapping("/api/countries")
 @RequiredArgsConstructor
 @Slf4j
 public class CountryMapController {

@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityDto;
-import org.example.logisticapplication.domain.City.CityDtoConverter;
 import org.example.logisticapplication.service.CityService;
+import org.example.logisticapplication.utils.CityMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,23 +14,31 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/cities")
+@RequestMapping("/api/cities")
 @RequiredArgsConstructor
 @Slf4j
 public class CityController {
     private final CityService cityService;
-    private final CityDtoConverter cityDtoConverter;
+    private final CityMapper cityMapper;
 
     @PostMapping
-    public ResponseEntity<CityDto> addCity(@RequestBody City city) {
+    public ResponseEntity<CityDto> addCity(
+            @RequestBody City city
+    ) {
         log.info("Get request for add city: {}", city);
         var newCity = cityService.addNewCity(city);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(
-                        cityDtoConverter.toDto(newCity)
-                );
+        return ResponseEntity.ok(cityMapper.toDto(newCity));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CityDto> getCity(
+            @PathVariable("id") Long id
+    ) {
+        log.info("Get request for get city: {}", id);
+        var city = cityService.findById(id);
+
+        return ResponseEntity.ok(cityMapper.toDto(city));
     }
 
     @GetMapping
@@ -39,11 +47,9 @@ public class CityController {
         var allCities = cityService.findAll();
 
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(allCities
+                .ok(allCities
                         .stream()
-                        .map(cityDtoConverter::toDto)
-                        .toList()
-                );
+                        .map(cityMapper::toDto)
+                        .toList());
     }
 }

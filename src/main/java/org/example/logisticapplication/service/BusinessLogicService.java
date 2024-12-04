@@ -2,19 +2,13 @@ package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.Driver;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
-import org.example.logisticapplication.domain.Driver.DriverEntityConverter;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.DriverRepository;
-import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.utils.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +29,7 @@ public class BusinessLogicService implements DriverLogicService {
 
         driverValidHelper.validateDriverNotAssignedToTruck(driverEntity, truckEntity);
         driverValidHelper.validateTruckBelongsToDriverCity(driverEntity, truckEntity);
-        driverValidHelper.validateTruckHasAvailableSeats(truckId, truckEntity);
+        driverValidHelper.validateTruckHasAvailableSeats(truckEntity);
 
         truckEntity.getDrivers().add(driverEntity);
         driverEntity.setCurrentTruck(truckEntity);

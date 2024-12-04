@@ -36,7 +36,7 @@ public class DriverEntity {
     @JoinColumn(name = "current_city_id")
     private CityEntity currentCity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "truck_id")
     private TruckEntity currentTruck;
 

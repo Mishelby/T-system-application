@@ -8,11 +8,12 @@ import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 
 import java.util.List;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
 
     @Mapping(target = "orderStatus", defaultValue = "NOT_COMPLETE")

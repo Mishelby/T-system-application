@@ -1,6 +1,8 @@
 package org.example.logisticapplication.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.*;
 import org.example.logisticapplication.repository.CityRepository;
@@ -38,13 +40,15 @@ public class TruckService {
                 truckMapper.toEntity(truck)
         );
 
-        newTruck.setCurrentCity(
-                cityRepository.findById(truck.currentCityId()).orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "City does not exist with id=%s"
-                                        .formatted(truck.currentCityId())
-                        )
+        var cityEntity = cityRepository.findById(truck.currentCityId()).orElseThrow(
+                () -> new IllegalArgumentException(
+                        "City does not exist with id=%s"
+                                .formatted(truck.currentCityId())
                 )
+        );
+
+        newTruck.setCurrentCity(
+                cityEntity
         );
 
         return truckMapper.toDomain(newTruck);
@@ -112,23 +116,25 @@ public class TruckService {
             Long id,
             Truck updateTruck
     ) {
-        var truckById = findById(id);
+        if (!truckRepository.existsById(id)) {
+            throw new EntityNotFoundException(
+                    "Truck does not exist with id=%s"
+                            .formatted(id)
+            );
+        }
 
-        var updatedTruck = new Truck(
-                truckById.id(),
-                orDefault(updateTruck.registrationNumber(), truckById.registrationNumber()),
-                orDefault(updateTruck.driversShift(), truckById.driversShift()),
-                orDefault(updateTruck.status(), truckById.status()),
-                orDefault(updateTruck.capacity(), truckById.capacity()),
-                orDefault(updateTruck.currentCityId(), truckById.currentCityId()),
-                orDefault(updateTruck.currentDriverId(), truckById.currentDriverId())
+        truckRepository.updateTruckById(
+                id,
+                updateTruck.registrationNumber(),
+                updateTruck.driversShift(),
+                updateTruck.status(),
+                updateTruck.capacity(),
+                updateTruck.currentCityId()
         );
 
-        truckRepository.save(
-                truckMapper.toEntity(updatedTruck)
+        return truckMapper.toDomain(
+                truckRepository.findById(id).orElseThrow()
         );
-
-        return updatedTruck;
     }
 
     private <T> T orDefault(T newValue, T currentValue) {

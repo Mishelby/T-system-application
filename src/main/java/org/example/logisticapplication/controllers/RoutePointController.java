@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/route-points")
+@RequestMapping("/api/route-points")
 @RequiredArgsConstructor
 @Slf4j
 public class RoutePointController {

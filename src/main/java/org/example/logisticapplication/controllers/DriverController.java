@@ -1,9 +1,9 @@
 package org.example.logisticapplication.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.Driver;
-import org.example.logisticapplication.domain.Driver.DriverConverter;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.service.DriverService;
 import org.example.logisticapplication.utils.DriverMapper;
@@ -15,7 +15,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/drivers")
+@RequestMapping("/api/drivers")
 @RequiredArgsConstructor
 @Slf4j
 public class DriverController {
@@ -40,31 +40,28 @@ public class DriverController {
 
     @PostMapping
     public ResponseEntity<DriverDto> addDriver(
-            @RequestBody DriverDto driver
+            @RequestBody Driver driver
     ) {
         log.info("Get request for save driver driver: {}", driver);
-        var savedDriver = driverService.createDriver(
-                driverMapper.toDomain(driver)
-        );
+        var savedDriver = driverService.createDriver(driver);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        driverMapper.toDto(savedDriver)
-                );
+                .body(driverMapper.toDto(savedDriver));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<DriverDto> updateDriver(
             @PathVariable("id") Long id,
-            @RequestBody Driver driver
+            @RequestBody DriverDto driverDto
     ) {
-        log.info("Get request for update driver driver: {}", driver);
-        var updatedDriver = driverService.updateDriver(id, driver);
+        log.info("Get request for update driver driver: {}", driverDto);
+        var updatedDriver = driverService.updateDriver(
+                id,
+                driverMapper.toDomain(driverDto)
+        );
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        driverMapper.toDto(updatedDriver)
-                );
+                .body(driverMapper.toDto(updatedDriver));
     }
 
     @GetMapping("/{id}")
@@ -76,9 +73,7 @@ public class DriverController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(
-                        driverMapper.toDto(foundedDriver)
-                );
+                .body(driverMapper.toDto(foundedDriver));
     }
 
     @DeleteMapping("/{id}")

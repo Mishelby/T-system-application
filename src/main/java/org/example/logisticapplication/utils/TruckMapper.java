@@ -5,8 +5,9 @@ import org.example.logisticapplication.domain.Truck.TruckDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TruckMapper {
 
     @Mapping(target = "driversShift", defaultValue = "0")
@@ -17,5 +18,5 @@ public interface TruckMapper {
 
     TruckDto toDto(Truck truck);
 
-    Truck toDomain(Truck truck);
+    Truck toDomain(TruckDto truckDto);
 }

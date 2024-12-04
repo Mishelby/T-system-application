@@ -2,12 +2,8 @@ package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.City;
-import org.example.logisticapplication.domain.City.CityDto;
-import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.City.CityEntityConverter;
 import org.example.logisticapplication.repository.CityRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.example.logisticapplication.utils.CityMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CityService {
     private final CityRepository cityRepository;
-    private final CityEntityConverter cityEntityConverter;
+    private final CityMapper cityMapper;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public City addNewCity(
@@ -34,11 +30,11 @@ public class CityService {
         }
 
         var savedCity = cityRepository.save(
-                cityEntityConverter.toEntity(city)
+                cityMapper.toEntity(city)
         );
 
 
-        return cityEntityConverter.toDomain(savedCity);
+        return cityMapper.toDomain(savedCity);
 
     }
 
@@ -53,7 +49,7 @@ public class CityService {
                 )
         );
 
-        return cityEntityConverter.toDomain(cityEntity);
+        return cityMapper.toDomain(cityEntity);
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +61,7 @@ public class CityService {
 
         return allCities
                 .stream()
-                .map(cityEntityConverter::toDomain)
+                .map(cityMapper::toDomain)
                 .toList();
     }
 }

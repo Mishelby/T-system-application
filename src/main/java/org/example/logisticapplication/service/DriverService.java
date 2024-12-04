@@ -1,5 +1,6 @@
 package org.example.logisticapplication.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -7,6 +8,7 @@ import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.utils.DriverMapper;
+import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +24,7 @@ public class DriverService {
     private final TruckRepository truckRepository;
     private final DriverMapper driverMapper;
     private final CityRepository cityRepository;
+    private final DriverValidHelper driverValidHelper;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Driver createDriver(
@@ -34,12 +37,11 @@ public class DriverService {
             );
         }
 
-        var savedDriver = driverRepository.save(
-                driverMapper.toEntity(driver)
-        );
+        var driverEntity = driverMapper.toEntity(driver);
 
+        driverEntity.setCurrentTruck(null);
 
-        savedDriver.setCurrentCity(
+        driverEntity.setCurrentCity(
                 cityRepository.findById(driver.currentCityId()).orElseThrow(
                         () -> new IllegalArgumentException(
                                 "No City found with id=%s"
@@ -48,11 +50,18 @@ public class DriverService {
                 )
         );
 
+        var savedDriver = driverRepository.save(
+                driverEntity
+        );
+
         return driverMapper.toDomain(savedDriver);
     }
 
     @Transactional(readOnly = true)
-    public List<Driver> findAll(String status, String cityName) {
+    public List<Driver> findAll(
+            String status,
+            String cityName
+    ) {
         var allDrivers = driverRepository.findAllDrivers(status, cityName);
 
         if (allDrivers.isEmpty()) {
@@ -113,27 +122,31 @@ public class DriverService {
             Long id,
             Driver updateDriver
     ) {
-        var driverById = findById(id);
+        if (!driverRepository.existsById(id)) {
+            throw new EntityNotFoundException(
+                    "Driver does not exist with id=%s"
+                            .formatted(id)
+            );
+        }
 
-        var updatedDriver = new Driver(
-                driverById.id(),
-                orDefault(updateDriver.name(), driverById.name()),
-                orDefault(updateDriver.secondName(), driverById.secondName()),
-                orDefault(updateDriver.personNumber(), driverById.personNumber()),
-                orDefault(updateDriver.numberOfHoursWorked(), driverById.numberOfHoursWorked()),
-                orDefault(updateDriver.status(), driverById.status()),
-                orDefault(updateDriver.currentCityId(), driverById.currentCityId()),
-                orDefault(updateDriver.currentTruckId(), driverById.currentTruckId())
+        driverRepository.updateCurrentDriver(
+                id,
+                updateDriver.name(),
+                updateDriver.secondName(),
+                updateDriver.personNumber(),
+                updateDriver.numberOfHoursWorked(),
+                updateDriver.status(),
+                updateDriver.currentCityId(),
+                updateDriver.currentTruckId()
         );
 
-        driverRepository.save(
-                driverMapper.toEntity(updatedDriver)
+        return driverMapper.toDomain(
+                driverRepository.findById(id).orElseThrow()
         );
-
-        return updatedDriver;
     }
 
     private <T> T orDefault(T newValue, T currentValue) {
         return newValue != null ? newValue : currentValue;
     }
+
 }

@@ -2,7 +2,6 @@ package org.example.logisticapplication.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.logisticapplication.domain.Driver.DriverConverter;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.service.BusinessLogicService;
 import org.example.logisticapplication.utils.DriverMapper;
@@ -11,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/drivers")
+@RequestMapping("/api/drivers")
 @RequiredArgsConstructor
 @Slf4j
 public class DriverLogisticController {

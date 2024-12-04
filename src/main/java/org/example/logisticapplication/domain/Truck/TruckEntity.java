@@ -17,7 +17,7 @@ public class TruckEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reg-number",unique = true, nullable = false)
+    @Column(name = "reg_number",unique = true, nullable = false)
     private String registrationNumber;
 
     @Column(name = "drivers_shift")

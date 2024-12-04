@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/trucks")
+@RequestMapping("/api/trucks")
 @RequiredArgsConstructor
 @Slf4j
 public class TruckController {
@@ -25,12 +25,10 @@ public class TruckController {
             @RequestBody Truck truck
     ) {
         log.info("Get request for creating truck: {}", truck);
+        var savedTruck = truckService.createNewTruck(truck);
 
-        var savedTruck = truckService.createNewTruck(
-                truckMapper.toDomain(truck)
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(truckMapper.toDto(savedTruck));
     }
 
@@ -63,11 +61,13 @@ public class TruckController {
     @PutMapping("/{id}")
     public ResponseEntity<TruckDto> updateTruck(
             @PathVariable("id") Long id,
-            @RequestBody Truck truck
+            @RequestBody TruckDto truckDto
     ) {
         log.info("Update request for getting truck by id: {}", id);
-
-        var updateTruck = truckService.updateTruck(id, truck);
+        var updateTruck = truckService.updateTruck(
+                id,
+                truckMapper.toDomain(truckDto)
+        );
 
         return ResponseEntity
                 .status(HttpStatus.OK)

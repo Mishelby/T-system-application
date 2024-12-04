@@ -18,9 +18,6 @@ public record TruckDto(
 
         Double capacity,
 
-        Long currentCityId,
-
-        Long currentDriverId
-
+        Long currentCityId
 ) {
 }
