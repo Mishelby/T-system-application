@@ -20,10 +20,10 @@ public class CargoService {
     public Cargo createNewCargo(
             Cargo cargo
     ) {
-        if (cargoRepository.existsByCargoNumber(cargo.cargoNumber())) {
+        if (cargoRepository.existsCargoEntitiesByNumber(cargo.number())) {
             throw new IllegalArgumentException(
                     "Cargo number=%s already exists"
-                            .formatted(cargo.cargoNumber())
+                            .formatted(cargo.number())
             );
         }
 

@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Null;
 public record RoutePointDto(
         @Null
         Long id,
-        String city,
+        Long cityId,
         Long cargoId,
         String operationType
 ) {

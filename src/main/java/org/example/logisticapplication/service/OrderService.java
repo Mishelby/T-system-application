@@ -30,40 +30,40 @@ public class OrderService {
     private final CargoRepository cargoRepository;
 
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public Order createOrder(
-            Order order
-    ) {
-        orderValidHelper.isOrderHasBeenCreated(order);
-        orderValidHelper.isRoutePointsListEmpty(order);
-
-        var truckEntity = orderValidHelper.findTruckEntityById(order);
-        var allDriversById = driverRepository.findAllById(order.driversId());
-        var orderEntity = orderMapper.toEntity(order, allDriversById, truckEntity);
-
-        orderValidHelper.checkDriversById(allDriversById, order);
-
-        var listRoutePoints = order.routePoints()
-                .stream()
-                .map(routePointMapper::toEntity)
-                .peek(routePointEntity -> {
-                    var routePoints = order.routePoints()
-                            .stream()
-                            .map(RoutePoint::cargoId)
-                            .toList();
-
-                    var allCargoEntityById = cargoRepository.findCargoEntityByCorrectStatus(orderEntity.getId());
-                    allCargoEntityById.forEach(routePointEntity::setCargo);
-                }).toList();
-
-
-        orderEntity.setRoutePoints(listRoutePoints);
-        orderEntity.setDrivers(allDriversById);
-
-        var savedOrder = orderRepository.save(orderEntity);
-
-        return orderMapper.toDomain(savedOrder);
-    }
+//    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+//    public Order createOrder(
+//            Order order
+//    ) {
+//        orderValidHelper.isOrderHasBeenCreated(order);
+//        orderValidHelper.isRoutePointsListEmpty(order);
+//
+//        var truckEntity = orderValidHelper.findTruckEntityById(order);
+//        var allDriversById = driverRepository.findAllById(order.driversId());
+//        var orderEntity = orderMapper.toEntity(order, allDriversById, truckEntity);
+//
+//        orderValidHelper.checkDriversById(allDriversById, order);
+//
+//        var listRoutePoints = order.routePoints()
+//                .stream()
+//                .map(routePointMapper::toEntity)
+//                .peek(routePointEntity -> {
+//                    var routePoints = order.routePoints()
+//                            .stream()
+//                            .map(RoutePoint::cargoId)
+//                            .toList();
+//
+//                    var allCargoEntityById = cargoRepository.findCargoEntityByCorrectStatus(orderEntity.getId());
+//                    allCargoEntityById.forEach(routePointEntity::setCargo);
+//                }).toList();
+//
+//
+//        orderEntity.setRoutePoints(listRoutePoints);
+//        orderEntity.setDrivers(allDriversById);
+//
+//        var savedOrder = orderRepository.save(orderEntity);
+//
+//        return orderMapper.toDomain(savedOrder);
+//    }
 
 
 }

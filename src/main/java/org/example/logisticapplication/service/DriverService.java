@@ -39,8 +39,6 @@ public class DriverService {
 
         var driverEntity = driverMapper.toEntity(driver);
 
-        driverEntity.setCurrentTruck(null);
-
         driverEntity.setCurrentCity(
                 cityRepository.findById(driver.currentCityId()).orElseThrow(
                         () -> new IllegalArgumentException(
@@ -143,10 +141,6 @@ public class DriverService {
         return driverMapper.toDomain(
                 driverRepository.findById(id).orElseThrow()
         );
-    }
-
-    private <T> T orDefault(T newValue, T currentValue) {
-        return newValue != null ? newValue : currentValue;
     }
 
 }

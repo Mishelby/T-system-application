@@ -6,12 +6,15 @@ import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.Mappings;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DriverMapper {
 
-    @Mapping(target = "status", defaultValue = "SUSPENDED")
-    @Mapping(target = "numberOfHoursWorked", defaultValue = "0")
+    @Mappings({
+            @Mapping(target = "status", defaultValue = "SUSPENDED"),
+            @Mapping(target = "numberOfHoursWorked", defaultValue = "0")
+    })
     DriverEntity toEntity(Driver driver);
 
     Driver toDomain(DriverEntity entity);

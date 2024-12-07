@@ -9,6 +9,8 @@ public record Distance(
 
         Long toCityId,
 
-        Double distance
+        Integer distance,
+
+        Long countryMapId
 ) {
 }

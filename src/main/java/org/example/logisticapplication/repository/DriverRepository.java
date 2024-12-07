@@ -14,7 +14,7 @@ import java.util.List;
 
 @Repository
 public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
-    boolean existsByPersonNumber(String personNumber);
+    boolean existsByPersonNumber(Long personNumber);
 
     boolean existsDriverEntityById(Long id);
 
@@ -35,21 +35,21 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
 
     @Modifying
     @Query(value = """
-            UPDATE drivers 
+            UPDATE driver 
             SET name = CASE WHEN :name IS NOT NULL THEN :name ELSE name END,
-                second_name = CASE WHEN :secondName IS NOT NULL THEN :secondName ELSE second_name END,
+                last_name = CASE WHEN :lastName IS NOT NULL THEN :secondName ELSE last_name END,
                 person_number = CASE WHEN :personNumber IS NOT NULL AND person_number != :personNumber THEN :personNumber ELSE person_number END,
                 driver_status= CASE WHEN :status IS NOT NULL THEN :status ELSE driver_status END,
                 num_of_hours_worked = CASE WHEN :numberOfHoursWorked IS NOT NULL THEN :numberOfHoursWorked ELSE num_of_hours_worked END,
-                truck_id = CASE WHEN :truckId IS NOT NULL THEN :truckId ELSE truck_id END,
+                current_truck_id = CASE WHEN :truckId IS NOT NULL THEN :truckId ELSE current_truck_id END,
                 current_city_id = CASE WHEN :cityId IS NOT NULL THEN :cityId ELSE current_city_id END
             WHERE id = :id
             """, nativeQuery = true)
     void updateCurrentDriver(
             @Param("id") Long id,
             @Param("name") String name,
-            @Param("secondName") String secondName,
-            @Param("personNumber") String personNumber,
+            @Param("secondName") String lastName,
+            @Param("personNumber") Long personNumber,
             @Param("numberOfHoursWorked") Integer numberOfHoursWorked,
             @Param("status") String status,
             @Param("cityId") Long currentCityId,

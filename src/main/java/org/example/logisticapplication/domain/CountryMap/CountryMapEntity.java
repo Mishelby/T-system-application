@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 public class CountryMapEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,12 +21,7 @@ public class CountryMapEntity {
     @Column(name = "country_name", nullable = false, unique = true)
     private String countryName;
 
-    @ManyToMany
-    @JoinTable(
-            name = "country_map_cities",
-            joinColumns = @JoinColumn(name = "country_map_id"),
-            inverseJoinColumns = @JoinColumn(name = "city_id")
-    )
+    @OneToMany(mappedBy = "countryMap", fetch = FetchType.LAZY)
     private List<CityEntity> cities;
 
     @OneToMany(mappedBy = "countryMap", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -41,6 +37,12 @@ public class CountryMapEntity {
         this.countryName = countryName;
         this.cities = cities;
         this.distances = distances;
+    }
+
+    public CountryMapEntity(
+            String countryName
+    ) {
+        this.countryName = countryName;
     }
 
     public CountryMapEntity() {}

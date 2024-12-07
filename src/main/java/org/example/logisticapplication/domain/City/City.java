@@ -9,6 +9,6 @@ public record City(
 
         String name,
 
-        String country
+        Long countyMapId
 ) {
 }

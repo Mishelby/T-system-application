@@ -10,10 +10,11 @@ import org.example.logisticapplication.domain.Distance.DistanceEntity;
 import java.util.List;
 
 @Entity
-@Table(name = "cities")
+@Table(name = "city")
 @Getter
 @Setter
 public class CityEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,17 +22,26 @@ public class CityEntity {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Column(name = "country", nullable = false)
-    private String country;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_map_id", nullable = false)
+    private CountryMapEntity countryMap;
 
     public CityEntity(
             Long id,
             String name,
-            String country
+            CountryMapEntity countryMap
     ) {
         this.id = id;
         this.name = name;
-        this.country = country;
+        this.countryMap = countryMap;
+    }
+
+    public CityEntity(
+            String name,
+            CountryMapEntity countryMap
+    ) {
+        this.name = name;
+        this.countryMap = countryMap;
     }
 
     public CityEntity() {}

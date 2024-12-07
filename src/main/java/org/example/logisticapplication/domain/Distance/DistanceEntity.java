@@ -7,10 +7,11 @@ import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 
 @Entity
-@Table(name = "distances")
+@Table(name = "distance")
 @Getter
 @Setter
 public class DistanceEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,8 +24,8 @@ public class DistanceEntity {
     @JoinColumn(name = "to_city_id", nullable = false)
     private CityEntity toCity;
 
-    @Column(name = "distance")
-    private Double  distance;
+    @Column(name = "distance", nullable = false)
+    private Integer distance;
 
     @ManyToOne
     @JoinColumn(name = "country_map_id", nullable = false)
@@ -32,16 +33,17 @@ public class DistanceEntity {
 
 
     public DistanceEntity(
-            Long id,
             CityEntity fromCity,
             CityEntity toCity,
-            Double  distance
+            Integer distance,
+            CountryMapEntity countryMap
     ) {
-        this.id = id;
         this.fromCity = fromCity;
         this.toCity = toCity;
         this.distance = distance;
+        this.countryMap = countryMap;
     }
 
     public DistanceEntity() {}
+
 }

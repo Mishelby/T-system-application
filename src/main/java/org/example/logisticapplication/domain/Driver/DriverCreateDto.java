@@ -10,6 +10,6 @@ public record DriverCreateDto(
 
         String secondName,
 
-        String personNumber
+        Long personNumber
 ) {
 }

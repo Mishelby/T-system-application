@@ -21,17 +21,17 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
-    @PostMapping("/create-order")
-    public ResponseEntity<OrderDto> createOrder(
-            @RequestBody Order order
-    ) {
-        log.info("Get request for creating order: {}", order);
-        var newOrder = orderService.createOrder(order);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(
-                        orderMapper.toDto(newOrder)
-                );
-    }
+//    @PostMapping("/create-order")
+//    public ResponseEntity<OrderDto> createOrder(
+//            @RequestBody Order order
+//    ) {
+//        log.info("Get request for creating order: {}", order);
+//        var newOrder = orderService.createOrder(order);
+//
+//        return ResponseEntity
+//                .status(HttpStatus.CREATED)
+//                .body(
+//                        orderMapper.toDto(newOrder)
+//                );
+//    }
 }

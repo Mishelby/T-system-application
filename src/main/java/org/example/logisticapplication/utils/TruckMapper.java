@@ -6,12 +6,15 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.Mappings;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TruckMapper {
 
-    @Mapping(target = "driversShift", defaultValue = "0")
-    @Mapping(target = "status", defaultValue = "SERVICEABLE")
+    @Mappings({
+            @Mapping(target = "driversShift", defaultValue = "0"),
+            @Mapping(target = "status", defaultValue = "SERVICEABLE")
+    })
     TruckEntity toEntity(Truck truck);
 
     Truck toDomain(TruckEntity truck);

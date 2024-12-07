@@ -1,11 +1,15 @@
 package org.example.logisticapplication.domain.Order;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 
 import java.util.List;
 
@@ -18,54 +22,40 @@ public class OrderEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "unique_number")
+    @Column(name = "unique_number", nullable = false, unique = true)
     private String uniqueNumber;
 
-    @Column(name = "order_status")
-    private String orderStatus;
+    @Column(name = "status", nullable = false)
+    @Pattern(regexp = "COMPLETED|NOT COMPLETED", message = "Invalid order status")
+    private String status;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "orders_route_points",
-            joinColumns = @JoinColumn(
-                    name = "order_id"
-            ),
-            inverseJoinColumns = @JoinColumn(
-                    name = "route_point_id"
-            )
-    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_map_id", nullable = false)
+    private CountryMapEntity countryMap;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoutePointEntity> routePoints;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "driver_orders",
-            joinColumns = @JoinColumn(
-                    name = "order_id"
-            ),
-            inverseJoinColumns = @JoinColumn(
-                    name = "driver_id"
-            )
-    )
-    public List<DriverEntity> drivers;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DriverOrderEntity> driverOrders;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "truck_id")
-    public TruckEntity truck;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TruckOrderEntity> truckOrders;
 
     public OrderEntity(
-            Long id,
             String uniqueNumber,
-            String orderStatus,
+            String status,
+            CountryMapEntity countryMap,
             List<RoutePointEntity> routePoints,
-            List<DriverEntity> drivers,
-            TruckEntity truck
+            List<DriverOrderEntity> driverOrders,
+            List<TruckOrderEntity> truckOrders
     ) {
-        this.id = id;
         this.uniqueNumber = uniqueNumber;
-        this.orderStatus = orderStatus;
+        this.status = status;
+        this.countryMap = countryMap;
         this.routePoints = routePoints;
-        this.drivers = drivers;
-        this.truck = truck;
+        this.driverOrders = driverOrders;
+        this.truckOrders = truckOrders;
     }
 
     public OrderEntity() {}

@@ -1,6 +1,7 @@
 package org.example.logisticapplication.domain.Truck;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
@@ -9,7 +10,7 @@ import org.example.logisticapplication.domain.Driver.DriverEntity;
 import java.util.List;
 
 @Entity
-@Table(name = "trucks")
+@Table(name = "truck")
 @Getter
 @Setter
 public class TruckEntity {
@@ -17,17 +18,18 @@ public class TruckEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reg_number",unique = true, nullable = false)
+    @Column(name = "reg_number", unique = true, nullable = false)
     private String registrationNumber;
 
-    @Column(name = "drivers_shift")
+    @Column(name = "size_of_driver_shift")
     private Integer driversShift;
 
-    @Column(name = "status")
+    @Column(name = "condition")
+    @Pattern(regexp = "SERVICEABLE|FAULTY", message = "Invalid truck condition")
     private String status;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id", referencedColumnName = "id")
+    @JoinColumn(name = "current_city_id", referencedColumnName = "id")
     private CityEntity currentCity;
 
     @Column(name = "capacity")

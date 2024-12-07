@@ -13,6 +13,6 @@ public record CityDto(
 
         String name,
 
-        String country
+        Long countyMapId
 ) {
 }

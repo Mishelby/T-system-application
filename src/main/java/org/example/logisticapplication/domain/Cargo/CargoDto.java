@@ -4,17 +4,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
+import java.math.BigDecimal;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record CargoDto(
         @Null
         Long id,
 
-        Integer cargoNumber,
+        String number,
 
         String cargoName,
 
         @NotNull
-        Integer cargoMass,
+        BigDecimal weightKg,
 
         String cargoStatus
 ) {

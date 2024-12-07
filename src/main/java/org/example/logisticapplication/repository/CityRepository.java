@@ -12,8 +12,17 @@ import java.util.List;
 public interface CityRepository extends JpaRepository<CityEntity, Long> {
     boolean existsCityEntityByName(String name);
 
-    @Query("SELECT c FROM CityEntity c WHERE c.id IN (:cityIds)")
-    List<CityEntity> findCitiesByIds(@Param("cityIds") List<Long> cityIds);
+    @Query(value = """
+            SELECT c.id, c.id, c.name FROM city c
+            JOIN country_map cm ON c.country_map_id = cm.id
+            WHERE c.id IN (:cityIds)
+            AND c.country_map_id = :countryId
+            """,
+            nativeQuery = true)
+    List<CityEntity> findCitiesByIds(
+            @Param("cityIds") List<Long> cityIds,
+            @Param("countryId")Long countryId
+    );
 
     @Query("SELECT COUNT(d) > 0 FROM DistanceEntity d WHERE d.fromCity = :fromCity AND d.toCity = :toCity")
     boolean existsByCities(

@@ -6,10 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "cargos")
+@Table(name = "cargo")
 @Getter
 @Setter
 public class CargoEntity {
@@ -17,34 +18,45 @@ public class CargoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "cargo_number",nullable = false)
-    private Integer cargoNumber;
+    @Column(name = "number", nullable = false, unique = true)
+    private String number;
 
-    @Column(name = "cargo_name",nullable = false)
-    private String cargoName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "cargo_mass",nullable = false)
-    private Integer cargoMass;
+    @Column(name = "weight_kg", nullable = false, precision = 10, scale = 2)
+    private BigDecimal weightKg;
 
-    @Column(name = "cargo_status")
-    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid driver status")
-    private String cargoStatus;
+    @Column(name = "status", nullable = true)
+    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid cargo status")
+    private String status;
 
-    @OneToMany(mappedBy = "cargo",fetch = FetchType.LAZY)
-    private List<RoutePointEntity> routePointEntity;
+    @OneToMany(mappedBy = "cargo", fetch = FetchType.LAZY)
+    private List<RoutePointEntity> routePoints;
 
     public CargoEntity(
             Long id,
-            Integer cargoNumber,
-            String cargoName,
-            Integer cargoMass,
-            String cargoStatus
+            String number,
+            String name,
+            BigDecimal weightKg,
+            String status
     ) {
         this.id = id;
-        this.cargoNumber = cargoNumber;
-        this.cargoName = cargoName;
-        this.cargoMass = cargoMass;
-        this.cargoStatus = cargoStatus;
+        this.number = number;
+        this.name = name;
+        this.weightKg = weightKg;
+        this.status = status;
     }
+
+    public CargoEntity(
+            String number,
+            String name,
+            BigDecimal weightKg
+    ) {
+        this.number = number;
+        this.name = name;
+        this.weightKg = weightKg;
+    }
+
     public CargoEntity() {}
 }

@@ -2,28 +2,26 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMap;
-import org.example.logisticapplication.domain.CountryMap.CountryMapEntityConverter;
 import org.example.logisticapplication.domain.Distance.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
+import org.example.logisticapplication.utils.CountryMapMapper;
+import org.example.logisticapplication.utils.DistanceMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CountryMapService {
     private final CountryMapRepository countryMapRepository;
-    private final CountryMapEntityConverter countryMapEntityConverter;
+    private final CountryMapMapper countryMapMapper;
     private final CityRepository cityRepository;
-    private final DistanceDtoConverter distanceDtoConverter;
-    private final DistanceEntityConverter distanceEntityConverter;
+    private final DistanceMapper distanceMapper;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public CountryMap addNewCountryMap(
@@ -37,14 +35,10 @@ public class CountryMapService {
         }
 
         var entity = countryMapRepository.save(
-                countryMapEntityConverter.toEntity(
-                        countryMap,
-                        new ArrayList<>(),
-                        new ArrayList<>()
-                )
+                countryMapMapper.toEntity(countryMap)
         );
 
-        return countryMapEntityConverter.toDomain(entity);
+        return countryMapMapper.toDomain(entity);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
@@ -78,7 +72,7 @@ public class CountryMapService {
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
     public Distance addDistances(
             Long countryMapId,
-            DistanceDto distanceDto
+            Distance distance
     ) {
         if (!countryMapRepository.existsCountryMapEntitiesById(countryMapId)) {
             throw new EntityNotFoundException(
@@ -90,9 +84,10 @@ public class CountryMapService {
         var countryMapEntity = countryMapRepository.findById(countryMapId).orElseThrow();
 
         var citiesByIds = cityRepository.findCitiesByIds(List.of(
-                distanceDto.fromCityId(),
-                distanceDto.toCityId()
-        ));
+                        distance.fromCityId(),
+                        distance.toCityId()
+                ),
+                distance.countryMapId());
 
         if (citiesByIds.size() != 2) {
             throw new IllegalArgumentException("One or both cities not found");
@@ -100,13 +95,13 @@ public class CountryMapService {
 
         var cityFrom = citiesByIds
                 .stream()
-                .filter(cityEntity -> cityEntity.getId().equals(distanceDto.fromCityId()))
+                .filter(cityEntity -> cityEntity.getId().equals(distance.fromCityId()))
                 .findFirst()
                 .orElseThrow();
 
         var cityTo = citiesByIds
                 .stream()
-                .filter(cityEntity -> cityEntity.getId().equals(distanceDto.toCityId()))
+                .filter(cityEntity -> cityEntity.getId().equals(distance.toCityId()))
                 .findFirst()
                 .orElseThrow();
 
@@ -117,16 +112,17 @@ public class CountryMapService {
             );
         }
 
-        var distanceEntity = distanceEntityConverter.toEntity(
-                distanceDtoConverter.toDomain(distanceDto),
+        var distanceEntity = distanceMapper.toEntity(
+                distance,
                 cityFrom,
-                cityTo
+                cityTo,
+                countryMapEntity
         );
 
         distanceEntity.setCountryMap(countryMapEntity);
         countryMapEntity.getDistances().add(distanceEntity);
         countryMapRepository.save(countryMapEntity);
 
-        return distanceEntityConverter.toDomain(distanceEntity);
+        return distanceMapper.toDomain(distanceEntity);
     }
 }

@@ -1,8 +1,11 @@
 package org.example.logisticapplication.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.City;
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.repository.CityRepository;
+import org.example.logisticapplication.repository.CountryMapRepository;
 import org.example.logisticapplication.utils.CityMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -17,6 +20,7 @@ import java.util.List;
 public class CityService {
     private final CityRepository cityRepository;
     private final CityMapper cityMapper;
+    private final CountryMapRepository countryMapRepository;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public City addNewCity(
@@ -29,8 +33,17 @@ public class CityService {
             );
         }
 
+        var countryMapEntity = countryMapRepository.findById(city.countyMapId()).orElseThrow(
+                () -> new EntityNotFoundException(
+                        "City with name=%s does not exist!"
+                                .formatted(city.name())
+                )
+        );
+
         var savedCity = cityRepository.save(
-                cityMapper.toEntity(city)
+                cityMapper.toEntity(
+                        city,
+                        countryMapEntity)
         );
 
 

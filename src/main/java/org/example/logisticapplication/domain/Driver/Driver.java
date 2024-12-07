@@ -11,7 +11,7 @@ public record Driver(
 
         String secondName,
 
-        String personNumber,
+        Long  personNumber,
 
         @JsonProperty("numOfHoursWorked")
         Integer numberOfHoursWorked,
