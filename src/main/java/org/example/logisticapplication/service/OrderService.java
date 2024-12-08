@@ -2,30 +2,20 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoEntity;
-import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
-import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrder;
-import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderEntity;
-import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
+import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
-import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
+import org.example.logisticapplication.domain.Truck.Truck;
+import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 
 @Service
@@ -38,6 +28,8 @@ public class OrderService {
     private final RoutePointMapper routePointMapper;
     private final CityRepository cityRepository;
     private final CargoRepository cargoRepository;
+    private final TruckRepository truckRepository;
+    private final TruckMapper truckMapper;
 
     @Transactional
     public Order createBaseOrder(
@@ -75,10 +67,37 @@ public class OrderService {
 
         var orderEntity = orderMapper.toEntity(orderRequest, countryMapEntity, routePointEntities);
 
+        routePointEntities.forEach(entity -> entity.setOrder(orderEntity));
+
         orderRepository.save(orderEntity);
 
         return orderMapper.toDomain(orderEntity);
     }
 
 
+    @Transactional
+    public List<Truck> findTruckForOrder(
+            String uniqueNumber
+    ) {
+
+        validateOrderAndFetch(uniqueNumber);
+
+        var correctTrucks = truckRepository.findAllInCurrentCity(TruckStatus.SERVICEABLE.toString());
+
+        return correctTrucks.stream()
+                .map(truckMapper::toDomain)
+                .toList();
+
+    }
+
+    @Transactional(readOnly = true)
+    public void validateOrderAndFetch(String uniqueNumber) {
+        if (!orderRepository.existsByUniqueNumber(uniqueNumber)) {
+            throw new EntityNotFoundException(
+                    "Order with unique number=%s not Found"
+                            .formatted(uniqueNumber)
+            );
+        }
+
+    }
 }

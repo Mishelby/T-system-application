@@ -13,7 +13,7 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
     boolean existsCityEntityByName(String name);
 
     @Query(value = """
-            SELECT c.id, c.id, c.name FROM city c
+            SELECT * FROM city c
             WHERE c.id IN (:cityIds)
             AND c.country_map_id = :countryId
             """,

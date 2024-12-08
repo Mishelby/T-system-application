@@ -2,6 +2,7 @@ package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
@@ -24,22 +26,32 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
 
     @Modifying
     @Query(value = """
-            UPDATE trucks 
+            UPDATE truck
             SET  
             reg_number = CASE WHEN :registrationNumber IS NOT NULL THEN :registrationNumber ELSE reg_number END,
-            drivers_shift = CASE WHEN :driversShift IS NOT NULL THEN :driversShift ELSE drivers_shift END,
-            status = CASE WHEN :status IS NOT NULL THEN :status ELSE status END,
+            size_of_driver_shift = CASE WHEN :driversShift IS NOT NULL THEN :driversShift ELSE size_of_driver_shift END,
+            condition = CASE WHEN :truck_condition IS NOT NULL THEN :truck_condition ELSE condition END,
             capacity = CASE WHEN :capacity IS NOT NULL THEN :capacity ELSE capacity END,
-            city_id = CASE WHEN :cityId IS NOT NULL THEN :cityId ELSE city_id END
+            current_city_id = CASE WHEN :cityId IS NOT NULL THEN :cityId ELSE current_city_id END
             WHERE id = :id
             """
-    , nativeQuery = true)
+            , nativeQuery = true)
     void updateTruckById(
             @Param("id") Long id,
             @Param("registrationNumber") String registrationNumber,
             @Param("driversShift") Integer driversShift,
-            @Param("status") String status,
+            @Param("truck_condition") String status,
             @Param("capacity") Double capacity,
             @Param("cityId") Long currentCityId
+    );
+
+    @Query("""
+            SELECT t FROM TruckEntity t 
+                        LEFT JOIN TruckOrderEntity toe ON t.id = toe.truck.id        
+                        WHERE t.status = :status
+                        AND toe.truck.id IS NULL
+            """)
+    List<TruckEntity> findAllInCurrentCity(
+            @Param("status") String status
     );
 }

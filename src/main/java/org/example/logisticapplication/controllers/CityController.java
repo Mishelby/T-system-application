@@ -6,7 +6,6 @@ import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityDto;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.utils.CityMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

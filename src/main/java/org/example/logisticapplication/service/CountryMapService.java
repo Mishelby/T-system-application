@@ -83,7 +83,8 @@ public class CountryMapService {
                         )
                 );
 
-        var citiesByIds = cityRepository.findCitiesByIds(List.of(
+        var citiesByIds = cityRepository.findCitiesByIds(
+                List.of(
                         distance.fromCityId(),
                         distance.toCityId()
                 ),
