@@ -1,11 +1,13 @@
 package org.example.logisticapplication.utils;
 
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
+import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderDto;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 
-import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -18,12 +20,16 @@ import java.util.List;
 public interface OrderMapper {
 
    @Mappings({
-           @Mapping(target = "status", source = "order.orderStatus",defaultValue = "NOT_COMPLETE"),
-           @Mapping(target = "id", source = "order.id"),
-           @Mapping(target = "driverOrders", source = "drivers"),
-           @Mapping(target = "truckOrders", source = "truck")
+           @Mapping(target = "status", source = "orderRequest.orderStatus", defaultValue = "NOT COMPLETED"),
+           @Mapping(target = "id", source = "orderRequest.id"),
+           @Mapping(target = "countryMap", source = "countryMapEntity"),
+           @Mapping(target = "routePoints", source = "routePointEntities")
    })
-    OrderEntity toEntity(Order order, List<DriverOrderEntity> drivers, List<TruckOrderEntity> truck);
+    OrderEntity toEntity(
+            CreateOrderRequest orderRequest,
+            CountryMapEntity countryMapEntity,
+            List<RoutePointEntity> routePointEntities
+   );
 
     Order toDomain(OrderDto orderDto);
 

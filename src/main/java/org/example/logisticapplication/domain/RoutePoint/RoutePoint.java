@@ -1,6 +1,7 @@
 package org.example.logisticapplication.domain.RoutePoint;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.example.logisticapplication.domain.Cargo.Cargo;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RoutePoint(

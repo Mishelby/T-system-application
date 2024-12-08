@@ -31,7 +31,7 @@ public class RoutePointEntity {
     @JoinColumn(name = "cargo_id")
     private CargoEntity cargo;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private OrderEntity order;
 

@@ -2,6 +2,7 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMap;
 import org.example.logisticapplication.domain.Distance.*;
 import org.example.logisticapplication.repository.CityRepository;
@@ -71,51 +72,59 @@ public class CountryMapService {
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
     public Distance addDistances(
-            Long countryMapId,
             Distance distance
     ) {
-        if (!countryMapRepository.existsCountryMapEntitiesById(countryMapId)) {
-            throw new EntityNotFoundException(
-                    "Country map with id=%s does not exist"
-                            .formatted(countryMapId)
-            );
-        }
-
-        var countryMapEntity = countryMapRepository.findById(countryMapId).orElseThrow();
+        var countryMapEntity = countryMapRepository
+                .findById(distance.countryMapId())
+                .orElseThrow(
+                        () -> new EntityNotFoundException(
+                                "Country map with id=%s does not exist"
+                                        .formatted(distance.countryMapId())
+                        )
+                );
 
         var citiesByIds = cityRepository.findCitiesByIds(List.of(
                         distance.fromCityId(),
                         distance.toCityId()
                 ),
-                distance.countryMapId());
+                distance.countryMapId()
+        );
 
-        if (citiesByIds.size() != 2) {
-            throw new IllegalArgumentException("One or both cities not found");
+        var cityIds = List.of(distance.fromCityId(), distance.toCityId());
+
+        if (!cityIds.equals(citiesByIds.stream().map(CityEntity::getId).toList())) {
+            throw new IllegalArgumentException(
+                    "One or both cities not found in country map with id=%s. Expected cities: %s, found cities: %s"
+                            .formatted(
+                                    distance.countryMapId(),
+                                    cityIds,
+                                    citiesByIds.stream().map(CityEntity::getId).toList()
+                            )
+            );
         }
 
-        var cityFrom = citiesByIds
-                .stream()
+        var cityFrom = citiesByIds.stream()
                 .filter(cityEntity -> cityEntity.getId().equals(distance.fromCityId()))
                 .findFirst()
                 .orElseThrow();
 
-        var cityTo = citiesByIds
-                .stream()
+
+        var toCity = citiesByIds.stream()
                 .filter(cityEntity -> cityEntity.getId().equals(distance.toCityId()))
                 .findFirst()
                 .orElseThrow();
 
-        if (cityRepository.existsByCities(cityFrom, cityTo)) {
+        if (cityRepository.existsByCities(cityFrom, toCity)) {
             throw new IllegalArgumentException(
                     "Distance between these cities already exists, cities: %s and %s"
-                            .formatted(cityFrom.getName(), cityTo.getName())
+                            .formatted(cityFrom.getName(), toCity.getName())
             );
         }
 
         var distanceEntity = distanceMapper.toEntity(
                 distance,
                 cityFrom,
-                cityTo,
+                toCity,
                 countryMapEntity
         );
 

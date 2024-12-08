@@ -2,6 +2,7 @@ package org.example.logisticapplication.utils;
 
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.OrderRepository;
@@ -18,8 +19,10 @@ public class OrderValidHelper {
     private final TruckRepository truckRepository;
 
     @Transactional(readOnly = true)
-    public TruckEntity findTruckEntityById(Order order) {
-        return truckRepository.findById(order.truckId()).orElseThrow(
+    public TruckEntity findTruckEntityById(
+            Order order
+    ) {
+        return truckRepository.findById(order.truckOrder().truckId()).orElseThrow(
                 () -> new IllegalArgumentException(
                         "No truck found for order=%s"
                                 .formatted(order)
@@ -28,16 +31,20 @@ public class OrderValidHelper {
     }
 
     @Transactional(readOnly = true)
-    public void isOrderHasBeenCreated(Order order) {
-        if (orderRepository.existsOrderEntityByUniqueNumber(order.uniqueNumber())) {
+    public void isOrderHasBeenCreated(
+            CreateOrderRequest orderRequest
+    ) {
+        if (orderRepository.existsOrderEntityByUniqueNumber(orderRequest.uniqueNumber())) {
             throw new IllegalArgumentException(
                     "Order with number=%s already exists"
-                            .formatted(order.uniqueNumber())
+                            .formatted(orderRequest.uniqueNumber())
             );
         }
     }
 
-    public void isRoutePointsListEmpty(Order order) {
+    public void isRoutePointsListEmpty(
+            Order order
+    ) {
         if (order.routePoints().isEmpty()) {
             throw new IllegalArgumentException(
                     "No route points found for order=%s"
@@ -46,7 +53,10 @@ public class OrderValidHelper {
         }
     }
 
-    public void checkDriversById(List<DriverEntity> drivers, Order order) {
+    public void checkDriversById(
+            List<DriverEntity> drivers,
+            Order order
+    ) {
         if(drivers.isEmpty()){
             throw new IllegalArgumentException(
                     "No drivers found for order id=%s"

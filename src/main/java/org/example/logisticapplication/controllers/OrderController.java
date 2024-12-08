@@ -2,6 +2,7 @@ package org.example.logisticapplication.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderDto;
 import org.example.logisticapplication.service.OrderService;
@@ -21,17 +22,17 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
-//    @PostMapping("/create-order")
-//    public ResponseEntity<OrderDto> createOrder(
-//            @RequestBody Order order
-//    ) {
-//        log.info("Get request for creating order: {}", order);
-//        var newOrder = orderService.createOrder(order);
-//
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(
-//                        orderMapper.toDto(newOrder)
-//                );
-//    }
+    @PostMapping("/create-order")
+    public ResponseEntity<OrderDto> createOrder(
+            @RequestBody CreateOrderRequest order
+    ) {
+        log.info("Get request for creating order: {}", order);
+        var newOrder = orderService.createBaseOrder(order);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        orderMapper.toDto(newOrder)
+                );
+    }
 }

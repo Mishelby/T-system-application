@@ -14,7 +14,6 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
 
     @Query(value = """
             SELECT c.id, c.id, c.name FROM city c
-            JOIN country_map cm ON c.country_map_id = cm.id
             WHERE c.id IN (:cityIds)
             AND c.country_map_id = :countryId
             """,

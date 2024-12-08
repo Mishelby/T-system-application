@@ -38,11 +38,10 @@ public class CountryMapController {
 
     @PostMapping("/{id}/add-distance")
     public ResponseEntity<DistanceDto> addDistance(
-            @PathVariable("id") final Long id,
             @RequestBody final Distance distance
     ) {
         log.info("Get request for adding Distance: {}", distance);
-        var newDistance = countryMapService.addDistances(id, distance);
+        var newDistance = countryMapService.addDistances(distance);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
