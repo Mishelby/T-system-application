@@ -135,4 +135,16 @@ public class CountryMapService {
 
         return distanceMapper.toDomain(distanceEntity);
     }
+
+    @Transactional(readOnly = true)
+    public CountryMap findById(Long id) {
+        return countryMapMapper.toDomain(
+                countryMapRepository.findById(id).orElseThrow(
+                        () -> new EntityNotFoundException(
+                                "Country map with id=%s does not exist"
+                                        .formatted(id)
+                        )
+                )
+        );
+    }
 }

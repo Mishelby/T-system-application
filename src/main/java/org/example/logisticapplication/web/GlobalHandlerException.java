@@ -50,7 +50,7 @@ public class GlobalHandlerException {
             NoSuchElementException ex
     ){
         ErrorMessageResponse response = new ErrorMessageResponse(
-                "Entity not found!",
+                "No such element!",
                 ex.getMessage(),
                 LocalDateTime.now()
         );
@@ -63,7 +63,7 @@ public class GlobalHandlerException {
             NoResourceFoundException ex
     ){
         ErrorMessageResponse response = new ErrorMessageResponse(
-                "Entity not found!",
+                "No resource found!",
                 ex.getMessage(),
                 LocalDateTime.now()
         );
