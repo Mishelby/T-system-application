@@ -7,8 +7,10 @@ import lombok.Setter;
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "route_point")
@@ -27,9 +29,13 @@ public class RoutePointEntity {
     @Pattern(regexp = "LOADING|UNLOADING", message = "Invalid operation type")
     private String operationType;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cargo_id")
-    private CargoEntity cargo;
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "route_point_cargo",
+            joinColumns = @JoinColumn(name = "route_point_id"),
+            inverseJoinColumns = @JoinColumn(name = "cargo_id")
+    )
+    private List<CargoEntity> cargo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
@@ -39,7 +45,7 @@ public class RoutePointEntity {
             Long id,
             CityEntity city,
             String operationType,
-            CargoEntity cargo
+            List<CargoEntity> cargo
     ) {
         this.id = id;
         this.city = city;
@@ -49,4 +55,5 @@ public class RoutePointEntity {
 
     public RoutePointEntity() {
     }
+
 }

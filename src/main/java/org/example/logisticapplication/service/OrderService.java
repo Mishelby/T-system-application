@@ -4,9 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
-import org.example.logisticapplication.domain.Order.OrderEntity;
-import org.example.logisticapplication.domain.RoutePoint.OperationType;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.repository.*;
@@ -15,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -54,12 +50,15 @@ public class OrderService {
                             )
                     );
 
-                    var cargoEntity = cargoRepository.findById(routePoint.cargoId()).orElseThrow(
-                            () -> new EntityNotFoundException(
-                                    "Cargo Map with id=%s Not Found"
-                                            .formatted(routePoint.cargoId())
-                            )
-                    );
+                    var cargoEntity = cargoRepository.findAllById(routePoint.cargoId());
+
+                    //TODO: check if cargo is in correct city
+                    if(cargoEntity.size() != routePoint.cargoId().size()) {
+                        throw new EntityNotFoundException(
+                                "Cargo with id=%s Not Found"
+                                        .formatted(routePoint.cargoId())
+                        );
+                    }
 
                     return routePointMapper.toEntity(routePoint, cityEntity, cargoEntity);
                 })
@@ -79,9 +78,7 @@ public class OrderService {
     public List<Truck> findTruckForOrder(
             String uniqueNumber
     ) {
-
         validateOrderAndFetch(uniqueNumber);
-
         var correctTrucks = truckRepository.findAllInCurrentCity(TruckStatus.SERVICEABLE.toString());
 
         return correctTrucks.stream()

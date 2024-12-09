@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +25,6 @@ public class DriverLogisticController {
         log.info("Get request for adding truck {} to driver {}", truckId, driverId);
         var driver = businessLogicService.addTruckForDriver(driverId, truckId);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(
-                        driverMapper.toDto(driver)
-                );
+        return ResponseEntity.ok(driverMapper.toDto(driver));
     }
 }

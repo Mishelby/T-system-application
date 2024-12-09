@@ -1,11 +1,9 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
-import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderDto;
-import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckDto;
 import org.example.logisticapplication.service.OrderService;
 import org.example.logisticapplication.utils.OrderMapper;
@@ -32,11 +30,7 @@ public class OrderController {
         log.info("Get request for creating order: {}", order);
         var newOrder = orderService.createBaseOrder(order);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(
-                        orderMapper.toDto(newOrder)
-                );
+        return ResponseEntity.ok(orderMapper.toDto(newOrder));
     }
 
     @GetMapping("/{uniqueNumber}/trucks")
@@ -47,7 +41,8 @@ public class OrderController {
         var truckForOrder = orderService.findTruckForOrder(uniqueNumber);
 
         return ResponseEntity.ok(
-                truckForOrder.stream().map(truckMapper::toDto).toList()
-        );
+                truckForOrder.stream()
+                        .map(truckMapper::toDto)
+                        .toList());
     }
 }

@@ -2,12 +2,17 @@ package org.example.logisticapplication.domain.Cargo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "cargo")
@@ -30,9 +35,6 @@ public class CargoEntity {
     @Column(name = "status", nullable = true)
     @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid cargo status")
     private String status;
-
-    @OneToMany(mappedBy = "cargo", fetch = FetchType.LAZY)
-    private List<RoutePointEntity> routePoints;
 
     public CargoEntity(
             Long id,
@@ -59,4 +61,5 @@ public class CargoEntity {
     }
 
     public CargoEntity() {}
+
 }

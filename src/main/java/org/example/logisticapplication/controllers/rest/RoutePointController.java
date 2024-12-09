@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +28,6 @@ public class RoutePointController {
         log.info("Get request for saving route point: {}", routePoint);
         var domain = routePointService.addNewRoutePoint(routePoint);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        routePointMapper.toDto(domain)
-                );
+        return ResponseEntity.ok(routePointMapper.toDto(domain));
     }
 }

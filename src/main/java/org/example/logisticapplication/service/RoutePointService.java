@@ -39,12 +39,7 @@ public class RoutePointService {
                 )
         );
 
-        var cargoEntity = cargoRepository.findById(routePoint.cargoId()).orElseThrow(
-                () -> new EntityNotFoundException(
-                        "Cargo with id=%s not found"
-                                .formatted(routePoint.cargoId())
-                )
-        );
+        var cargoEntity = cargoRepository.findAllById(routePoint.cargoId());
 
         var routePointentity = routePointMapper.toEntity(routePoint, cityEntity, cargoEntity);
 

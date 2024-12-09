@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Cargo</title>
+    <script>
+        async function addCargo(event) {
+            event.preventDefault();
+
+            const cargoData = {
+                number: document.getElementById("number").value,
+                cargoName: document.getElementById("cargoName").value,
+                weightKg: parseFloat(document.getElementById("weightKg").value)
+            };
+
+            try {
+                const response = await fetch("/api/cargos", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(cargoData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert("Cargo added successfully with ID: " + result.id);
+                } else {
+                    const error = await response.json();
+                    alert("Error adding cargo: " + error.message);
+                }
+            } catch (e) {
+                console.error("Error adding cargo:", e);
+                alert("An unexpected error occurred.");
+            }
+        }
+    </script>
+</head>
+<body>
+<h1>Add Cargo</h1>
+<form onsubmit="addCargo(event)">
+    <label for="number">Cargo Number:</label><br>
+    <input type="text" id="number" name="number" required><br><br>
+
+    <label for="cargoName">Cargo Name:</label><br>
+    <input type="text" id="cargoName" name="cargoName" required><br><br>
+
+    <label for="weightKg">Weight (kg):</label><br>
+    <input type="number" id="weightKg" name="weightKg" step="0.01" required><br><br>
+
+    <button type="submit">Add Cargo</button>
+</form>
+</body>
+</html>

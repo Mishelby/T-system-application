@@ -1,6 +1,5 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.Driver;
@@ -30,12 +29,11 @@ public class DriverController {
         log.info("Get request for find all drivers");
         var allDrivers = driverService.findAll(status, cityName);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        allDrivers.stream()
-                                .map(driverMapper::toDto)
-                                .toList()
-                );
+        return ResponseEntity.ok(
+                allDrivers.stream()
+                        .map(driverMapper::toDto)
+                        .toList()
+        );
     }
 
     @PostMapping
@@ -45,8 +43,7 @@ public class DriverController {
         log.info("Get request for save driver driver: {}", driver);
         var savedDriver = driverService.createDriver(driver);
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(driverMapper.toDto(savedDriver));
+        return ResponseEntity.ok(driverMapper.toDto(savedDriver));
     }
 
     @PutMapping("/{id}")
@@ -60,8 +57,7 @@ public class DriverController {
                 driverMapper.toDomain(driverDto)
         );
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(driverMapper.toDto(updatedDriver));
+        return ResponseEntity.ok(driverMapper.toDto(updatedDriver));
     }
 
     @GetMapping("/{id}")
@@ -71,9 +67,7 @@ public class DriverController {
         log.info("Get request for get driver by id: {}", id);
         var foundedDriver = driverService.findById(id);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(driverMapper.toDto(foundedDriver));
+        return ResponseEntity.ok(driverMapper.toDto(foundedDriver));
     }
 
     @DeleteMapping("/{id}")

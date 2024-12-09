@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +29,7 @@ public class CountryMapController {
         log.info("Get request for adding CountryMap: {}", countryMap);
         var newCountryMap = countryMapService.addNewCountryMap(countryMap);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(
-                        countryMapMapper.toDto(newCountryMap)
-                );
+        return ResponseEntity.ok(countryMapMapper.toDto(newCountryMap));
     }
 
     @PostMapping("/{id}/add-distance")
@@ -43,10 +39,7 @@ public class CountryMapController {
         log.info("Get request for adding Distance: {}", distance);
         var newDistance = countryMapService.addDistances(distance);
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(
-                        distanceMapper.toDto(newDistance)
-                );
+        return ResponseEntity.ok(distanceMapper.toDto(newDistance));
     }
 
     @PutMapping("/{id}/add-city/{cityId}")

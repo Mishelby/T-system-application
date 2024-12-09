@@ -10,6 +10,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Mappings;
 
+import java.util.List;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RoutePointMapper {
 
@@ -21,7 +23,7 @@ public interface RoutePointMapper {
     RoutePointEntity toEntity(
             RoutePoint routePoint,
             CityEntity cityEntity,
-            CargoEntity cargoEntity
+            List<CargoEntity> cargoEntity
     );
 
     RoutePoint toDomain(RoutePointDto routePoint);

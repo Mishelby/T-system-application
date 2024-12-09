@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,9 +45,8 @@ public class CityController {
         log.info("Get request for get cities");
         var allCities = cityService.findAll();
 
-        return ResponseEntity
-                .ok(allCities
-                        .stream()
+        return ResponseEntity.ok(
+                allCities.stream()
                         .map(cityMapper::toDto)
                         .toList());
     }

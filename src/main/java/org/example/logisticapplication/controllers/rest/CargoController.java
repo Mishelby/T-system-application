@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +25,7 @@ public class CargoController {
         log.info("Get request for add cargo: {}", cargo);
         var newCargo = cargoService.createNewCargo(cargo);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(
-                        cargoMapper.toDto(newCargo)
-                );
+        return ResponseEntity.ok(cargoMapper.toDto(newCargo));
     }
 
     @GetMapping("/{id}")
@@ -39,17 +35,13 @@ public class CargoController {
         log.info("Get request for get cargo: {}", id);
         var newCargo = cargoService.findCargoById(id);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(
-                        cargoMapper.toDto(newCargo)
-                );
+        return ResponseEntity.ok(cargoMapper.toDto(newCargo));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCargo(
             @PathVariable("id") Long id
-    ){
+    ) {
         log.info("Delete request for get cargo: {}", id);
         cargoService.deleteCargo(id);
 

@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers;
+package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +27,7 @@ public class TruckController {
         log.info("Get request for creating truck: {}", truck);
         var savedTruck = truckService.createNewTruck(truck);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(truckMapper.toDto(savedTruck));
+        return ResponseEntity.ok(truckMapper.toDto(savedTruck));
     }
 
     @GetMapping
@@ -37,13 +35,11 @@ public class TruckController {
         log.info("Get request for getting all trucks");
         var allTrucks = truckService.findAll();
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(
-                        allTrucks.stream()
-                                .map(truckMapper::toDto)
-                                .toList()
-                );
+        return ResponseEntity.ok(
+                allTrucks.stream()
+                        .map(truckMapper::toDto)
+                        .toList()
+        );
     }
 
     @GetMapping("/{id}")
@@ -53,9 +49,7 @@ public class TruckController {
         log.info("Get request for getting truck by id: {}", id);
         var truck = truckService.findById(id);
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(truckMapper.toDto(truck));
+        return ResponseEntity.ok(truckMapper.toDto(truck));
     }
 
     @PutMapping("/{id}")
@@ -69,9 +63,7 @@ public class TruckController {
                 truckMapper.toDomain(truckDto)
         );
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(truckMapper.toDto(updateTruck));
+        return ResponseEntity.ok(truckMapper.toDto(updateTruck));
     }
 
     @DeleteMapping("/{id}")

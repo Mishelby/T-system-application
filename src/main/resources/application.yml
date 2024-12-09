@@ -2,6 +2,11 @@ spring:
   application:
     name: Logistic-Application
 
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+
   datasource:
     url: jdbc:postgresql://localhost:5433/postgres
     username: postgres
