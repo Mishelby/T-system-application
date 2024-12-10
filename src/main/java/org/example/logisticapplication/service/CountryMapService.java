@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMap;
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Distance.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -24,14 +26,28 @@ public class CountryMapService {
     private final CityRepository cityRepository;
     private final DistanceMapper distanceMapper;
 
+
+    @Transactional(readOnly = true)
+    public List<CountryMap> findAll() {
+        var allCountryMaps = countryMapRepository.findAll();
+
+        if(allCountryMaps.isEmpty()) {
+           return Collections.emptyList();
+        }
+        //TODO: add exception
+        return allCountryMaps.stream()
+                .map(countryMapMapper::toDomain)
+                .toList();
+    }
+
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public CountryMap addNewCountryMap(
             CountryMap countryMap
     ) {
-        if (countryMapRepository.existsCountryMapEntitiesByCountryName(countryMap.countryName())) {
+        if (countryMapRepository.existsCountryMapEntitiesByCountryName(countryMap.name())) {
             throw new IllegalArgumentException(
                     "Country with name=%s already exists"
-                            .formatted(countryMap.countryName())
+                            .formatted(countryMap.name())
             );
         }
 
@@ -147,4 +163,5 @@ public class CountryMapService {
                 )
         );
     }
+
 }

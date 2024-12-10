@@ -66,8 +66,12 @@ public class CityService {
     }
 
     @Transactional(readOnly = true)
-    public List<City> findAll() {
-        var allCities = cityRepository.findAll();
+    public List<City> findAllCitiesByCountryId(
+            Long countryId
+    ) {
+        //TODO: add pagination
+        var allCities = cityRepository.findAllByCountryMapId(countryId);
+
         if (allCities.isEmpty()) {
             return new ArrayList<>();
         }

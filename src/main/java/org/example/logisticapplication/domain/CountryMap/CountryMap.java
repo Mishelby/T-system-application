@@ -6,7 +6,7 @@ import java.util.List;
 
 public record CountryMap(
         Long id,
-        String countryName,
+        String name,
         List<Long> citiesId,
         List<Long> distancesId
 ) {

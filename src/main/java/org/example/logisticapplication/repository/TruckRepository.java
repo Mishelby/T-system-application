@@ -45,13 +45,21 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             @Param("cityId") Long currentCityId
     );
 
-    @Query("""
-            SELECT t FROM TruckEntity t 
-                        LEFT JOIN TruckOrderEntity toe ON t.id = toe.truck.id        
-                        WHERE t.status = :status
-                        AND toe.truck.id IS NULL
-            """)
-    List<TruckEntity> findAllInCurrentCity(
-            @Param("status") String status
+    @Query(value = """
+            SELECT t.id, t.reg_number, t.size_of_driver_shift, t.condition, t.capacity, t.current_city_id
+            FROM truck t
+            LEFT JOIN truck_order tor ON tor.truck_id = t.id
+            WHERE t.capacity > (SELECT SUM(c.weight_kg) as total_weight
+                                FROM orders o
+                                         JOIN route_point rp ON rp.order_id = o.id
+                                         JOIN route_point_cargo rpc ON rpc.route_point_id = rp.id
+                                         JOIN cargo c ON c.id = rpc.cargo_id
+                                WHERE o.id = :orderId)
+            AND t.condition = :status
+            AND tor.truck_id IS NULL
+            """, nativeQuery = true)
+    List<TruckEntity> findAllCorrectTrucks(
+            @Param("status") String status,
+            @Param("orderId") Long orderId
     );
 }

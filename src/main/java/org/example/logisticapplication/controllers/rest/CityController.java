@@ -40,10 +40,13 @@ public class CityController {
         return ResponseEntity.ok(cityMapper.toDto(city));
     }
 
-    @GetMapping
-    public ResponseEntity<List<CityDto>> getAllCities() {
+    @GetMapping("by-country")
+    public ResponseEntity<List<CityDto>> getAllCities(
+            @RequestParam(value = "countryId", required = false)
+            Long countryId
+    ) {
         log.info("Get request for get cities");
-        var allCities = cityService.findAll();
+        var allCities = cityService.findAllCitiesByCountryId(countryId);
 
         return ResponseEntity.ok(
                 allCities.stream()

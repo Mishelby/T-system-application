@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/countries")
 @RequiredArgsConstructor
@@ -21,6 +23,18 @@ public class CountryMapController {
     private final CountryMapService countryMapService;
     private final CountryMapMapper countryMapMapper;
     private final DistanceMapper distanceMapper;
+
+    @GetMapping
+    public ResponseEntity<List<CountryMapDto>> findAll() {
+        log.info("Get request for all CountryMaps");
+        var countryMaps = countryMapService.findAll();
+
+        return ResponseEntity.ok(
+                countryMaps.stream()
+                        .map(countryMapMapper::toDto)
+                        .toList()
+        );
+    }
 
     @PostMapping
     public ResponseEntity<CountryMapDto> addCountryMap(

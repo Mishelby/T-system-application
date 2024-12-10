@@ -1,6 +1,7 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Order.OrderEntity;
+import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +19,14 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query("SELECT oe FROM OrderEntity oe WHERE oe.uniqueNumber = :uniqueNumber")
     OrderEntity findByUniqueNumber(@Param("uniqueNumber") String uniqueNumber);
+
+
+    @Query(value = """
+            SELECT new org.example.logisticapplication.domain.Order.OrderStatusDto(o.uniqueNumber,o.status)
+            FROM OrderEntity o
+            WHERE o.id = :order_id
+            """)
+    OrderStatusDto showOrderStatusByOrderId(
+            @Param("order_id") Long orderId
+    );
 }

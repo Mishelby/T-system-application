@@ -9,7 +9,7 @@ import java.util.List;
 public record CountryMapDto(
         @Null
         Long id,
-        String countryName,
+        String name,
         List<Long> citiesId,
         List<Long> distancesId
 ) {
