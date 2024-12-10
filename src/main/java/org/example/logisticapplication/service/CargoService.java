@@ -68,6 +68,7 @@ public class CargoService {
         cargoRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
     public List<CargoStatusDto> findCargoStatusById(
             Long id
     ) {
