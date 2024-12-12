@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
+import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderDto;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.example.logisticapplication.domain.Truck.TruckDto;
@@ -37,6 +38,16 @@ public class OrderController {
         return ResponseEntity.ok(orderMapper.toDto(newOrder));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderDto> updateOrder(
+            @PathVariable("id") Long orderId
+    ){
+        log.info("Get request for updating order: {}", orderId);
+        var order = orderService.appointTruckAndDrivers(orderId);
+
+        return ResponseEntity.ok(orderMapper.toDto(order));
+    }
+
     @GetMapping("/{id}/trucks")
     public ResponseEntity<List<TruckDto>> getTruckForOrder(
             @PathVariable("id") Long orderId
@@ -55,7 +66,7 @@ public class OrderController {
             @PathVariable("id") Long orderId
     ){
         log.info("Get request for getting drivers for order");
-        var driversForOrder = orderService.showDriversForOrder(orderId);
+        var driversForOrder = orderService.findDriversForOrder(orderId);
 
         return ResponseEntity.ok(
                 driversForOrder.stream()

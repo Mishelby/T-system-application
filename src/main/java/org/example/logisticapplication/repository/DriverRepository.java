@@ -15,18 +15,10 @@ import java.util.List;
 public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     boolean existsByPersonNumber(Long personNumber);
 
-    boolean existsDriverEntityById(Long id);
+    ;
 
     @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:truck")
     List<DriverEntity> findAllByCurrentTruck(TruckEntity truck);
-
-    @Query(value = """
-            SELECT d.*
-            FROM driver d
-                     LEFT JOIN truck t ON d.current_truck_id = t.id
-            WHERE t.id = :truckId;
-            """, nativeQuery = true)
-    List<DriverEntity> findAllDriversByTruckId(Long truckId);
 
     @Query(value = """
             SELECT d
@@ -73,9 +65,10 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
                    d.current_truck_id,
                    d.current_city_id
             FROM driver d
-                     JOIN truck t ON d.current_truck_id = t.id
+                     LEFT JOIN truck t ON d.current_truck_id = t.id
                      LEFT JOIN driver_order dor ON d.id = dor.driver_id
             WHERE d.current_city_id = :cityId
+              AND (t.current_city_id IS NULL OR d.current_city_id = t.current_city_id)
               AND dor.driver_id IS NULL
               AND d.num_of_hours_worked + (SELECT DISTINCT d.distance total_distance
                                            FROM route_point rp
@@ -95,4 +88,26 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("cityId") Long cityId,
             @Param("orderId") Long orderId
     );
+
+
+    @EntityGraph(attributePaths = {
+            "currentTruck",
+            "currentTruck.drivers",
+            "personNumber",
+            "currentTruck.registrationNumber",
+    })
+    @Query("""
+                SELECT d
+                FROM DriverEntity d
+                WHERE d.id IN (
+                    SELECT dor.driver.id
+                    FROM DriverOrderEntity dor
+                    WHERE dor.order.id = :orderId
+                )
+            """)
+    List<DriverEntity> findDriversForOrderId(
+            @Param("orderId") Long orderId
+    );
+
+
 }

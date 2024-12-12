@@ -36,15 +36,14 @@ public class DriverController {
         );
     }
 
-    @GetMapping("/{id}/get-info/{orderId}")
+    @GetMapping("/get-info/{orderId}")
     public ResponseEntity<DriverInfoDto> findById(
-            @PathVariable("id") Long id,
             @PathVariable("orderId") Long orderId
 
     ) {
         log.info("Get request for get info for driver by id");
 
-        return ResponseEntity.ok( driverService.getInfoForDriver(id,orderId));
+        return ResponseEntity.ok( driverService.getInfoForDriver(orderId));
     }
 
     @PostMapping

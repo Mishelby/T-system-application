@@ -154,15 +154,8 @@ public class DriverService {
 
     @Transactional(readOnly = true)
     public DriverInfoDto getInfoForDriver(
-            Long driverId,
             Long orderId
     ) {
-        var driverEntity = driverRepository.findById(driverId).orElseThrow(
-                () -> new IllegalArgumentException(
-                        "Driver does not exist with id=%s"
-                                .formatted(driverId)
-                )
-        );
 
         var orderEntity = orderRepository.findById(orderId).orElseThrow(
                 () -> new IllegalArgumentException(
@@ -171,15 +164,26 @@ public class DriverService {
                 )
         );
 
+        var driversForOrderId = driverRepository.findDriversForOrderId(orderId);
+
+        if (orderEntity.getDriverOrders().size() != driversForOrderId.size()) {
+            throw new IllegalArgumentException(
+                    "Order does not contain drivers with id=%s"
+                            .formatted(orderId)
+            );
+        }
+
+        var firstDriver = driversForOrderId.getFirst();
+
         return new DriverInfoDto(
-                driverEntity.getPersonNumber().toString(),
-                driverEntity.getCurrentTruck()
+                firstDriver.getPersonNumber().toString(),
+                firstDriver.getCurrentTruck()
                         .getDrivers()
                         .stream()
-                        .filter(driver -> !driver.getId().equals(driverId))
+                        .filter(driver -> !driver.getId().equals(driversForOrderId.getLast().getId()))
                         .map(DriverEntity::getPersonNumber)
                         .map(String::valueOf).collect(Collectors.toSet()),
-                driverEntity.getCurrentTruck().getRegistrationNumber(),
+                firstDriver.getCurrentTruck().getRegistrationNumber(),
                 orderEntity.getUniqueNumber(),
                 orderEntity.getRoutePoints().stream().map(RoutePointEntity::getId).toList()
         );

@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
+import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
@@ -94,7 +96,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Driver> showDriversForOrder(
+    public List<Driver> findDriversForOrder(
             Long orderId
     ) {
         orderValidHelper.validateOrderAndFetch(orderId);
@@ -113,5 +115,36 @@ public class OrderService {
                 .stream()
                 .map(driverMapper::toDomain)
                 .toList();
+    }
+
+    @Transactional
+    public Order appointTruckAndDrivers(
+            Long orderId
+    ) {
+        var orderEntity = orderRepository.findById(orderId).orElseThrow(
+                () -> new EntityNotFoundException(
+                        "Order with id=%s Not Found"
+                                .formatted(orderId)
+                )
+        );
+
+        var routePointEntity = routePointRepository.findRoutePointEntitiesByOrderId(
+                orderId,
+                OperationType.LOADING.toString()
+        );
+
+        var driversForCorrectTruck = driverRepository.findDriversForCorrectTruck(
+                routePointEntity.getCity().getId(),
+                orderId
+        );
+
+
+        for (DriverEntity driverEntity : driversForCorrectTruck) {
+            orderEntity.getDriverOrders().add(new DriverOrderEntity(orderEntity, driverEntity));
+        }
+
+
+        orderRepository.save(orderEntity);
+        return orderMapper.toDomain(orderEntity);
     }
 }
