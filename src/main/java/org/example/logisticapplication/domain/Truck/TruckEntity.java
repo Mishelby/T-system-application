@@ -13,6 +13,12 @@ import java.util.List;
 @Table(name = "truck")
 @Getter
 @Setter
+@NamedEntityGraph(
+        name = "trucks_with_drivers",
+        attributeNodes = {
+                @NamedAttributeNode("drivers")
+        }
+)
 public class TruckEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

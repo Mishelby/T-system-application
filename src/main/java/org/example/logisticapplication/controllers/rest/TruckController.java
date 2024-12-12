@@ -1,5 +1,6 @@
 package org.example.logisticapplication.controllers.rest;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Truck.Truck;
@@ -22,7 +23,7 @@ public class TruckController {
 
     @PostMapping
     public ResponseEntity<TruckDto> createTruck(
-            @RequestBody Truck truck
+            @Valid @RequestBody Truck truck
     ) {
         log.info("Get request for creating truck: {}", truck);
         var savedTruck = truckService.createNewTruck(truck);
@@ -55,7 +56,7 @@ public class TruckController {
     @PutMapping("/{id}")
     public ResponseEntity<TruckDto> updateTruck(
             @PathVariable("id") Long id,
-            @RequestBody TruckDto truckDto
+            @Valid @RequestBody TruckDto truckDto
     ) {
         log.info("Update request for getting truck by id: {}", id);
         var updateTruck = truckService.updateTruck(

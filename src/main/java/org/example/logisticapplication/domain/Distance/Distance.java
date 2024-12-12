@@ -1,7 +1,5 @@
 package org.example.logisticapplication.domain.Distance;
 
-import jakarta.validation.constraints.Null;
-
 public record Distance(
         Long id,
 
@@ -9,8 +7,6 @@ public record Distance(
 
         Long toCityId,
 
-        Integer distance,
-
-        Long countryMapId
+        Integer distance
 ) {
 }

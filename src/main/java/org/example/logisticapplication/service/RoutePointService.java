@@ -2,7 +2,6 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.repository.CargoRepository;
 import org.example.logisticapplication.repository.CityRepository;

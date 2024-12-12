@@ -1,14 +1,13 @@
 package org.example.logisticapplication.repository;
 
-import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +19,14 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
 
     @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:truck")
     List<DriverEntity> findAllByCurrentTruck(TruckEntity truck);
+
+    @Query(value = """
+            SELECT d.*
+            FROM driver d
+                     LEFT JOIN truck t ON d.current_truck_id = t.id
+            WHERE t.id = :truckId;
+            """, nativeQuery = true)
+    List<DriverEntity> findAllDriversByTruckId(Long truckId);
 
     @Query(value = """
             SELECT d
@@ -54,5 +61,38 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("status") String status,
             @Param("cityId") Long currentCityId,
             @Param("truckId") Long currentTruckId
+    );
+
+    @Query(value = """
+            SELECT d.id,
+                   d.name,
+                   d.num_of_hours_worked,
+                   d.person_number,
+                   d.last_name,
+                   d.driver_status,
+                   d.current_truck_id,
+                   d.current_city_id
+            FROM driver d
+                     JOIN truck t ON d.current_truck_id = t.id
+                     LEFT JOIN driver_order dor ON d.id = dor.driver_id
+            WHERE d.current_city_id = :cityId
+              AND dor.driver_id IS NULL
+              AND d.num_of_hours_worked + (SELECT DISTINCT d.distance total_distance
+                                           FROM route_point rp
+                                                    LEFT JOIN distance d ON d.from_city_id = (
+                                                                SELECT rp2.city_id 
+                                                                FROM route_point rp2 
+                                                                WHERE rp2.operation_type = 'LOADING' 
+                                                                AND rp2.order_id = :orderId)
+                                                    LEFT JOIN orders ords ON ords.id = rp.order_id
+                                           WHERE ords.id = :orderId
+                                             AND d.to_city_id = (SELECT rp3.city_id
+                                                                 FROM route_point rp3
+                                                                 WHERE rp3.operation_type = 'UNLOADING' 
+                                                                 AND rp3.order_id = :orderId)) / 80 < 176;
+            """, nativeQuery = true)
+    List<DriverEntity> findDriversForCorrectTruck(
+            @Param("cityId") Long cityId,
+            @Param("orderId") Long orderId
     );
 }

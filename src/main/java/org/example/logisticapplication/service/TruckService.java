@@ -1,6 +1,7 @@
 package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
@@ -135,9 +136,5 @@ public class TruckService {
         return truckMapper.toDomain(
                 truckRepository.findById(id).orElseThrow()
         );
-    }
-
-    private <T> T orDefault(T newValue, T currentValue) {
-        return newValue != null ? newValue : currentValue;
     }
 }

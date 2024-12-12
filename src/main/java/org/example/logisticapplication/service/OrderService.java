@@ -2,13 +2,16 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoEntity;
+import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.Driver.Driver;
+import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.Truck;
+import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
@@ -16,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -28,6 +30,9 @@ public class OrderService {
     private final CountryMapRepository countryMapRepository;
     private final TruckRepository truckRepository;
     private final TruckMapper truckMapper;
+    private final DriverRepository driverRepository;
+    private final DriverMapper driverMapper;
+    private final RoutePointRepository routePointRepository;
 
     @Transactional
     public Order createBaseOrder(
@@ -63,7 +68,7 @@ public class OrderService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Truck> findTruckForOrder(
             Long orderId
     ) {
@@ -77,14 +82,36 @@ public class OrderService {
         return correctTrucks.stream()
                 .map(truckMapper::toDomain)
                 .toList();
-
     }
 
+    @Transactional(readOnly = true)
     public OrderStatusDto getOrderStatusById(
             Long orderId
     ) {
         orderValidHelper.validateOrderAndFetch(orderId);
 
         return orderRepository.showOrderStatusByOrderId(orderId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Driver> showDriversForOrder(
+            Long orderId
+    ) {
+        orderValidHelper.validateOrderAndFetch(orderId);
+
+        var routePointEntity = routePointRepository.findRoutePointEntitiesByOrderId(
+                orderId,
+                OperationType.LOADING.toString()
+        );
+
+        var driversForCorrectTruck = driverRepository.findDriversForCorrectTruck(
+                routePointEntity.getCity().getId(),
+                orderId
+        );
+
+        return driversForCorrectTruck
+                .stream()
+                .map(driverMapper::toDomain)
+                .toList();
     }
 }

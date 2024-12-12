@@ -3,19 +3,27 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.*;
+import org.example.logisticapplication.domain.Order.OrderEntity;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
+import org.example.logisticapplication.repository.OrderRepository;
 import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.utils.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +32,8 @@ public class DriverService {
     private final TruckRepository truckRepository;
     private final DriverMapper driverMapper;
     private final CityRepository cityRepository;
-    private final DriverValidHelper driverValidHelper;
+    private final JdbcTemplate jdbcTemplate;
+    private final OrderRepository orderRepository;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Driver createDriver(
@@ -140,6 +149,39 @@ public class DriverService {
 
         return driverMapper.toDomain(
                 driverRepository.findById(id).orElseThrow()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public DriverInfoDto getInfoForDriver(
+            Long driverId,
+            Long orderId
+    ) {
+        var driverEntity = driverRepository.findById(driverId).orElseThrow(
+                () -> new IllegalArgumentException(
+                        "Driver does not exist with id=%s"
+                                .formatted(driverId)
+                )
+        );
+
+        var orderEntity = orderRepository.findById(orderId).orElseThrow(
+                () -> new IllegalArgumentException(
+                        "Order does not exist with id=%s"
+                                .formatted(orderId)
+                )
+        );
+
+        return new DriverInfoDto(
+                driverEntity.getPersonNumber().toString(),
+                driverEntity.getCurrentTruck()
+                        .getDrivers()
+                        .stream()
+                        .filter(driver -> !driver.getId().equals(driverId))
+                        .map(DriverEntity::getPersonNumber)
+                        .map(String::valueOf).collect(Collectors.toSet()),
+                driverEntity.getCurrentTruck().getRegistrationNumber(),
+                orderEntity.getUniqueNumber(),
+                orderEntity.getRoutePoints().stream().map(RoutePointEntity::getId).toList()
         );
     }
 

@@ -7,7 +7,6 @@ import org.example.logisticapplication.domain.Cargo.CargoDto;
 import org.example.logisticapplication.domain.Cargo.CargoStatusDto;
 import org.example.logisticapplication.service.CargoService;
 import org.example.logisticapplication.utils.CargoMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

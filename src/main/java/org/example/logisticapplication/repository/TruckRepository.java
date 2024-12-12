@@ -55,8 +55,13 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
                                          JOIN route_point_cargo rpc ON rpc.route_point_id = rp.id
                                          JOIN cargo c ON c.id = rpc.cargo_id
                                 WHERE o.id = :orderId)
-            AND t.condition = :status
+            AND t.condition = :status             
             AND tor.truck_id IS NULL
+            AND t.current_city_id =
+                            (SELECT city_id
+                             FROM route_point rp2
+                             WHERE rp2.order_id = :orderId
+                             AND rp2.operation_type = 'LOADING')            
             """, nativeQuery = true)
     List<TruckEntity> findAllCorrectTrucks(
             @Param("status") String status,

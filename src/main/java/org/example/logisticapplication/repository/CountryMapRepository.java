@@ -17,7 +17,7 @@ public interface CountryMapRepository extends JpaRepository<CountryMapEntity, Lo
     boolean existsCountryMapEntitiesById(@Param("countryId") Long countryId);
 
     @Query("SELECT c FROM CountryMapEntity c WHERE c.id =:countryId")
-    @EntityGraph(attributePaths = {"cities"})
+    @EntityGraph(value = "country_map_with_cities")
     Optional<CountryMapEntity> findById(
             @Param("countryId") Long countryId
     );

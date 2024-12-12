@@ -1,5 +1,8 @@
 package org.example.logisticapplication.domain.CountryMap;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +15,12 @@ import java.util.List;
 @Table(name = "country_map")
 @Getter
 @Setter
+@NamedEntityGraph(
+        name = "country_map_with_cities",
+        attributeNodes = {
+                @NamedAttributeNode("cities")
+        }
+)
 public class CountryMapEntity {
 
     @Id

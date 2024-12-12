@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverDto;
+import org.example.logisticapplication.domain.Driver.DriverInfoDto;
 import org.example.logisticapplication.service.DriverService;
 import org.example.logisticapplication.utils.DriverMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +34,17 @@ public class DriverController {
                         .map(driverMapper::toDto)
                         .toList()
         );
+    }
+
+    @GetMapping("/{id}/get-info/{orderId}")
+    public ResponseEntity<DriverInfoDto> findById(
+            @PathVariable("id") Long id,
+            @PathVariable("orderId") Long orderId
+
+    ) {
+        log.info("Get request for get info for driver by id");
+
+        return ResponseEntity.ok( driverService.getInfoForDriver(id,orderId));
     }
 
     @PostMapping
@@ -69,6 +80,7 @@ public class DriverController {
 
         return ResponseEntity.ok(driverMapper.toDto(foundedDriver));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDriverById(

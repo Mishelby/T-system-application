@@ -31,13 +31,25 @@ public class CountryMapService {
     public List<CountryMap> findAll() {
         var allCountryMaps = countryMapRepository.findAll();
 
-        if(allCountryMaps.isEmpty()) {
-           return Collections.emptyList();
+        if (allCountryMaps.isEmpty()) {
+            return Collections.emptyList();
         }
         //TODO: add exception
         return allCountryMaps.stream()
                 .map(countryMapMapper::toDomain)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public CountryMap findById(Long id) {
+        return countryMapMapper.toDomain(
+                countryMapRepository.findById(id).orElseThrow(
+                        () -> new EntityNotFoundException(
+                                "Country map with id=%s does not exist"
+                                        .formatted(id)
+                        )
+                )
+        );
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -88,14 +100,15 @@ public class CountryMapService {
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
     public Distance addDistances(
-            Distance distance
+            Distance distance,
+            Long countryId
     ) {
         var countryMapEntity = countryMapRepository
-                .findById(distance.countryMapId())
+                .findById(countryId)
                 .orElseThrow(
                         () -> new EntityNotFoundException(
                                 "Country map with id=%s does not exist"
-                                        .formatted(distance.countryMapId())
+                                        .formatted(countryId)
                         )
                 );
 
@@ -104,7 +117,7 @@ public class CountryMapService {
                         distance.fromCityId(),
                         distance.toCityId()
                 ),
-                distance.countryMapId()
+                countryId
         );
 
         var cityIds = List.of(distance.fromCityId(), distance.toCityId());
@@ -113,7 +126,7 @@ public class CountryMapService {
             throw new IllegalArgumentException(
                     "One or both cities not found in country map with id=%s. Expected cities: %s, found cities: %s"
                             .formatted(
-                                    distance.countryMapId(),
+                                    countryId,
                                     cityIds,
                                     citiesByIds.stream().map(CityEntity::getId).toList()
                             )
@@ -152,16 +165,5 @@ public class CountryMapService {
         return distanceMapper.toDomain(distanceEntity);
     }
 
-    @Transactional(readOnly = true)
-    public CountryMap findById(Long id) {
-        return countryMapMapper.toDomain(
-                countryMapRepository.findById(id).orElseThrow(
-                        () -> new EntityNotFoundException(
-                                "Country map with id=%s does not exist"
-                                        .formatted(id)
-                        )
-                )
-        );
-    }
 
 }

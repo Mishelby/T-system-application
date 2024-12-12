@@ -11,6 +11,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalHandlerException {
@@ -22,14 +23,30 @@ public class GlobalHandlerException {
     public ResponseEntity<ErrorMessageResponse> illegalArgumentException(
             Exception ex
     ) {
+
+        String detailedMessage = ex instanceof MethodArgumentNotValidException
+                ? constructMethodArgumentNotValidMessage((MethodArgumentNotValidException) ex)
+                : ex.getMessage();
+
+
         ErrorMessageResponse response = new ErrorMessageResponse(
                 "Illegal argument exception!",
-                ex.getMessage(),
+                detailedMessage,
                 LocalDateTime.now()
         );
 
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    private static String constructMethodArgumentNotValidMessage(
+            MethodArgumentNotValidException ex
+    ) {
+        return ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + " " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
     }
 
     @ExceptionHandler(value = EntityNotFoundException.class)
