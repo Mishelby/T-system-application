@@ -28,3 +28,7 @@ server:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+driver:
+  defaultAverageSpeed: 80
+  defaultNumberOfHoursWorkedLimit: 176

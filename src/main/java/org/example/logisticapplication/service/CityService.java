@@ -7,6 +7,7 @@ import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
 import org.example.logisticapplication.utils.CityMapper;
+import org.example.logisticapplication.web.EntityAlreadyExistsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,29 +27,38 @@ public class CityService {
     public City addNewCity(
             City city
     ) {
-        if (cityRepository.existsCityEntityByName(city.name())) {
-            throw new IllegalArgumentException(
-                    "City with name=%s already exists!"
-                            .formatted(city.name())
-            );
-        }
+        validateCityDoesNotExist(city.name());
 
         var countryMapEntity = countryMapRepository.findById(city.countyMapId()).orElseThrow(
-                () -> new EntityNotFoundException(
-                        "City with name=%s does not exist!"
-                                .formatted(city.name())
+                () -> entityNotFound(
+                        "Country Map",
+                        city.countyMapId()
                 )
         );
 
         var savedCity = cityRepository.save(
-                cityMapper.toEntity(
-                        city,
-                        countryMapEntity)
+                cityMapper.toEntity(city, countryMapEntity)
         );
 
 
         return cityMapper.toDomain(savedCity);
+    }
 
+    public void validateCityDoesNotExist(
+            String name
+    ) {
+        if (cityRepository.existsCityEntityByName(name)) {
+            throw new EntityAlreadyExistsException("City", "name", name);
+        }
+
+    }
+
+    private EntityNotFoundException entityNotFound(
+            String entityName,
+            Long id
+    ) {
+        return new EntityNotFoundException("%s with id=%s does not exist!"
+                .formatted(entityName, id));
     }
 
     @Transactional(readOnly = true)
@@ -69,7 +79,6 @@ public class CityService {
     public List<City> findAllCitiesByCountryId(
             Long countryId
     ) {
-        //TODO: add pagination
         var allCities = cityRepository.findAllByCountryMapId(countryId);
 
         if (allCities.isEmpty()) {

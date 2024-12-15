@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DriverValidHelper {
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
+    private static final int DEFAULT_TRUCK_SEATS = 2;
 
     @Transactional(readOnly = true)
     public TruckEntity findTruckById(
@@ -64,7 +65,7 @@ public class DriverValidHelper {
     public void validateTruckHasAvailableSeats(
             TruckEntity truckEntity
     ) {
-        if (truckEntity.getDrivers().size() >= 2) {
+        if (truckEntity.getDrivers().size() >= DEFAULT_TRUCK_SEATS) {
             throw new IllegalArgumentException(
                     "There are no seats in the current truck with id=%s"
                             .formatted(truckEntity.getId())

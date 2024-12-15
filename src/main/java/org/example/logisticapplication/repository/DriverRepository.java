@@ -1,6 +1,7 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Driver.DriverWithTruckDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,12 +11,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
-    boolean existsByPersonNumber(Long personNumber);
 
-    ;
+    boolean existsByPersonNumber(Long personNumber);
 
     @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:truck")
     List<DriverEntity> findAllByCurrentTruck(TruckEntity truck);
@@ -34,7 +36,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
 
     @Modifying
     @Query(value = """
-            UPDATE driver 
+            UPDATE driver
             SET name = CASE WHEN :name IS NOT NULL THEN :name ELSE name END,
                 last_name = CASE WHEN :lastName IS NOT NULL THEN :secondName ELSE last_name END,
                 person_number = CASE WHEN :personNumber IS NOT NULL AND person_number != :personNumber THEN :personNumber ELSE person_number END,
@@ -73,20 +75,22 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
               AND d.num_of_hours_worked + (SELECT DISTINCT d.distance total_distance
                                            FROM route_point rp
                                                     LEFT JOIN distance d ON d.from_city_id = (
-                                                                SELECT rp2.city_id 
-                                                                FROM route_point rp2 
-                                                                WHERE rp2.operation_type = 'LOADING' 
+                                                                SELECT rp2.city_id
+                                                                FROM route_point rp2
+                                                                WHERE rp2.operation_type = 'LOADING'
                                                                 AND rp2.order_id = :orderId)
                                                     LEFT JOIN orders ords ON ords.id = rp.order_id
                                            WHERE ords.id = :orderId
                                              AND d.to_city_id = (SELECT rp3.city_id
                                                                  FROM route_point rp3
-                                                                 WHERE rp3.operation_type = 'UNLOADING' 
-                                                                 AND rp3.order_id = :orderId)) / 80 < 176;
-            """, nativeQuery = true)
+                                                                 WHERE rp3.operation_type = 'UNLOADING'
+                                                                 AND rp3.order_id = :orderId)) / :averageSpeed < :numberOfHoursWorkedLimit;
+           \s""", nativeQuery = true)
     List<DriverEntity> findDriversForCorrectTruck(
             @Param("cityId") Long cityId,
-            @Param("orderId") Long orderId
+            @Param("orderId") Long orderId,
+            Double averageSpeed,
+            Integer numberOfHoursWorkedLimit
     );
 
 
@@ -110,4 +114,46 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     );
 
 
+    @Query("SELECT d FROM DriverEntity d WHERE d.id IN(:driverIds)")
+    List<DriverEntity> findAllDriversById(
+            @Param("driverIds") Set<Long> driverIds
+    );
+
+    @Query("""
+            SELECT new org.example.logisticapplication.domain.Driver.DriverWithTruckDto(d, t)
+            FROM DriverEntity d 
+            LEFT JOIN FETCH d.currentTruck t 
+            WHERE d.id = :driverId
+            """)
+    Optional<DriverWithTruckDto> findDriverWithTruckById(
+            @Param("driverId") Long driverId
+    );
+
+    @Modifying
+    @Query(value = """
+            UPDATE driver
+            SET driver_status = :newStatus
+            WHERE id = :driverId
+              AND id IN (SELECT dor.driver_id
+                         FROM driver_order dor
+                         WHERE dor.driver_id = driver.id)
+            """, nativeQuery = true)
+    void changeShiftForDriverById(
+            @Param("driverId") Long driverId,
+            @Param("newStatus") String status
+    );
+
+    @Modifying
+    @Query(value = """
+            UPDATE driver
+            SET driver_status = :newStatus
+            WHERE id = :driverId
+              AND id IN (SELECT dor.driver_id
+                         FROM driver_order dor
+                         WHERE dor.driver_id = driver.id)
+            """, nativeQuery = true)
+    void changeDriverStatusById(
+            @Param("driverId") Long driverId,
+            @Param("newStatus") String status
+    );
 }

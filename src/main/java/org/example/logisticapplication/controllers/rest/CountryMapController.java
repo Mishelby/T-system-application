@@ -38,7 +38,7 @@ public class CountryMapController {
 
     @PostMapping
     public ResponseEntity<CountryMapDto> addCountryMap(
-            @RequestBody final CountryMap countryMap
+            @RequestBody CountryMap countryMap
     ) {
         log.info("Get request for adding CountryMap: {}", countryMap);
         var newCountryMap = countryMapService.addNewCountryMap(countryMap);
@@ -48,26 +48,13 @@ public class CountryMapController {
 
     @PostMapping("/{id}/add-distance")
     public ResponseEntity<DistanceDto> addDistance(
-            @RequestBody final Distance distance,
+            @RequestBody Distance distance,
             @PathVariable("id") Long countryId
     ) {
         log.info("Get request for adding Distance: {}", distance);
-        var newDistance = countryMapService.addDistances(distance,countryId);
+        var newDistance = countryMapService.addDistances(distance, countryId);
 
         return ResponseEntity.ok(distanceMapper.toDto(newDistance));
     }
 
-    @PutMapping("/{id}/add-city/{cityId}")
-    public ResponseEntity<Void> addCityToCountryMap(
-            @PathVariable("id") Long countryId,
-            @PathVariable("cityId") Long cityId
-
-    ) {
-        log.info("Get request for adding CityToCountryMap: {}", countryId);
-        countryMapService.addNewCity(countryId, cityId);
-
-        return ResponseEntity
-                .ok()
-                .build();
-    }
 }

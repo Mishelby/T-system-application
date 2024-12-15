@@ -2,19 +2,16 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.Driver;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
-import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.Truck;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
+import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
 import org.springframework.stereotype.Service;
@@ -35,6 +32,7 @@ public class OrderService {
     private final DriverRepository driverRepository;
     private final DriverMapper driverMapper;
     private final RoutePointRepository routePointRepository;
+    private final DriverDefaultValues defaultValues;
 
     @Transactional
     public Order createBaseOrder(
@@ -108,7 +106,9 @@ public class OrderService {
 
         var driversForCorrectTruck = driverRepository.findDriversForCorrectTruck(
                 routePointEntity.getCity().getId(),
-                orderId
+                orderId,
+                defaultValues.getAverageSpeed(),
+                defaultValues.getNumberOfHoursWorkedLimit()
         );
 
         return driversForCorrectTruck
@@ -119,30 +119,24 @@ public class OrderService {
 
     @Transactional
     public Order appointTruckAndDrivers(
-            Long orderId
+            Long orderId,
+            Long driverId
     ) {
-        var orderEntity = orderRepository.findById(orderId).orElseThrow(
-                () -> new EntityNotFoundException(
-                        "Order with id=%s Not Found"
-                                .formatted(orderId)
-                )
-        );
 
-        var routePointEntity = routePointRepository.findRoutePointEntitiesByOrderId(
-                orderId,
-                OperationType.LOADING.toString()
-        );
-
-        var driversForCorrectTruck = driverRepository.findDriversForCorrectTruck(
-                routePointEntity.getCity().getId(),
-                orderId
-        );
-
-
-        for (DriverEntity driverEntity : driversForCorrectTruck) {
-            orderEntity.getDriverOrders().add(new DriverOrderEntity(orderEntity, driverEntity));
+        if (!orderRepository.existsById(orderId)) {
+            throw new EntityNotFoundException("Order with id=%s Not Found"
+                    .formatted(orderId));
         }
 
+        var driverWithTruckDto = driverRepository.findDriverWithTruckById(driverId).orElseThrow(
+                () -> new EntityNotFoundException("Driver with id=%s Not Found"
+                        .formatted(driverId))
+        );
+
+        var orderEntity = orderRepository.getReferenceById(orderId);
+
+        orderEntity.getDriverOrders().add(new DriverOrderEntity(orderEntity, driverWithTruckDto.driver()));
+        orderEntity.getTruckOrders().add(new TruckOrderEntity(orderEntity, driverWithTruckDto.truck()));
 
         orderRepository.save(orderEntity);
         return orderMapper.toDomain(orderEntity);

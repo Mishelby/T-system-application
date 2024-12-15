@@ -27,4 +27,28 @@ public class DriverLogisticController {
 
         return ResponseEntity.ok(driverMapper.toDto(driver));
     }
+
+
+    @PutMapping("/{id}/work-shift-status")
+    public ResponseEntity<HttpStatus> workShift(
+            @PathVariable("id") Long driverId,
+            @RequestParam(value = "status") String status
+    ) {
+        log.info("Get request for work-shift to driver {}", driverId);
+        businessLogicService.changeShiftStatus(driverId, status);
+
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/driver-status")
+    public ResponseEntity<HttpStatus> driverStatus(
+            @PathVariable("id") Long driverId,
+            @RequestParam(value = "status") String status
+    ) {
+        log.info("Get request for driver status to driver {}", driverId);
+        businessLogicService.changeDriverStatus(driverId, status);
+
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
 }

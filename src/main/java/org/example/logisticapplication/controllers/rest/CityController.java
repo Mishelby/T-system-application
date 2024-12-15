@@ -40,7 +40,7 @@ public class CityController {
         return ResponseEntity.ok(cityMapper.toDto(city));
     }
 
-    @GetMapping("by-country")
+    @GetMapping("/by-country")
     public ResponseEntity<List<CityDto>> getAllCities(
             @RequestParam(value = "countryId", required = false)
             Long countryId
