@@ -2,6 +2,7 @@ package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
@@ -34,6 +35,7 @@ public class OrderInfoService {
     private final TruckRepository truckRepository;
     private final DriverMapper driverMapper;
     private final TruckMapper truckMapper;
+    private final CityMapper cityMapper;
 
     @Transactional(readOnly = true)
     public List<OrderInfo> findLastOrders(
@@ -57,14 +59,18 @@ public class OrderInfoService {
                 }).toList();
     }
 
+    @Transactional(readOnly = true)
     public DriverAndTruckDto findAllDriversAndTrucks() {
 
-        var driverDomainList = driverRepository.findAll().stream()
-                .map(driverMapper::toDomain)
-                .map(driverMapper::toDto)
-                .toList();
+        var driverDomainList = driverRepository.findAllDrivers().stream()
+                .map(driver ->
+                        driverMapper.toDtoInfo(
+                                driver,
+                                cityMapper.toInfoDto(driver.getCurrentCity()),
+                                truckMapper.toInfoDto(driver.getCurrentTruck()))
+                ).toList();
 
-        var truckDomainList = truckRepository.findAll().stream()
+        var truckDomainList = truckRepository.findAllTrucks().stream()
                 .map(truckMapper::toDomain)
                 .map(truckMapper::toDto)
                 .toList();

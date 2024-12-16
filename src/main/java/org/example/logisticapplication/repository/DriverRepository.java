@@ -18,6 +18,10 @@ import java.util.Set;
 @Repository
 public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
 
+    @EntityGraph(attributePaths = {"currentCity", "currentTruck"})
+    @Query("SELECT d FROM DriverEntity d")
+    List<DriverEntity> findAllDrivers();
+
     boolean existsByPersonNumber(Long personNumber);
 
     @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:truck")
@@ -86,7 +90,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
                                                                   FROM route_point rp3
                                                                   WHERE rp3.operation_type = 'UNLOADING'
                                                                   AND rp3.order_id = :orderId)) / :averageSpeed < :numberOfHoursWorkedLimit;
-            \s""", nativeQuery = true)
+            """, nativeQuery = true)
     List<DriverEntity> findDriversForCorrectTruck(
             @Param("cityId") Long cityId,
             @Param("orderId") Long orderId,

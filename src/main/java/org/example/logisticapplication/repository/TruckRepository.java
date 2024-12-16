@@ -3,6 +3,7 @@ package org.example.logisticapplication.repository;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,10 @@ import java.util.Set;
 
 @Repository
 public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
+
+    @EntityGraph(attributePaths = {"currentCity", "drivers"})
+    @Query("SELECT t FROM TruckEntity t")
+    List<TruckEntity> findAllTrucks();
 
     @Query("SELECT COUNT(t) > 0 FROM TruckEntity t WHERE t.registrationNumber = :registrationNumber")
     boolean existsByRegistrationNumber(String registrationNumber);

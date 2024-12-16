@@ -3,6 +3,7 @@ package org.example.logisticapplication.utils;
 import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityDto;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.City.CityInfoDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -23,4 +24,9 @@ public interface CityMapper {
     CityDto toDto(City city);
 
     City toDomain(CityDto cityDto);
+
+    @Mappings({
+            @Mapping(target = "countyMapName", source = "entity.countryMap.countryName")
+    })
+    CityInfoDto toInfoDto(CityEntity entity);
 }

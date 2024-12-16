@@ -6,11 +6,11 @@ import java.util.List;
 
 
 public record DriverAndTruckDto(
-        List<DriverDto> drivers,
+        List<DriverAllInfoDto> drivers,
         List<TruckDto> trucks
 ) {
     public DriverAndTruckDto(
-            List<DriverDto> drivers,
+            List<DriverAllInfoDto> drivers,
             List<TruckDto> trucks
     ) {
         this.drivers = drivers;

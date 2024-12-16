@@ -41,8 +41,6 @@ public class OrderInfoController {
     public ResponseEntity<DriverAndTruckDto> getOrderInfoById() {
         log.info("Get request for get drivers and trucks");
 
-        return ResponseEntity.ok(
-                orderInfoService.findAllDriversAndTrucks()
-        );
+        return ResponseEntity.ok(orderInfoService.findAllDriversAndTrucks());
     }
 }
