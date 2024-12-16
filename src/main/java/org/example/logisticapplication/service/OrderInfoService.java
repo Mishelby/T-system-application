@@ -1,9 +1,20 @@
 package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
+import org.example.logisticapplication.domain.Driver.Driver;
+import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
+import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Order.OrderInfo;
+import org.example.logisticapplication.domain.Order.OrderInfoDto;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
+import org.example.logisticapplication.domain.Truck.Truck;
+import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.OrderRepository;
-import org.example.logisticapplication.utils.OrderMapper;
+import org.example.logisticapplication.repository.TruckRepository;
+import org.example.logisticapplication.utils.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +28,12 @@ import java.util.List;
 public class OrderInfoService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final RoutePointMapper routePointMapper;
+    private final CargoMapper cargoMapper;
+    private final DriverRepository driverRepository;
+    private final TruckRepository truckRepository;
+    private final DriverMapper driverMapper;
+    private final TruckMapper truckMapper;
 
     @Transactional(readOnly = true)
     public List<OrderInfo> findLastOrders(
@@ -27,7 +44,31 @@ public class OrderInfoService {
         var lastOrders = orderRepository.findLast(pageable);
 
         return lastOrders.stream()
-                .map(orderMapper::toDomainInfo)
+                .map(entity -> {
+                    var routePointInfoDtoList = entity.getRoutePoints().stream()
+                            .map(routePoint -> {
+                                var cargoInfoDto = routePoint.getCargo().stream()
+                                        .map(cargoMapper::toDtoInfo)
+                                        .toList();
+
+                                return routePointMapper.toInfoDto(routePoint, cargoInfoDto);
+                            }).toList();
+                    return orderMapper.toDomainInfo(entity, routePointInfoDtoList);
+                }).toList();
+    }
+
+    public DriverAndTruckDto findAllDriversAndTrucks() {
+
+        var driverDomainList = driverRepository.findAll().stream()
+                .map(driverMapper::toDomain)
+                .map(driverMapper::toDto)
                 .toList();
+
+        var truckDomainList = truckRepository.findAll().stream()
+                .map(truckMapper::toDomain)
+                .map(truckMapper::toDto)
+                .toList();
+
+        return new DriverAndTruckDto(driverDomainList, truckDomainList);
     }
 }

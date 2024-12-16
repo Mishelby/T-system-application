@@ -2,6 +2,8 @@ package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
+import org.example.logisticapplication.domain.Driver.DriverWithTruckDto;
 import org.example.logisticapplication.domain.Order.OrderInfoDto;
 import org.example.logisticapplication.service.OrderInfoService;
 import org.example.logisticapplication.utils.OrderMapper;
@@ -15,13 +17,13 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/orders/info")
+@RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderInfoController {
     private final OrderInfoService orderInfoService;
     private final OrderMapper orderMapper;
 
-    @GetMapping
+    @GetMapping("/info")
     public ResponseEntity<List<OrderInfoDto>> getOrderInfos(
             @RequestParam(value = "countOfLast") Integer countOfLastOrders
     ) {
@@ -32,6 +34,15 @@ public class OrderInfoController {
                 lastOrders.stream()
                         .map(orderMapper::toDtoInfo)
                         .toList()
+        );
+    }
+
+    @GetMapping("/drivers-trucks")
+    public ResponseEntity<DriverAndTruckDto> getOrderInfoById() {
+        log.info("Get request for get drivers and trucks");
+
+        return ResponseEntity.ok(
+                orderInfoService.findAllDriversAndTrucks()
         );
     }
 }

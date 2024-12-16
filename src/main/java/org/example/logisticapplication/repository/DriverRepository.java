@@ -1,5 +1,6 @@
 package org.example.logisticapplication.repository;
 
+import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverWithTruckDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -58,34 +59,34 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     );
 
     @Query(value = """
-            SELECT d.id,
-                   d.name,
-                   d.num_of_hours_worked,
-                   d.person_number,
-                   d.last_name,
-                   d.driver_status,
-                   d.current_truck_id,
-                   d.current_city_id
-            FROM driver d
-                     LEFT JOIN truck t ON d.current_truck_id = t.id
-                     LEFT JOIN driver_order dor ON d.id = dor.driver_id
-            WHERE d.current_city_id = :cityId
-              AND (t.current_city_id IS NULL OR d.current_city_id = t.current_city_id)
-              AND dor.driver_id IS NULL
-              AND d.num_of_hours_worked + (SELECT DISTINCT d.distance total_distance
-                                           FROM route_point rp
-                                                    LEFT JOIN distance d ON d.from_city_id = (
-                                                                SELECT rp2.city_id
-                                                                FROM route_point rp2
-                                                                WHERE rp2.operation_type = 'LOADING'
-                                                                AND rp2.order_id = :orderId)
-                                                    LEFT JOIN orders ords ON ords.id = rp.order_id
-                                           WHERE ords.id = :orderId
-                                             AND d.to_city_id = (SELECT rp3.city_id
-                                                                 FROM route_point rp3
-                                                                 WHERE rp3.operation_type = 'UNLOADING'
-                                                                 AND rp3.order_id = :orderId)) / :averageSpeed < :numberOfHoursWorkedLimit;
-           \s""", nativeQuery = true)
+             SELECT d.id,
+                    d.name,
+                    d.num_of_hours_worked,
+                    d.person_number,
+                    d.last_name,
+                    d.driver_status,
+                    d.current_truck_id,
+                    d.current_city_id
+             FROM driver d
+                      LEFT JOIN truck t ON d.current_truck_id = t.id
+                      LEFT JOIN driver_order dor ON d.id = dor.driver_id
+             WHERE d.current_city_id = :cityId
+               AND (t.current_city_id IS NULL OR d.current_city_id = t.current_city_id)
+               AND dor.driver_id IS NULL
+               AND d.num_of_hours_worked + (SELECT DISTINCT d.distance total_distance
+                                            FROM route_point rp
+                                                     LEFT JOIN distance d ON d.from_city_id = (
+                                                                 SELECT rp2.city_id
+                                                                 FROM route_point rp2
+                                                                 WHERE rp2.operation_type = 'LOADING'
+                                                                 AND rp2.order_id = :orderId)
+                                                     LEFT JOIN orders ords ON ords.id = rp.order_id
+                                            WHERE ords.id = :orderId
+                                              AND d.to_city_id = (SELECT rp3.city_id
+                                                                  FROM route_point rp3
+                                                                  WHERE rp3.operation_type = 'UNLOADING'
+                                                                  AND rp3.order_id = :orderId)) / :averageSpeed < :numberOfHoursWorkedLimit;
+            \s""", nativeQuery = true)
     List<DriverEntity> findDriversForCorrectTruck(
             @Param("cityId") Long cityId,
             @Param("orderId") Long orderId,
@@ -156,4 +157,5 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("driverId") Long driverId,
             @Param("newStatus") String status
     );
+
 }
