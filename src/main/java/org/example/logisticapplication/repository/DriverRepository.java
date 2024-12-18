@@ -22,6 +22,14 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     @Query("SELECT d FROM DriverEntity d")
     List<DriverEntity> findAllDrivers();
 
+    @Query("""
+            SELECT d 
+            FROM DriverEntity d
+            JOIN FETCH DriverOrderEntity doe ON d.id = doe.driver.id
+            WHERE doe.order.id = :orderId            
+            """)
+    List<DriverEntity> findAllByOrderId(Long orderId);
+
     boolean existsByPersonNumber(Long personNumber);
 
     @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:truck")

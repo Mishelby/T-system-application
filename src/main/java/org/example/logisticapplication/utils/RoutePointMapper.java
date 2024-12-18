@@ -13,6 +13,7 @@ import org.mapstruct.MappingConstants;
 import org.mapstruct.Mappings;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RoutePointMapper {
@@ -33,7 +34,7 @@ public interface RoutePointMapper {
             @Mapping(target = "operationType", source = "routePoint.operationType"),
             @Mapping(target = "cargoInfo", source = "cargoInfoDto")
     })
-    RoutePointInfoDto toInfoDto(RoutePointEntity routePoint, List<CargoInfoDto> cargoInfoDto);
+    RoutePointInfoDto toInfoDto(RoutePointEntity routePoint, Set<CargoInfoDto> cargoInfoDto);
 
     RoutePoint toDomain(RoutePointDto routePoint);
 

@@ -32,7 +32,14 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             """)
     OrderStatusDto showOrderStatusByOrderId(@Param("order_id") Long orderId);
 
-    @EntityGraph(attributePaths = {"countryMap", "routePoints"})
-    @Query(value = "SELECT o FROM OrderEntity o")
+    @EntityGraph(attributePaths = {"countryMap"})
+    @Query(value = """
+            SELECT o
+            FROM OrderEntity o
+            INNER JOIN FETCH o.routePoints rp  
+            LEFT JOIN FETCH rp.cargo c           
+            LEFT JOIN FETCH o.driverOrders             
+            LEFT JOIN FETCH o.truckOrders             
+            """)
     List<OrderEntity> findLast(Pageable pageable);
 }

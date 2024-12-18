@@ -21,7 +21,7 @@ public class RoutePointEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "city_id")
     private CityEntity city;
 
@@ -29,7 +29,7 @@ public class RoutePointEntity {
     @Pattern(regexp = "LOADING|UNLOADING", message = "Invalid operation type")
     private String operationType;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "route_point_cargo",
             joinColumns = @JoinColumn(name = "route_point_id"),

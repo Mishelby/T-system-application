@@ -1,10 +1,7 @@
 package org.example.logisticapplication.utils;
 
 import org.example.logisticapplication.domain.City.CityInfoDto;
-import org.example.logisticapplication.domain.Driver.Driver;
-import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
-import org.example.logisticapplication.domain.Driver.DriverDto;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.mapstruct.*;
@@ -43,5 +40,11 @@ public interface DriverMapper {
             CityInfoDto currentCityInfo,
             TruckInfoDto currentTruckInfo
     );
+
+    @Mappings({
+            @Mapping(target = "currentLocation", source = "entity.currentCity.name"),
+            @Mapping(target = "currentTruckNumber", source = "entity.currentTruck.registrationNumber")
+    })
+    DriverOrderInfo toOrderInfo(DriverEntity entity);
 
 }

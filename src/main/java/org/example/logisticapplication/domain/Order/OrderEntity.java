@@ -12,6 +12,7 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "orders")
@@ -34,21 +35,21 @@ public class OrderEntity {
     private CountryMapEntity countryMap;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<RoutePointEntity> routePoints;
+    private Set<RoutePointEntity> routePoints;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<DriverOrderEntity> driverOrders;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<DriverOrderEntity> driverOrders;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<TruckOrderEntity> truckOrders;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<TruckOrderEntity> truckOrders;
 
     public OrderEntity(
             String uniqueNumber,
             String status,
             CountryMapEntity countryMap,
-            List<RoutePointEntity> routePoints,
-            List<DriverOrderEntity> driverOrders,
-            List<TruckOrderEntity> truckOrders
+            Set<RoutePointEntity> routePoints,
+            Set<DriverOrderEntity> driverOrders,
+            Set<TruckOrderEntity> truckOrders
     ) {
         this.uniqueNumber = uniqueNumber;
         this.status = status;

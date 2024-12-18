@@ -1,17 +1,10 @@
 package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
-import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.OrderInfo;
-import org.example.logisticapplication.domain.Order.OrderInfoDto;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
-import org.example.logisticapplication.domain.Truck.Truck;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.OrderRepository;
 import org.example.logisticapplication.repository.TruckRepository;
@@ -23,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +36,26 @@ public class OrderInfoService {
             Integer countOfLastOrders
     ) {
 
-        Pageable pageable = PageRequest.of(0, countOfLastOrders, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(0, countOfLastOrders != null ? countOfLastOrders : 3, Sort.by(Sort.Direction.DESC, "id"));
         var lastOrders = orderRepository.findLast(pageable);
+
+
+        var list = driverRepository.findAllByOrderId(1L)
+                .stream()
+                .map(driverMapper::toOrderInfo)
+                .toList();
+
+        var driverOrderInfos = lastOrders.stream()
+                .flatMap(entity -> entity.getDriverOrders().stream())
+                        .map(DriverOrderEntity::getDriver)
+                        .map(driverMapper::toOrderInfo)
+                        .toList();
+
+        var truckInfoDto = lastOrders.stream()
+                .flatMap(entity -> entity.getTruckOrders().stream())
+                        .map(TruckOrderEntity::getTruck)
+                        .map(truckMapper::toInfoDto)
+                        .toList();
 
         return lastOrders.stream()
                 .map(entity -> {
@@ -51,11 +63,11 @@ public class OrderInfoService {
                             .map(routePoint -> {
                                 var cargoInfoDto = routePoint.getCargo().stream()
                                         .map(cargoMapper::toDtoInfo)
-                                        .toList();
+                                        .collect(Collectors.toSet());
 
                                 return routePointMapper.toInfoDto(routePoint, cargoInfoDto);
                             }).toList();
-                    return orderMapper.toDomainInfo(entity, routePointInfoDtoList);
+                    return orderMapper.toDomainInfo(entity, routePointInfoDtoList, driverOrderInfos, truckInfoDto);
                 }).toList();
     }
 

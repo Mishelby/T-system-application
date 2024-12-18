@@ -3,7 +3,6 @@ package org.example.logisticapplication.controllers.rest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
-import org.example.logisticapplication.domain.Driver.DriverWithTruckDto;
 import org.example.logisticapplication.domain.Order.OrderInfoDto;
 import org.example.logisticapplication.service.OrderInfoService;
 import org.example.logisticapplication.utils.OrderMapper;
