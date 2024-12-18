@@ -2,7 +2,6 @@ package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
-import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
@@ -71,5 +69,25 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
     List<TruckEntity> findAllCorrectTrucks(
             @Param("status") String status,
             @Param("orderId") Long orderId
+    );
+
+    @Query(value = """
+            SELECT t.*
+            FROM truck t
+                     LEFT JOIN truck_order tor ON t.id = tor.truck_id
+            WHERE t.condition = :condition
+              AND tor.truck_id IS NULL
+              AND t.capacity >=
+                  (SELECT SUM(c.weight_kg) as total_weight
+                   FROM route_point rp
+                            LEFT JOIN route_point_cargo rpc ON rp.id = rpc.route_point_id
+                            LEFT JOIN cargo c ON rpc.cargo_id = c.id
+                   WHERE rp.id IN (:rpId))
+              AND t.current_city_id = :cityId;
+            """, nativeQuery = true)
+    List<TruckEntity> findTrucksForOrder(
+            @Param("rpIds") List<Long> routePointsId,
+            @Param("cityId") Long loadingCargoCityId,
+            @Param("condition") String truckCondition
     );
 }

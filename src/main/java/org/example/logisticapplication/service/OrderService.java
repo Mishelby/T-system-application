@@ -2,6 +2,7 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
@@ -9,6 +10,7 @@ import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
@@ -77,6 +79,32 @@ public class OrderService {
         var correctTrucks = truckRepository.findAllCorrectTrucks(
                 TruckStatus.SERVICEABLE.toString(),
                 orderId
+        );
+
+        return correctTrucks.stream()
+                .map(truckMapper::toDomain)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Truck> findTrucksForOrder(
+            List<RoutePointEntity> routePointEntities
+    ) {
+
+        var routePointsIdList = routePointEntities.stream().map(RoutePointEntity::getId).toList();
+
+        var loadingCityId = routePointEntities.stream()
+                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.toString()))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("No loading operation found"))
+                .getCity()
+                .getId();
+
+
+        var correctTrucks = truckRepository.findTrucksForOrder(
+                routePointsIdList,
+                loadingCityId,
+                TruckStatus.SERVICEABLE.toString()
         );
 
         return correctTrucks.stream()

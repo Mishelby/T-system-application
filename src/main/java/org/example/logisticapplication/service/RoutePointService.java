@@ -25,11 +25,6 @@ public class RoutePointService {
     public RoutePoint addNewRoutePoint(
             RoutePoint routePoint
     ) {
-        if (routePointRepository.existsRoutePointEntitiesById(routePoint.id())) {
-            throw new IllegalArgumentException(
-                    "Route point with id=%s already exists"
-                            .formatted(routePoint.id()));
-        }
 
         var cityEntity = cityRepository.findById(routePoint.cityId()).orElseThrow(
                 () -> new EntityNotFoundException(
