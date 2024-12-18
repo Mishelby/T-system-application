@@ -39,12 +39,6 @@ public class OrderInfoService {
         Pageable pageable = PageRequest.of(0, countOfLastOrders != null ? countOfLastOrders : 3, Sort.by(Sort.Direction.DESC, "id"));
         var lastOrders = orderRepository.findLast(pageable);
 
-
-        var list = driverRepository.findAllByOrderId(1L)
-                .stream()
-                .map(driverMapper::toOrderInfo)
-                .toList();
-
         var driverOrderInfos = lastOrders.stream()
                 .flatMap(entity -> entity.getDriverOrders().stream())
                         .map(DriverOrderEntity::getDriver)
