@@ -10,6 +10,7 @@ import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
@@ -88,17 +89,16 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<Truck> findTrucksForOrder(
-            List<RoutePointEntity> routePointEntities
+            List<RoutePointDto> routePointEntities
     ) {
 
-        var routePointsIdList = routePointEntities.stream().map(RoutePointEntity::getId).toList();
+        var routePointsIdList = routePointEntities.stream().map(RoutePointDto::id).toList();
 
         var loadingCityId = routePointEntities.stream()
-                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.toString()))
+                .filter(rp -> rp.operationType().equals(OperationType.LOADING.toString()))
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("No loading operation found"))
-                .getCity()
-                .getId();
+                .cityId();
 
 
         var correctTrucks = truckRepository.findTrucksForOrder(

@@ -32,7 +32,6 @@ public class DriverService {
     private final TruckRepository truckRepository;
     private final DriverMapper driverMapper;
     private final CityRepository cityRepository;
-    private final JdbcTemplate jdbcTemplate;
     private final OrderRepository orderRepository;
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -85,10 +84,6 @@ public class DriverService {
     public Driver findById(
             Long id
     ) {
-        if (id == null) {
-            throw new IllegalArgumentException("Driver ID cannot be null");
-        }
-
         var driverEntity = driverRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException(
                         "Driver does not exist with id=%s"
@@ -103,10 +98,6 @@ public class DriverService {
     public void deleteDriver(
             Long id
     ) {
-        if (id == null) {
-            throw new IllegalArgumentException("Driver ID cannot be null");
-        }
-
         var driverEntity = driverRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException(
                         "Driver does not exist with id=%s"
@@ -177,10 +168,9 @@ public class DriverService {
 
         return new DriverInfoDto(
                 firstDriver.getPersonNumber().toString(),
-                firstDriver.getCurrentTruck()
-                        .getDrivers()
+                firstDriver.getCurrentTruck().getDrivers()
                         .stream()
-                        .filter(driver -> !driver.getId().equals(driversForOrderId.getLast().getId()))
+                        .filter(driver -> !driver.getId().equals(firstDriver.getId()))
                         .map(DriverEntity::getPersonNumber)
                         .map(String::valueOf).collect(Collectors.toSet()),
                 firstDriver.getCurrentTruck().getRegistrationNumber(),
