@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: Logistic-Application
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/postgres
+    username: postgres
+    password: mysecretpassword
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  error:
+    include-message: always
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+driver:
+  defaultAverageSpeed: 80
+  defaultNumberOfHoursWorkedLimit: 176
