@@ -20,8 +20,8 @@ public class CityController {
     private final CityService cityService;
     private final CityMapper cityMapper;
 
-    @PostMapping
-    public ResponseEntity<CityDto> addCity(
+    @PostMapping("/create")
+    public ResponseEntity<CityDto> createCity(
             @RequestBody City city
     ) {
         log.info("Get request for add city: {}", city);

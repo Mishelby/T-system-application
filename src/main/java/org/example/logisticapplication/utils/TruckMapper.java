@@ -18,6 +18,9 @@ public interface TruckMapper {
     })
     TruckEntity toEntity(Truck truck);
 
+    @Mappings({
+            @Mapping(target = "currentCityId", source = "truck.currentCity.id")
+    })
     Truck toDomain(TruckEntity truck);
 
     TruckDto toDto(Truck truck);

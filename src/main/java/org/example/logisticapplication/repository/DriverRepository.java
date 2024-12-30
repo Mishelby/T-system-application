@@ -1,6 +1,5 @@
 package org.example.logisticapplication.repository;
 
-import org.example.logisticapplication.domain.Driver.DriverAndTruckDto;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverWithTruckDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -102,7 +101,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     List<DriverEntity> findDriversForCorrectTruck(
             @Param("cityId") Long cityId,
             @Param("orderId") Long orderId,
-            Double averageSpeed,
+            Long averageSpeed,
             Integer numberOfHoursWorkedLimit
     );
 
@@ -168,6 +167,24 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     void changeDriverStatusById(
             @Param("driverId") Long driverId,
             @Param("newStatus") String status
+    );
+
+
+    @EntityGraph(attributePaths = {"currentCity", "currentCity.countryMap"})
+    @Query(value = """
+            SELECT d 
+            FROM DriverEntity d    
+                     LEFT JOIN TruckEntity t ON d.currentTruck.id = t.id
+                     LEFT JOIN DriverOrderEntity dor ON d.id = dor.driver.id
+            WHERE dor.driver.id IS NULL
+              AND d.currentCity.id IN (:truckId)
+              AND (d.numberOfHoursWorked + (:distance / :speed) < :total)
+            """)
+    List<DriverEntity> findDriversByTruckId(
+            @Param("truckId") Set<Long> truckId,
+            @Param("distance") Long distance,
+            @Param("speed") Long speed,
+            @Param("total") Long total
     );
 
 }

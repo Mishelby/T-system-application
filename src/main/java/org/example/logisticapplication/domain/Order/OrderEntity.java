@@ -45,14 +45,13 @@ public class OrderEntity {
 
     public OrderEntity(
             String uniqueNumber,
-            String status,
             CountryMapEntity countryMap,
             Set<RoutePointEntity> routePoints,
             Set<DriverOrderEntity> driverOrders,
             Set<TruckOrderEntity> truckOrders
     ) {
         this.uniqueNumber = uniqueNumber;
-        this.status = status;
+        this.status = OrderStatus.NOT_COMPLETED.toString();
         this.countryMap = countryMap;
         this.routePoints = routePoints;
         this.driverOrders = driverOrders;

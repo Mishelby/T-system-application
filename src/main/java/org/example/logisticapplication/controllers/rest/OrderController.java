@@ -3,10 +3,13 @@ package org.example.logisticapplication.controllers.rest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverDto;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
 import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderDto;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointForOrderDto;
 import org.example.logisticapplication.domain.Truck.TruckDto;
 import org.example.logisticapplication.service.OrderService;
 import org.example.logisticapplication.utils.DriverMapper;
@@ -17,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -25,8 +29,6 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final TruckMapper truckMapper;
-    private final DriverMapper driverMapper;
 
     @PostMapping("/create-order")
     public ResponseEntity<OrderDto> createOrder(
@@ -41,7 +43,7 @@ public class OrderController {
     @PutMapping("/{id}/driver{driverId}")
     public ResponseEntity<OrderDto> updateOrder(
             @PathVariable("id") Long orderId,
-            @PathVariable("driverId") Long driverId
+            @PathVariable("driverId") Set<Long> driverId
     ){
         log.info("Get request for updating order: {}", orderId);
         var order = orderService.appointTruckAndDrivers(orderId, driverId);
@@ -49,32 +51,16 @@ public class OrderController {
         return ResponseEntity.ok(orderMapper.toDto(order));
     }
 
-    @GetMapping("/{id}/trucks")
-    public ResponseEntity<List<TruckDto>> getTruckForOrder(
-            @PathVariable("id") Long orderId
+    @GetMapping("/trucks-drivers")
+    public ResponseEntity<DriversAndTrucksForOrderDto> getTruckAndDriversForOrder(
+            @RequestBody List<RoutePointForOrderDto> routePointDto
     ) {
         log.info("Get request for getting trucks for order");
-        var truckForOrder = orderService.findTruckForOrder(orderId);
+        var truckForOrder = orderService.findTrucksAndDriversForOrder(routePointDto);
 
-        return ResponseEntity.ok(
-                truckForOrder.stream()
-                        .map(truckMapper::toDto)
-                        .toList());
+        return ResponseEntity.ok(truckForOrder);
     }
 
-    @GetMapping("/{id}/trucks/drivers")
-    public ResponseEntity<List<DriverDto>> getDriversForOrder(
-            @PathVariable("id") Long orderId
-    ){
-        log.info("Get request for getting drivers for order");
-        var driversForOrder = orderService.findDriversForOrder(orderId);
-
-        return ResponseEntity.ok(
-                driversForOrder.stream()
-                .map(driverMapper::toDto)
-                .toList()
-        );
-    }
 
     @GetMapping("/{id}/status")
     public ResponseEntity<OrderStatusDto> getOrderStatusById(

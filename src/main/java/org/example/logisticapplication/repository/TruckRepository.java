@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,5 +90,21 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             @Param("rpIds") List<Long> routePointsId,
             @Param("cityId") Long loadingCargoCityId,
             @Param("condition") String truckCondition
+    );
+
+    @EntityGraph(attributePaths = {"currentCity", "drivers"})
+    @Query(value = """
+            SELECT t
+            FROM TruckEntity t
+                     LEFT JOIN TruckOrderEntity tor ON t.id = tor.truck.id
+            WHERE t.currentCity.id = :cityId
+              AND t.status = :condition
+              AND tor.truck.id IS NULL
+              AND t.capacity >= :weight
+            """)
+    List<TruckEntity> findTrucksForOrderByWeight(
+            @Param("cityId") Long cityId,
+            @Param("condition") String condition,
+            @Param("weight") BigDecimal weight
     );
 }

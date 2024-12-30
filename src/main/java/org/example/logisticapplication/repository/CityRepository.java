@@ -1,16 +1,19 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CityRepository extends JpaRepository<CityEntity, Long> {
-    boolean existsCityEntityByName(String name);
+    @Query("SELECT COUNT(*) > 0 FROM CityEntity c WHERE c.name =:name")
+    boolean existsCityEntityByName(@Param("name") String name);
 
     @Query(value = """
             SELECT * FROM city c
@@ -34,4 +37,6 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
           @Param("countryId")  Long countryId
     );
 
+    @EntityGraph(attributePaths = {"countryMap"})
+    Optional<CityEntity> findCityEntityByName(String name);
 }

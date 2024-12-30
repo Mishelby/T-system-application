@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Distance.DistanceEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,12 @@ import java.util.Set;
 @Table(name = "country_map")
 @Getter
 @Setter
+@NamedEntityGraph(
+        name = "country_map_with_cities",
+        attributeNodes = {
+                @NamedAttributeNode("cities")
+        }
+)
 public class CountryMapEntity {
 
     @Id

@@ -2,9 +2,11 @@ package org.example.logisticapplication.utils;
 
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
+import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverOrderInfo;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrder;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
@@ -52,6 +54,15 @@ public interface OrderMapper {
             List<RoutePointInfoDto> routePointInfoDto,
             List<DriverOrderInfo> driverOrderInfo,
             List<TruckInfoDto> truckInfoDto
+    );
+
+    @Mappings({
+            @Mapping(target = "drivers", source = "driversDto"),
+            @Mapping(target = "trucks", source = "trucksDto")
+    })
+    DriversAndTrucksForOrderDto toDtoInfo(
+            List<DriverAllInfoDto> driversDto,
+            List<TruckInfoDto> trucksDto
     );
 
 

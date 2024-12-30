@@ -17,7 +17,6 @@ public interface CountryMapRepository extends JpaRepository<CountryMapEntity, Lo
     @Query("SELECT c FROM CountryMapEntity c LEFT JOIN FETCH c.distances")
     List<CountryMapEntity> findAllMaps();
 
-
     boolean existsCountryMapEntitiesByCountryName(String countryName);
 
     @Query("SELECT COUNT(c) > 0 FROM CountryMapEntity c WHERE c.id =:countryId")
@@ -28,5 +27,8 @@ public interface CountryMapRepository extends JpaRepository<CountryMapEntity, Lo
     Optional<CountryMapEntity> findById(
             @Param("countryId") Long countryId
     );
+
+    @Query("SELECT ct FROM CountryMapEntity ct LEFT JOIN CityEntity ce ON ce.countryMap.id = ct.id WHERE ce.name =:cityName")
+    Optional<CountryMapEntity> findByCityName(@Param("cityName")String cityName);
 
 }

@@ -52,7 +52,7 @@ public class GlobalHandlerException {
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             EntityNotFoundException ex
-    ){
+    ) {
         ErrorMessageResponse response = new ErrorMessageResponse(
                 "Entity not found!",
                 ex.getMessage(),
@@ -65,7 +65,7 @@ public class GlobalHandlerException {
     @ExceptionHandler(value = NoSuchElementException.class)
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             NoSuchElementException ex
-    ){
+    ) {
         ErrorMessageResponse response = new ErrorMessageResponse(
                 "No such element!",
                 ex.getMessage(),
@@ -78,7 +78,7 @@ public class GlobalHandlerException {
     @ExceptionHandler(value = NoResourceFoundException.class)
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             NoResourceFoundException ex
-    ){
+    ) {
         ErrorMessageResponse response = new ErrorMessageResponse(
                 "No resource found!",
                 ex.getMessage(),
@@ -86,5 +86,18 @@ public class GlobalHandlerException {
         );
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = EntityAlreadyExistsException.class)
+    public ResponseEntity<ErrorMessageResponse> entityAlreadyExistsException(
+            EntityAlreadyExistsException ex
+    ) {
+        ErrorMessageResponse response = new ErrorMessageResponse(
+                "Entity already exists!",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 }

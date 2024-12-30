@@ -104,4 +104,8 @@ public class OrderValidHelper {
                 .collect(Collectors.toSet());
     }
 
+    public static String generateUniqueNumber() {
+        return String.valueOf(System.currentTimeMillis());
+    }
+
 }

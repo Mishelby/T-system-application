@@ -29,11 +29,8 @@ public class CityService {
     ) {
         validateCityDoesNotExist(city.name());
 
-        var countryMapEntity = countryMapRepository.findById(city.countyMapId()).orElseThrow(
-                () -> entityNotFound(
-                        "Country Map",
-                        city.countyMapId()
-                )
+        var countryMapEntity = countryMapRepository.findById(city.countryMapId()).orElseThrow(
+                () -> entityNotFound("Country Map", city.countryMapId())
         );
 
         var savedCity = cityRepository.save(

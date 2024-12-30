@@ -8,7 +8,6 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RoutePointDto(
-        @Null
         Long id,
         Long cityId,
         List<Long> cargoId,
