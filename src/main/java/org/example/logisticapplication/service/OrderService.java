@@ -256,14 +256,6 @@ public class OrderService {
         var truckEntities = Set.of(truckRepository.findById(truckId).orElseThrow());
         var driversEntityById = driverRepository.findAllDriversById(driversId);
 
-        var driverOrderEntity = driversEntityById.stream()
-                .map(driverEntity -> new DriverOrderEntity(null, driverEntity))
-                .collect(Collectors.toSet());
-
-        var truckOrderEntity = truckEntities.stream()
-                .map(truck -> new TruckOrderEntity(null, truck))
-                .collect(Collectors.toSet());
-
         var cityName = routePointDto.
                 stream()
                 .filter(rp -> rp.operationType().equals(OperationType.LOADING.toString()))
@@ -289,14 +281,35 @@ public class OrderService {
                     );
                 }).collect(Collectors.toSet());
 
-        new OrderEntity(
+        var orderEntity = new OrderEntity(
                 OrderValidHelper.generateUniqueNumber(),
                 countryMapEntity,
                 routePointEntityList,
-                driverOrderEntity,
-                truckOrderEntity
+                null,
+                null
         );
 
-        return null;
+        var driverOrderEntity = driversEntityById.stream()
+                .map(driverEntity -> new DriverOrderEntity(orderEntity, driverEntity))
+                .collect(Collectors.toSet());
+
+        var truckOrderEntity = truckEntities.stream()
+                .map(truck -> new TruckOrderEntity(orderEntity, truck))
+                .collect(Collectors.toSet());
+
+        orderEntity.setDriverOrders(driverOrderEntity);
+        orderEntity.setTruckOrders(truckOrderEntity);
+
+
+        return orderMapper.toDomain(
+                new OrderEntity(
+                        OrderValidHelper.generateUniqueNumber(),
+                        countryMapEntity,
+                        routePointEntityList,
+                        driverOrderEntity,
+                        truckOrderEntity
+                )
+        );
+
     }
 }
