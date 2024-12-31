@@ -51,7 +51,6 @@ public class OrderEntity {
             Set<TruckOrderEntity> truckOrders
     ) {
         this.uniqueNumber = uniqueNumber;
-        this.status = OrderStatus.NOT_COMPLETED.toString();
         this.countryMap = countryMap;
         this.routePoints = routePoints;
         this.driverOrders = driverOrders;

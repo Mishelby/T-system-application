@@ -40,13 +40,14 @@ public class OrderController {
         return ResponseEntity.ok(orderMapper.toDto(newOrder));
     }
 
-    @PutMapping("/{id}/driver{driverId}")
+    @PostMapping("/appoint-order")
     public ResponseEntity<OrderDto> updateOrder(
-            @PathVariable("id") Long orderId,
-            @PathVariable("driverId") Set<Long> driverId
+            @RequestParam("truckId") Long truckId,
+            @RequestParam("driverId") Set<Long> driverId,
+            @RequestBody List<RoutePointForOrderDto> routePoints
     ){
-        log.info("Get request for updating order: {}", orderId);
-        var order = orderService.appointTruckAndDrivers(orderId, driverId);
+        log.info("Get request for updating order: {}, {}, {}", truckId, driverId, routePoints);
+        var order = orderService.appointTruckAndDrivers(truckId, driverId, routePoints);
 
         return ResponseEntity.ok(orderMapper.toDto(order));
     }

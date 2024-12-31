@@ -30,7 +30,7 @@ public class CargoEntity {
     private String name;
 
     @Column(name = "weight_kg", nullable = false, precision = 10, scale = 2)
-    private BigDecimal weightKg;
+    private Long weightKg;
 
     @Column(name = "status", nullable = true)
     @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid cargo status")
@@ -40,7 +40,7 @@ public class CargoEntity {
             Long id,
             String number,
             String name,
-            BigDecimal weightKg,
+            Long weightKg,
             String status
     ) {
         this.id = id;
@@ -53,7 +53,7 @@ public class CargoEntity {
     public CargoEntity(
             String number,
             String name,
-            BigDecimal weightKg
+            Long weightKg
     ) {
         this.number = number;
         this.name = name;

@@ -10,16 +10,16 @@ import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointForOrderDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
-import org.example.logisticapplication.repository.CargoRepository;
-import org.example.logisticapplication.repository.CityRepository;
-import org.example.logisticapplication.repository.OrderRepository;
-import org.example.logisticapplication.repository.TruckRepository;
+import org.example.logisticapplication.repository.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,6 +29,11 @@ public class OrderValidHelper {
     private final RoutePointMapper routePointMapper;
     private final CityRepository cityRepository;
     private final CargoRepository cargoRepository;
+    protected static AtomicLong orderCounter = new AtomicLong();
+    protected static StringBuilder uniqueNumber = new StringBuilder();
+    private static final String orderName = "Order";
+    private final CargoMapper cargoMapper;
+    private final RoutePointRepository routePointRepository;
 
     @Transactional(readOnly = true)
     public void isOrderHasBeenCreated(
@@ -67,7 +72,9 @@ public class OrderValidHelper {
     }
 
     @Transactional(readOnly = true)
-    public List<RoutePointEntity> getRoutePointEntities(CreateOrderRequest orderRequest) {
+    public List<RoutePointEntity> getRoutePointEntities(
+            CreateOrderRequest orderRequest
+    ) {
         return orderRequest.routePoints()
                 .stream()
                 .map(routePoint -> {
@@ -85,6 +92,24 @@ public class OrderValidHelper {
                     return routePointMapper.toEntity(routePoint, cityEntity, cargoEntity);
                 })
                 .toList();
+    }
+
+    public Set<RoutePointEntity> saveRoutePoints(List<RoutePointForOrderDto> routePointDto) {
+        return routePointDto.stream()
+                .map(routePoint -> {
+                    var cityEntityByName = cityRepository.findCityEntityByName(routePoint.cityName()).orElseThrow(
+                            () -> new EntityNotFoundException("City with name =%s not found!"
+                                    .formatted(routePoint.cityName()))
+                    );
+
+                    var cargoEntities = routePoint.cargos().stream()
+                            .map(cargo ->
+                                    cargoMapper.toEntity(cargo, CargoNumberGenerator.generateNumber()))
+                            .toList();
+
+                    return routePointRepository.save(routePointMapper.toEntity(routePoint, cityEntityByName, cargoEntities));
+                }).peek(routePoint -> routePoint.setOrder(null))
+                .collect(Collectors.toSet());
     }
 
 
@@ -105,7 +130,9 @@ public class OrderValidHelper {
     }
 
     public static String generateUniqueNumber() {
-        return String.valueOf(System.currentTimeMillis());
+        return uniqueNumber.append(orderName)
+                .append("-")
+                .append(orderCounter.getAndIncrement()).toString();
     }
 
 }

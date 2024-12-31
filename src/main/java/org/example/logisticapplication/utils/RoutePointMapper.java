@@ -1,12 +1,10 @@
 package org.example.logisticapplication.utils;
 
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
+import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
+import org.example.logisticapplication.domain.RoutePoint.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -27,6 +25,16 @@ public interface RoutePointMapper {
             RoutePoint routePoint,
             CityEntity cityEntity,
             List<CargoEntity> cargoEntity
+    );
+
+    @Mappings({
+            @Mapping(target = "city", source = "cityEntity"),
+            @Mapping(target = "cargo.cargos", source = "cargoEntityList")
+    })
+    RoutePointEntity toEntity(
+            RoutePointForOrderDto routePointForOrderDto,
+            CityEntity cityEntity,
+            List<CargoEntity> cargoEntityList
     );
 
     @Mappings({

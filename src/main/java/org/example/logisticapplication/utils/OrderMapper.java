@@ -13,12 +13,14 @@ import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrder;
+import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Mappings;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
@@ -34,6 +36,22 @@ public interface OrderMapper {
             CreateOrderRequest orderRequest,
             CountryMapEntity countryMapEntity,
             List<RoutePointEntity> routePointEntities
+    );
+
+    @Mappings({
+            @Mapping(target = "status", source = "status"),
+            @Mapping(target = "countryMap", source = "countryMapEntity"),
+            @Mapping(target = "routePoints", source = "routePointEntities"),
+            @Mapping(target = "driverOrders", source = "driverOrderEntity"),
+            @Mapping(target = "truckOrders", source = "truckOrderEntity")
+    })
+    OrderEntity toEntity(
+            String uniqueNumber,
+            String status,
+            CountryMapEntity countryMapEntity,
+            Set<RoutePointEntity> routePointEntities,
+            Set<DriverOrderEntity> driverOrderEntity,
+            Set<TruckOrderEntity> truckOrderEntity
     );
 
     Order toDomain(OrderDto orderDto);
