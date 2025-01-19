@@ -44,6 +44,14 @@ public interface CargoMapper {
         return CargoNumberGenerator.generateNumber();
     }
 
+    @Mappings({
+            @Mapping(target = "number", source = "cargoInfoDto.number"),
+            @Mapping(target = "name", source = "cargoInfoDto.name"),
+            @Mapping(target = "weightKg", source = "cargoInfoDto.weightKg"),
+            @Mapping(target = "status", source = "cargoInfoDto.status")
+    })
+    CargoEntity toEntity(CargoInfoDto cargoInfoDto);
+
     Cargo toDomain(CargoEntity entity);
 
     CargoDto toDto(Cargo cargo);

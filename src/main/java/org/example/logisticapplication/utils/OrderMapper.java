@@ -9,6 +9,7 @@ import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntit
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 
+import org.example.logisticapplication.domain.RoutePoint.BaseOrder;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
@@ -52,6 +53,19 @@ public interface OrderMapper {
             Set<RoutePointEntity> routePointEntities,
             Set<DriverOrderEntity> driverOrderEntity,
             Set<TruckOrderEntity> truckOrderEntity
+    );
+
+    @Mappings({
+            @Mapping(target = "countryMap.id", source = "countryMapEntity.id"),
+            @Mapping(target = "uniqueNumber", source = "baseOrder.uniqueNumber"),
+            @Mapping(target = "status", source = "baseOrder.orderStatus"),
+            @Mapping(target = "routePoints", source = "routePointEntities"),
+            @Mapping(target = "countryMap", source = "countryMapEntity")
+    })
+    OrderEntity toEntity(
+            BaseOrder baseOrder,
+            Set<RoutePointEntity> routePointEntities,
+            CountryMapEntity countryMapEntity
     );
 
     Order toDomain(OrderDto orderDto);

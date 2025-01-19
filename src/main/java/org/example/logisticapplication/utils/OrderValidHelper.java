@@ -4,20 +4,17 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Order.CreateBaseOrder;
 import org.example.logisticapplication.domain.Order.CreateOrderRequest;
-import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointForOrderDto;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -29,23 +26,24 @@ public class OrderValidHelper {
     private final RoutePointMapper routePointMapper;
     private final CityRepository cityRepository;
     private final CargoRepository cargoRepository;
-    protected static AtomicLong orderCounter = new AtomicLong();
-    protected static StringBuilder uniqueNumber = new StringBuilder();
-    private static final String orderName = "Order";
+    private static final String ORDER_NAME = "Order";
     private final CargoMapper cargoMapper;
     private final RoutePointRepository routePointRepository;
 
-    @Transactional(readOnly = true)
-    public void isOrderHasBeenCreated(
-            CreateOrderRequest orderRequest
-    ) {
-        if (orderRepository.existsOrderEntityByUniqueNumber(orderRequest.uniqueNumber())) {
-            throw new IllegalArgumentException(
-                    "Order with number=%s already exists"
-                            .formatted(orderRequest.uniqueNumber())
-            );
-        }
-    }
+    protected final AtomicLong orderCounter;
+    protected final StringBuilder uniqueNumber;
+
+//    @Transactional(readOnly = true)
+//    public void isOrderHasBeenCreated(
+//            CreateBaseOrder baseOrder
+//    ) {
+//        if (orderRepository.existsOrderEntityByUniqueNumber(baseOrder.())) {
+//            throw new IllegalArgumentException(
+//                    "Order with number=%s already exists"
+//                            .formatted(baseOrder.orderUniqueNumber())
+//            );
+//        }
+//    }
 
     @Transactional(readOnly = true)
     public void validateOrderAndFetch(
@@ -129,10 +127,12 @@ public class OrderValidHelper {
                 .collect(Collectors.toSet());
     }
 
-    public static String generateUniqueNumber() {
-        return uniqueNumber.append(orderName)
+    public String generateUniqueNumber() {
+        return uniqueNumber
+                .append(ORDER_NAME)
                 .append("-")
-                .append(orderCounter.getAndIncrement()).toString();
+                .append(orderCounter.getAndIncrement())
+                .toString();
     }
 
 }

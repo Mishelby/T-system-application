@@ -31,7 +31,7 @@ public class OrderEntity {
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_map_id", nullable = false)
+    @JoinColumn(name = "country_map_id")
     private CountryMapEntity countryMap;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

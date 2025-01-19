@@ -4,6 +4,7 @@ import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,14 +18,25 @@ import java.util.Set;
 public interface RoutePointMapper {
 
     @Mappings({
-            @Mapping(target = "id", source ="routePoint.id"),
-            @Mapping(target = "city", source ="cityEntity"),
-            @Mapping(target = "cargo", source ="cargoEntity")
+            @Mapping(target = "id", source = "routePoint.id"),
+            @Mapping(target = "city", source = "cityEntity"),
+            @Mapping(target = "cargo", source = "cargoEntity")
     })
     RoutePointEntity toEntity(
             RoutePoint routePoint,
             CityEntity cityEntity,
             List<CargoEntity> cargoEntity
+    );
+
+    @Mappings({
+            @Mapping(target = "operationType", source = "routePointInfoDto.operationType"),
+            @Mapping(target = "city", source = "cityEntity"),
+            @Mapping(target = "cargo", source = "cargoEntities")
+    })
+    RoutePointEntity toEntity(
+            RoutePointInfoDto routePointInfoDto,
+            List<CargoEntity> cargoEntities,
+            CityEntity cityEntity
     );
 
     @Mappings({
@@ -43,6 +55,7 @@ public interface RoutePointMapper {
             @Mapping(target = "cargoInfo", source = "cargoInfoDto")
     })
     RoutePointInfoDto toInfoDto(RoutePointEntity routePoint, Set<CargoInfoDto> cargoInfoDto);
+
 
     RoutePoint toDomain(RoutePointDto routePoint);
 

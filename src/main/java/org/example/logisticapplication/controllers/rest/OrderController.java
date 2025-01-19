@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
-import org.example.logisticapplication.domain.Order.CreateOrderRequest;
-import org.example.logisticapplication.domain.Order.Order;
-import org.example.logisticapplication.domain.Order.OrderDto;
-import org.example.logisticapplication.domain.Order.OrderStatusDto;
+import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointForOrderDto;
 import org.example.logisticapplication.domain.Truck.TruckDto;
@@ -32,24 +29,19 @@ public class OrderController {
 
     @PostMapping("/create-order")
     public ResponseEntity<OrderDto> createOrder(
-            @RequestBody CreateOrderRequest order
+            @RequestBody CreateBaseOrder baseOrder
     ) {
-        log.info("Get request for creating order: {}", order);
-        var newOrder = orderService.createBaseOrder(order);
+        log.info("Get request for creating order: {}", baseOrder);
+        var newOrder = orderService.createBaseOrder(baseOrder);
 
         return ResponseEntity.ok(orderMapper.toDto(newOrder));
     }
 
-    @PostMapping("/appoint-order")
-    public ResponseEntity<OrderDto> updateOrder(
-            @RequestParam("truckId") Long truckId,
-            @RequestParam("driverId") Set<Long> driverId,
-            @RequestBody List<RoutePointForOrderDto> routePoints
+    @PostMapping("/{id}")
+    public ResponseEntity<OrderDto> addRoutePoints(
+            @PathVariable("id") Long orderId
     ){
-        log.info("Get request for updating order: {}, {}, {}", truckId, driverId, routePoints);
-        var order = orderService.appointTruckAndDrivers(truckId, driverId, routePoints);
-
-        return ResponseEntity.ok(orderMapper.toDto(order));
+        return null;
     }
 
     @GetMapping("/trucks-drivers")
