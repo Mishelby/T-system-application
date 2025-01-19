@@ -131,7 +131,7 @@ public class OrderValidHelper {
         return uniqueNumber
                 .append(ORDER_NAME)
                 .append("-")
-                .append(orderCounter.getAndIncrement())
+                .append(orderCounter.getAndIncrement() + 1)
                 .toString();
     }
 

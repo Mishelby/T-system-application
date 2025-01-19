@@ -2,8 +2,10 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
@@ -51,55 +53,55 @@ public class OrderService {
     public Order createBaseOrder(
             CreateBaseOrder createBaseOrder
     ) {
-//        orderValidHelper.isOrderHasBeenCreated(createBaseOrder);
 
-        var baseOrder = new BaseOrder(
-                orderValidHelper.generateUniqueNumber(),
-                OrderStatus.NOT_COMPLETED.getName(),
-                createBaseOrder.routePointInfoDto()
-        );
+        var countryMapEntity = createBaseOrder.routePointInfoDto().stream()
+                .filter(rp -> rp.operationType().equals(OperationType.LOADING.name()))
+                .findFirst()
+                .map(RoutePointInfoDto::cityName)
+                .flatMap(countryMapRepository::findByCityName);
 
-        var routePointEntities = baseOrder.routePoints()
+        var orderEntity = new OrderEntity();
+
+        orderEntity.setUniqueNumber(orderValidHelper.generateUniqueNumber());
+        orderEntity.setStatus(OrderStatus.NOT_COMPLETED.getName());
+        orderEntity.setCountryMap(countryMapEntity.orElseThrow(
+                () -> new EntityNotFoundException("Country Map not found")
+        ));
+
+        var savedOrder = orderRepository.save(orderEntity);
+
+        var routePointEntities = saveRoutePoints(createBaseOrder.routePointInfoDto(), savedOrder);
+
+        orderEntity.setRoutePoints(routePointEntities);
+
+        var updatedOrder = orderRepository.save(orderEntity);
+
+        return orderMapper.toDomain(updatedOrder);
+    }
+
+    @Transactional
+    public Set<RoutePointEntity> saveRoutePoints(
+            List<RoutePointInfoDto> routePointInfoDto,
+            OrderEntity orderEntity
+    ) {
+        return routePointInfoDto
                 .stream()
                 .map(rp -> {
-                    var cargoEntities = rp.cargoInfo()
+                    var cargoEntityList = rp.cargoInfo()
                             .stream()
                             .map(cargoMapper::toEntity)
                             .toList();
 
-                    var cityEntity = cityRepository.findCityEntityByName(rp.cityName()).orElseThrow(
-                            () -> new EntityNotFoundException("City with name = %s not found"
-                                    .formatted(rp.cityName()))
-                    );
+                    var cityEntity = cityRepository.findCityEntityByName(rp.cityName())
+                            .orElseThrow(() -> new EntityNotFoundException("City with name = %s not found"
+                                    .formatted(rp.cityName())));
 
-                    return routePointMapper.toEntity(rp, cargoEntities, cityEntity);
-                }).peek(routePointRepository::save)
+                    return routePointMapper.toEntity(rp, cargoEntityList, cityEntity);
+                }).peek(rp -> {
+                    rp.setOrder(orderEntity);
+                    routePointRepository.save(rp);
+                })
                 .collect(Collectors.toSet());
-
-        var cityName = createBaseOrder.routePointInfoDto()
-                .stream()
-                .filter(rp -> rp.operationType().equalsIgnoreCase(OperationType.LOADING.name()))
-                .map(RoutePointInfoDto::cityName)
-                .findFirst().orElseThrow(
-                        () -> new EntityNotFoundException("City with loading operation type not found!")
-                );
-
-        var countryMapEntity = countryMapRepository.findByCityName(cityName).orElseThrow(
-                () -> new EntityNotFoundException(
-                        "Country map for city with name = %s not found"
-                        .formatted(cityName)
-                )
-        );
-
-        var orderEntity = orderRepository.save(
-                orderMapper.toEntity(
-                        baseOrder,
-                        routePointEntities,
-                        countryMapEntity
-                )
-        );
-
-        return orderMapper.toDomain(orderEntity);
     }
 
     @Transactional(readOnly = true)

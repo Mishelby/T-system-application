@@ -25,11 +25,14 @@ public class RoutePointEntity {
     @JoinColumn(name = "city_id")
     private CityEntity city;
 
+//    @Version
+//    private Long version;
+
     @Column(name = "operation_type")
     @Pattern(regexp = "LOADING|UNLOADING", message = "Invalid operation type")
     private String operationType;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "route_point_cargo",
             joinColumns = @JoinColumn(name = "route_point_id"),

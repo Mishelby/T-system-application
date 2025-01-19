@@ -31,7 +31,8 @@ public interface RoutePointMapper {
     @Mappings({
             @Mapping(target = "operationType", source = "routePointInfoDto.operationType"),
             @Mapping(target = "city", source = "cityEntity"),
-            @Mapping(target = "cargo", source = "cargoEntities")
+            @Mapping(target = "cargo", source = "cargoEntities"),
+            @Mapping(target = "id", ignore = true)
     })
     RoutePointEntity toEntity(
             RoutePointInfoDto routePointInfoDto,
@@ -41,7 +42,8 @@ public interface RoutePointMapper {
 
     @Mappings({
             @Mapping(target = "city", source = "cityEntity"),
-            @Mapping(target = "cargo.cargos", source = "cargoEntityList")
+            @Mapping(target = "cargo.cargos", source = "cargoEntityList"),
+            @Mapping(target = "id", ignore = true)
     })
     RoutePointEntity toEntity(
             RoutePointForOrderDto routePointForOrderDto,
