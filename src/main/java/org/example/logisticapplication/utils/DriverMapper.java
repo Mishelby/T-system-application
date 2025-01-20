@@ -6,6 +6,9 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.mapstruct.*;
 
+import java.util.List;
+import java.util.Set;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DriverMapper {
 
@@ -46,5 +49,11 @@ public interface DriverMapper {
             @Mapping(target = "currentTruckNumber", source = "entity.currentTruck.registrationNumber")
     })
     DriverOrderInfo toOrderInfo(DriverEntity entity);
+
+    @Mappings({
+            @Mapping(target = "currentLocation", source = "entity.currentCity.name"),
+            @Mapping(target = "currentTruckNumber", source = "entity.currentTruck.registrationNumber")
+    })
+    List<DriverOrderInfo> toOrderInfo(List<DriverEntity> entity);
 
 }

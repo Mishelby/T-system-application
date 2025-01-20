@@ -15,11 +15,11 @@ public class LogisticApplication {
         SpringApplication.run(LogisticApplication.class, args);
     }
 
-    @Bean
-    @Scope("prototype")
-    public StringBuilder sb(){
-        return new StringBuilder();
-    }
+//    @Bean
+//    @Scope("prototype")
+//    public StringBuilder sb(){
+//        return new StringBuilder();
+//    }
 
     @Bean
     public AtomicLong counter(){

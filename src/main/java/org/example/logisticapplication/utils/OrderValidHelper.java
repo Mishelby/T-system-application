@@ -31,7 +31,7 @@ public class OrderValidHelper {
     private final RoutePointRepository routePointRepository;
 
     protected final AtomicLong orderCounter;
-    protected final StringBuilder uniqueNumber;
+//    protected final StringBuilder uniqueNumber;
 
 //    @Transactional(readOnly = true)
 //    public void isOrderHasBeenCreated(
@@ -128,11 +128,9 @@ public class OrderValidHelper {
     }
 
     public String generateUniqueNumber() {
-        return uniqueNumber
-                .append(ORDER_NAME)
-                .append("-")
-                .append(orderCounter.getAndIncrement() + 1)
-                .toString();
+        return ORDER_NAME
+                .concat("-")
+                .concat(String.valueOf(orderCounter.incrementAndGet()));
     }
 
 }

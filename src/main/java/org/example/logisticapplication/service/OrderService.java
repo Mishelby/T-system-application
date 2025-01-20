@@ -47,18 +47,21 @@ public class OrderService {
     private final CityMapper cityMapper;
     private final RoutePointMapper routePointMapper;
     private final CargoMapper cargoMapper;
-    private final CargoRepository cargoRepository;
 
     @Transactional
-    public Order createBaseOrder(
-            CreateBaseOrder createBaseOrder
+    public OrderInfo createBaseOrder(
+            CreateBaseOrder createBaseOrder,
+            Long truckId,
+            Set<Long> driversId
     ) {
-
         var countryMapEntity = createBaseOrder.routePointInfoDto().stream()
                 .filter(rp -> rp.operationType().equals(OperationType.LOADING.name()))
                 .findFirst()
                 .map(RoutePointInfoDto::cityName)
                 .flatMap(countryMapRepository::findByCityName);
+
+        var allDriversById = driverRepository.findAllById(driversId);
+        var truckEntity = truckRepository.findById(truckId).orElseThrow();
 
         var orderEntity = new OrderEntity();
 
@@ -72,11 +75,32 @@ public class OrderService {
 
         var routePointEntities = saveRoutePoints(createBaseOrder.routePointInfoDto(), savedOrder);
 
+        var truckEntitySet = truckRepository.findById(truckId)
+                .map(truck -> new TruckOrderEntity(orderEntity, truck))
+                .map(truck -> {
+                    Set<TruckOrderEntity> set = new HashSet<>();
+                    set.add(truck);
+                    return set;
+                })
+                .orElseThrow();
+
+        var drivers = allDriversById
+                .stream()
+                .map(driverEntity -> new DriverOrderEntity(orderEntity, driverEntity))
+                .collect(Collectors.toSet());
+
         orderEntity.setRoutePoints(routePointEntities);
+        orderEntity.setDriverOrders(drivers);
+        orderEntity.setTruckOrders(truckEntitySet);
 
         var updatedOrder = orderRepository.save(orderEntity);
 
-        return orderMapper.toDomain(updatedOrder);
+        return orderMapper.toDomainInfo(
+                updatedOrder,
+                createBaseOrder.routePointInfoDto(),
+                driverMapper.toOrderInfo(allDriversById),
+                truckMapper.toInfoDto(List.of(truckEntity))
+        );
     }
 
     @Transactional

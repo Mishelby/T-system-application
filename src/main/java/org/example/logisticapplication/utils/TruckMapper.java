@@ -9,6 +9,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Mappings;
 
+import java.util.List;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TruckMapper {
 
@@ -31,4 +33,9 @@ public interface TruckMapper {
             @Mapping(target = "currentCityName", source = "truck.currentCity.name")
     })
     TruckInfoDto toInfoDto(TruckEntity truck);
+
+    @Mappings({
+            @Mapping(target = "currentCityName", source = "truck.currentCity.name")
+    })
+    List<TruckInfoDto> toInfoDto(List<TruckEntity> truck);
 }

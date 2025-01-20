@@ -28,19 +28,21 @@ public class OrderController {
     private final OrderMapper orderMapper;
 
     @PostMapping("/create-order")
-    public ResponseEntity<OrderDto> createOrder(
-            @RequestBody CreateBaseOrder baseOrder
+    public ResponseEntity<OrderInfo> createOrder(
+            @RequestBody CreateBaseOrder baseOrder,
+            @RequestParam("truckId") Long truckId,
+            @RequestParam("driversId") Set<Long> driversId
     ) {
         log.info("Get request for creating order: {}", baseOrder);
-        var newOrder = orderService.createBaseOrder(baseOrder);
+        var newOrder = orderService.createBaseOrder(baseOrder, truckId, driversId);
 
-        return ResponseEntity.ok(orderMapper.toDto(newOrder));
+        return ResponseEntity.ok(newOrder);
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<OrderDto> addRoutePoints(
             @PathVariable("id") Long orderId
-    ){
+    ) {
         return null;
     }
 
@@ -58,7 +60,7 @@ public class OrderController {
     @GetMapping("/{id}/status")
     public ResponseEntity<OrderStatusDto> getOrderStatusById(
             @PathVariable("id") Long orderId
-    ){
+    ) {
         log.info("Get request for getting status for order");
         var orderStatusById = orderService.getOrderStatusById(orderId);
 
