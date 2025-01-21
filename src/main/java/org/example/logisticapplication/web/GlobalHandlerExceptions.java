@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -14,7 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class GlobalHandlerException {
+public class GlobalHandlerExceptions {
 
     @ExceptionHandler(value = {
             IllegalArgumentException.class,
@@ -24,17 +23,15 @@ public class GlobalHandlerException {
             Exception ex
     ) {
 
-        String detailedMessage = ex instanceof MethodArgumentNotValidException
-                ? constructMethodArgumentNotValidMessage((MethodArgumentNotValidException) ex)
+        var detailedMessage = (ex instanceof MethodArgumentNotValidException methodArgumentNotValidException)
+                ? constructMethodArgumentNotValidMessage(methodArgumentNotValidException)
                 : ex.getMessage();
 
-
-        ErrorMessageResponse response = new ErrorMessageResponse(
+        var response = new ErrorMessageResponse(
                 "Illegal argument exception!",
                 detailedMessage,
                 LocalDateTime.now()
         );
-
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -53,7 +50,7 @@ public class GlobalHandlerException {
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             EntityNotFoundException ex
     ) {
-        ErrorMessageResponse response = new ErrorMessageResponse(
+        var response = new ErrorMessageResponse(
                 "Entity not found!",
                 ex.getMessage(),
                 LocalDateTime.now()
@@ -66,7 +63,7 @@ public class GlobalHandlerException {
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             NoSuchElementException ex
     ) {
-        ErrorMessageResponse response = new ErrorMessageResponse(
+        var response = new ErrorMessageResponse(
                 "No such element!",
                 ex.getMessage(),
                 LocalDateTime.now()
@@ -79,7 +76,7 @@ public class GlobalHandlerException {
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             NoResourceFoundException ex
     ) {
-        ErrorMessageResponse response = new ErrorMessageResponse(
+        var response = new ErrorMessageResponse(
                 "No resource found!",
                 ex.getMessage(),
                 LocalDateTime.now()
@@ -92,7 +89,7 @@ public class GlobalHandlerException {
     public ResponseEntity<ErrorMessageResponse> entityAlreadyExistsException(
             EntityAlreadyExistsException ex
     ) {
-        ErrorMessageResponse response = new ErrorMessageResponse(
+        var response = new ErrorMessageResponse(
                 "Entity already exists!",
                 ex.getMessage(),
                 LocalDateTime.now()
