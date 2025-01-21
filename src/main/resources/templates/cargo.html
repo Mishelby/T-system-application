@@ -3,125 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавление груза</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Create Order</title>
+    <style>
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        .form-container label,
+        .form-container input,
+        .form-container select {
+            display: block;
+            margin: 5px 0;
+        }
+
+        #truck-drivers-container {
+            margin-top: 20px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-<h1>Добавить груз</h1>
-<form id="cargo-form">
-    <!-- Поле выбора страны отправления -->
-    <label for="departure-country">Страна отправления:</label>
-    <select id="departure-country" name="departureCountry"></select>
 
-    <!-- Поле выбора города отправления -->
-    <label for="departure-city">Город отправления:</label>
-    <select id="departure-city" name="departureCity"></select>
+<!-- Form to input route points -->
+<div class="form-container" id="route-point-form">
+    <h3>Enter Route Points</h3>
 
-    <!-- Поле выбора страны назначения -->
-    <label for="destination-country">Страна назначения:</label>
-    <select id="destination-country" name="destinationCountry"></select>
+    <label for="cityFrom">City From:</label>
+    <input type="text" id="cityFrom" placeholder="Enter city from">
 
-    <!-- Поле выбора города назначения -->
-    <label for="destination-city">Город назначения:</label>
-    <select id="destination-city" name="destinationCity"></select>
+    <label for="cityTo">City To:</label>
+    <input type="text" id="cityTo" placeholder="Enter city to">
 
-    <!-- Поле для веса груза -->
-    <label for="cargo-weight">Вес груза (кг):</label>
-    <input type="number" id="cargo-weight" name="weight" min="0" step="0.1" required>
+    <label for="cargoName">Cargo Name:</label>
+    <input type="text" id="cargoName" placeholder="Enter cargo name">
 
-    <!-- Поле для названия груза -->
-    <label for="cargo-name">Название груза:</label>
-    <input type="text" id="cargo-name" name="name" required>
+    <label for="cargoWeight">Cargo Weight:</label>
+    <input type="number" id="cargoWeight" placeholder="Enter cargo weight">
 
-    <button type="submit">Добавить груз</button>
-</form>
+    <label for="operationType">Operation Type:</label>
+    <select id="operationType">
+        <option value="LOADING">Loading</option>
+        <option value="UNLOADING">Unloading</option>
+    </select>
+
+    <label for="distance">Distance:</label>
+    <input type="number" id="distance" placeholder="Enter distance">
+
+    <button class="button" onclick="submitRoutePoints()">Submit Route Points</button>
+</div>
+
+<!-- Form to display trucks and drivers -->
+<div class="form-container" id="truck-drivers-container" style="display: none;">
+    <h3>Select Trucks and Drivers</h3>
+
+    <div id="driversList"></div>
+    <div id="trucksList"></div>
+
+    <button class="button" onclick="submitOrder()">Submit Order</button>
+</div>
 
 <script>
-    // Загрузка стран при загрузке страницы
-    $(document).ready(function () {
-        $.ajax({
-            url: '/api/countries',
-            method: 'GET',
-            success: function (countries) {
-                // Заполняем страны отправления и назначения
-                populateCountries('#departure-country', countries);
-                populateCountries('#destination-country', countries);
-            },
-            error: function () {
-                alert('Ошибка загрузки стран');
-            }
-        });
+    // Function to submit route points and fetch available trucks and drivers
+    function submitRoutePoints() {
+        const cityFrom = document.getElementById("cityFrom").value;
+        const cityTo = document.getElementById("cityTo").value;
+        const cargoName = document.getElementById("cargoName").value;
+        const cargoWeight = document.getElementById("cargoWeight").value;
+        const operationType = document.getElementById("operationType").value;
+        const distance = document.getElementById("distance").value;
 
-        // Обработчик изменения страны отправления
-        $('#departure-country').change(function () {
-            const countryId = $(this).val();
-            loadCities(countryId, '#departure-city');
-        });
-
-        // Обработчик изменения страны назначения
-        $('#destination-country').change(function () {
-            const countryId = $(this).val();
-            loadCities(countryId, '#destination-city');
-        });
-
-        // Обработчик отправки формы
-        $('#cargo-form').submit(function (event) {
-            event.preventDefault(); // Предотвращаем отправку формы по умолчанию
-
-            const formData = {
-                departureCountry: $('#departure-country').val(),
-                departureCity: $('#departure-city').val(),
-                destinationCountry: $('#destination-country').val(),
-                destinationCity: $('#destination-city').val(),
-                weight: $('#cargo-weight').val(),
-                name: $('#cargo-name').val()
-            };
-
-            $.ajax({
-                url: '/api/cargos', // URL для отправки данных
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function () {
-                    alert('Груз успешно добавлен');
-                },
-                error: function () {
-                    alert('Ошибка добавления груза');
-                }
-            });
-        });
-    });
-
-    // Функция для заполнения списка стран
-    function populateCountries(selectId, countries) {
-        $(selectId).empty().append('<option value="">Выберите страну</option>');
-        countries.forEach(country => {
-            $(selectId).append('<option value="' + country.id + '">' + country.name + '</option>');
-        });
-    }
-
-    // Функция для загрузки городов
-    function loadCities(countryId, citySelectId) {
-        if (!countryId) {
-            $(citySelectId).empty().append('<option value="">Выберите город</option>');
+        // Validate inputs
+        if (!cityFrom || !cityTo || !cargoName || !cargoWeight || !operationType || !distance) {
+            alert("Please fill in all fields.");
             return;
         }
 
-        $.ajax({
-            url: '/api/cities?countryId=' + countryId,
-            method: 'GET',
-            success: function (cities) {
-                $(citySelectId).empty().append('<option value="">Выберите город</option>');
-                cities.forEach(city => {
-                    $(citySelectId).append('<option value="' + city.id + '">' + city.name + '</option>');
-                });
+        // Create the route point object
+        const routePoint = {
+            cityName: cityFrom,
+            cityTo: cityTo,
+            cargos: [{
+                name: cargoName,
+                weight: cargoWeight
+            }],
+            operationType: operationType,
+            distance: distance
+        };
+
+        // Send the route point data to the backend
+        fetch("/api/orders/trucks-drivers", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
-            error: function () {
-                alert('Ошибка загрузки городов');
-            }
+            body: JSON.stringify([routePoint]) // Send an array of route points
+        })
+            .then(response => response.json())
+            .then(data => {
+                displayAvailableVehicles(data); // Display the trucks and drivers
+                document.getElementById("route-point-form").style.display = "none";
+                document.getElementById("truck-drivers-container").style.display = "block";
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while fetching trucks and drivers.");
+            });
+    }
+
+    // Function to display the available trucks and drivers
+    function displayAvailableVehicles(data) {
+        const driversList = document.getElementById("driversList");
+        const trucksList = document.getElementById("trucksList");
+
+        // Clear previous lists
+        driversList.innerHTML = '';
+        trucksList.innerHTML = '';
+
+        // Display drivers
+        data.drivers.forEach(driver => {
+            driversList.innerHTML += `
+                    <input type="checkbox" id="driver-${driver.id}" value="${driver.id}">
+                    <label for="driver-${driver.id}">${driver.name} ${driver.secondName}</label><br>
+                `;
+        });
+
+        // Display trucks
+        data.trucks.forEach(truck => {
+            trucksList.innerHTML += `
+                    <input type="checkbox" id="truck-${truck.id}" value="${truck.id}">
+                    <label for="truck-${truck.id}">${truck.registrationNumber}</label><br>
+                `;
         });
     }
+
+    // Function to submit the order with selected trucks and drivers
+    function submitOrder() {
+        const selectedDrivers = [];
+        const selectedTrucks = [];
+
+        // Get selected drivers
+        const driverCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="driver-"]:checked');
+        driverCheckboxes.forEach(checkbox => {
+            selectedDrivers.push(checkbox.value);
+        });
+
+        // Get selected trucks
+        const truckCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="truck-"]:checked');
+        truckCheckboxes.forEach(checkbox => {
+            selectedTrucks.push(checkbox.value);
+        });
+
+        if (selectedDrivers.length === 0 || selectedTrucks.length === 0) {
+            alert("Please select at least one driver and one truck.");
+            return;
+        }
+
+        const orderData = {
+            driversId: selectedDrivers,
+            trucksId: selectedTrucks
+        };
+
+        // Send the order data to the backend
+        fetch("/create-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert("Order created successfully!");
+            })
+            .catch(error => {
+                console.error("Error creating order:", error);
+                alert("Error creating order.");
+            });
+    }
 </script>
+
 </body>
 </html>
+
+
+
+
+
+
 

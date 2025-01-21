@@ -42,6 +42,7 @@ public class DriverEntity {
     private TruckEntity currentTruck;
 
     public DriverEntity(
+            Long id,
             String name,
             String secondName,
             Long personNumber,
@@ -50,6 +51,7 @@ public class DriverEntity {
             CityEntity currentCity,
             TruckEntity currentTruck
     ) {
+        this.id = id;
         this.name = name;
         this.secondName = secondName;
         this.personNumber = personNumber;
