@@ -4,13 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.utils.BusinessLogicHelper;
-import org.example.logisticapplication.utils.DriverAndOrderMapper;
 import org.example.logisticapplication.utils.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -22,7 +18,7 @@ public class BusinessLogicService implements DriverLogicService {
     private final DriverValidHelper driverValidHelper;
 
     @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
+    @Transactional
     public Driver addTruckForDriver(
             Long driverId,
             Long truckId

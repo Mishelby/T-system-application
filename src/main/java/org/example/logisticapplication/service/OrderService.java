@@ -2,11 +2,9 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
-import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
@@ -22,7 +20,6 @@ import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -54,40 +51,28 @@ public class OrderService {
             Long truckId,
             Set<Long> driversId
     ) {
-        var countryMapEntity = createBaseOrder.routePointInfoDto().stream()
-                .filter(rp -> rp.operationType().equals(OperationType.LOADING.name()))
-                .findFirst()
-                .map(RoutePointInfoDto::cityName)
-                .flatMap(countryMapRepository::findByCityName);
+        /**
+         * Find country map by loading city
+         */
+        var countryMapEntity = getCountryMapEntity(createBaseOrder);
 
         var allDriversById = driverRepository.findAllById(driversId);
         var truckEntity = truckRepository.findById(truckId).orElseThrow();
 
-        var orderEntity = new OrderEntity();
+        var orderEntity = createNewOrder(countryMapEntity);
 
-        orderEntity.setUniqueNumber(orderValidHelper.generateUniqueNumber());
-        orderEntity.setStatus(OrderStatus.NOT_COMPLETED.getName());
-        orderEntity.setCountryMap(countryMapEntity.orElseThrow(
-                () -> new EntityNotFoundException("Country Map not found")
-        ));
+        /**
+         * Mapping to entities and saving route points in database
+         */
+        var routePointEntities = saveRoutePoints(createBaseOrder.routePointInfoDto(), orderEntity);
 
-        var savedOrder = orderRepository.save(orderEntity);
-
-        var routePointEntities = saveRoutePoints(createBaseOrder.routePointInfoDto(), savedOrder);
-
-        var truckEntitySet = truckRepository.findById(truckId)
-                .map(truck -> new TruckOrderEntity(orderEntity, truck))
-                .map(truck -> {
-                    Set<TruckOrderEntity> set = new HashSet<>();
-                    set.add(truck);
-                    return set;
-                })
-                .orElseThrow();
-
-        var drivers = allDriversById
-                .stream()
-                .map(driverEntity -> new DriverOrderEntity(orderEntity, driverEntity))
-                .collect(Collectors.toSet());
+        /**
+         * Mapping to entities and return
+         * new HashSet<TruckOrderEntity> and
+         * new HashSet<DriverOrderEntity>
+         */
+        var truckEntitySet = getTruckOrderEntities(truckId, orderEntity);
+        var drivers = getDriverOrderEntities(allDriversById, orderEntity);
 
         orderEntity.setRoutePoints(routePointEntities);
         orderEntity.setDriverOrders(drivers);
@@ -103,12 +88,58 @@ public class OrderService {
         );
     }
 
-    @Transactional
+    private CountryMapEntity getCountryMapEntity(
+            CreateBaseOrder createBaseOrder
+    ) {
+        return createBaseOrder.routePointInfoDto()
+                .stream()
+                .filter(rp -> rp.operationType().equals(OperationType.LOADING.name()))
+                .findFirst()
+                .map(RoutePointInfoDto::cityName)
+                .flatMap(countryMapRepository::findByCityName).orElseThrow(
+                        () -> new EntityNotFoundException("Country map for city not found")
+                );
+    }
+
+    private Set<TruckOrderEntity> getTruckOrderEntities(
+            Long truckId,
+            OrderEntity orderEntity
+    ) {
+        return truckRepository.findById(truckId)
+                .map(truck -> new TruckOrderEntity(orderEntity, truck))
+                .map(truck -> {
+                    Set<TruckOrderEntity> set = new HashSet<>();
+                    set.add(truck);
+                    return set;
+                })
+                .orElseThrow();
+    }
+
+    private static Set<DriverOrderEntity> getDriverOrderEntities(
+            List<DriverEntity> allDriversById,
+            OrderEntity orderEntity
+    ) {
+        return allDriversById
+                .stream()
+                .map(driverEntity -> new DriverOrderEntity(orderEntity, driverEntity))
+                .collect(Collectors.toSet());
+    }
+
+    private OrderEntity createNewOrder(
+            CountryMapEntity countryMapEntity
+    ) {
+        var orderEntity = new OrderEntity();
+        orderEntity.setUniqueNumber(orderValidHelper.generateUniqueNumber());
+        orderEntity.setStatus(OrderStatus.NOT_COMPLETED.getName());
+        orderEntity.setCountryMap(countryMapEntity);
+        return orderRepository.save(orderEntity);
+    }
+
     public Set<RoutePointEntity> saveRoutePoints(
             List<RoutePointInfoDto> routePointInfoDto,
             OrderEntity orderEntity
     ) {
-        return routePointInfoDto
+        var routePointEntities = routePointInfoDto
                 .stream()
                 .map(rp -> {
                     var cargoEntityList = rp.cargoInfo()
@@ -117,15 +148,21 @@ public class OrderService {
                             .toList();
 
                     var cityEntity = cityRepository.findCityEntityByName(rp.cityName())
-                            .orElseThrow(() -> new EntityNotFoundException("City with name = %s not found"
-                                    .formatted(rp.cityName())));
+                            .orElseThrow(
+                                    () -> new EntityNotFoundException("City with name = %s not found"
+                                            .formatted(rp.cityName()))
+                            );
 
                     return routePointMapper.toEntity(rp, cargoEntityList, cityEntity);
-                }).peek(rp -> {
-                    rp.setOrder(orderEntity);
-                    routePointRepository.save(rp);
                 })
                 .collect(Collectors.toSet());
+
+        routePointEntities.forEach(routePoint -> {
+            routePoint.setOrder(orderEntity);
+            routePointRepository.save(routePoint);
+        });
+
+        return routePointEntities;
     }
 
     @Transactional(readOnly = true)
@@ -169,14 +206,18 @@ public class OrderService {
         );
     }
 
-    private List<TruckInfoDto> mapTrucksToDto(List<TruckEntity> trucksForOrderByWeight) {
+    private List<TruckInfoDto> mapTrucksToDto(
+            List<TruckEntity> trucksForOrderByWeight
+    ) {
         return trucksForOrderByWeight
                 .stream()
                 .map(truckMapper::toInfoDto)
                 .toList();
     }
 
-    private List<DriverAllInfoDto> mapDriversToDto(List<DriverEntity> driversForOrder) {
+    private List<DriverAllInfoDto> mapDriversToDto(
+            List<DriverEntity> driversForOrder
+    ) {
         return driversForOrder.stream()
                 .map(driver ->
                         driverMapper.toDtoInfo(
@@ -187,7 +228,9 @@ public class OrderService {
                 ).toList();
     }
 
-    private static long getTotalDistance(List<RoutePointForOrderDto> routePointsDto) {
+    private static long getTotalDistance(
+            List<RoutePointForOrderDto> routePointsDto
+    ) {
         return routePointsDto
                 .stream()
                 .filter(rp -> rp.operationType().equals(OperationType.LOADING.toString()))
@@ -196,19 +239,25 @@ public class OrderService {
                 .sum();
     }
 
-    private static long getTotalWeight(List<RoutePointForOrderDto> routePointsDto) {
+    private static long getTotalWeight(
+            List<RoutePointForOrderDto> routePointsDto
+    ) {
         return routePointsDto.stream()
                 .flatMap(rp -> rp.cargos().stream())
                 .mapToLong(CargoForOrderDto::weight)
                 .sum();
     }
 
-    private CityEntity findCityEntityByName(String loadingCityName) {
+    private CityEntity findCityEntityByName(
+            String loadingCityName
+    ) {
         return cityRepository.findCityEntityByName(loadingCityName)
                 .orElseThrow(() -> new EntityNotFoundException("No city for loading operation"));
     }
 
-    private static String findLoadingCityName(List<RoutePointForOrderDto> routePointsDto) {
+    private static String findLoadingCityName(
+            List<RoutePointForOrderDto> routePointsDto
+    ) {
         return routePointsDto.stream()
                 .filter(rp -> rp.operationType().equals(OperationType.LOADING.toString()))
                 .map(RoutePointForOrderDto::cityName)
@@ -223,96 +272,5 @@ public class OrderService {
         orderValidHelper.validateOrderAndFetch(orderId);
 
         return orderRepository.showOrderStatusByOrderId(orderId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Driver> findDriversForOrder(
-            Long orderId
-    ) {
-        orderValidHelper.validateOrderAndFetch(orderId);
-
-        var routePointEntity = routePointRepository.findRoutePointEntitiesByOrderId(
-                orderId,
-                OperationType.LOADING.toString()
-        );
-
-        var driversForCorrectTruck = driverRepository.findDriversForCorrectTruck(
-                routePointEntity.getCity().getId(),
-                orderId,
-                defaultValues.getAverageSpeed(),
-                defaultValues.getNumberOfHoursWorkedLimit()
-        );
-
-        return driversForCorrectTruck
-                .stream()
-                .map(driverMapper::toDomain)
-                .toList();
-    }
-
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Order appointTruckAndDrivers(
-            Long truckId,
-            Set<Long> driversId,
-            List<RoutePointForOrderDto> routePointDto
-    ) {
-
-        var truckEntities = Set.of(truckRepository.findById(truckId).orElseThrow());
-        var driversEntityById = driverRepository.findAllDriversById(driversId);
-
-        var cityName = routePointDto
-                .stream()
-                .filter(rp -> rp.operationType().equals(OperationType.LOADING.toString()))
-                .map(RoutePointForOrderDto::cityName)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No loading operation found"));
-
-        var countryMapEntity = countryMapRepository.findByCityName(cityName).orElseThrow(
-                () -> new EntityNotFoundException("City with name = %s not found!"
-                        .formatted(cityName))
-        );
-
-        var routePointEntityList = routePointDto.stream()
-                .map(routePoint -> {
-                    var cityEntityByName = cityRepository.findCityEntityByName(routePoint.cityName()).orElseThrow(
-                            () -> new EntityNotFoundException("City with name = %s not found!"
-                                    .formatted(routePoint.cityName()))
-                    );
-
-                    var cargoEntities = routePoint.cargos().stream()
-                            .map(cargo ->
-                                    cargoMapper.toEntity(cargo, CargoNumberGenerator.generateNumber()))
-                            .toList();
-
-                    return routePointMapper.toEntity(routePoint, cityEntityByName, cargoEntities);
-                }).peek(routePoint -> routePoint.setOrder(null))
-                .collect(Collectors.toSet());
-
-
-        var driverOrderEntity = driversEntityById.stream()
-                .map(driverEntity -> new DriverOrderEntity(null, driverEntity))
-                .collect(Collectors.toSet());
-
-        var truckOrderEntity = truckEntities.stream()
-                .map(truck -> new TruckOrderEntity(null, truck))
-                .collect(Collectors.toSet());
-
-        var orderEntity = orderMapper.toEntity(
-                orderValidHelper.generateUniqueNumber(),
-                OrderStatus.NOT_COMPLETED.name(),
-                countryMapEntity,
-                routePointEntityList,
-                driverOrderEntity,
-                truckOrderEntity
-        );
-
-        driverOrderEntity.forEach(driver -> driver.setOrder(orderEntity));
-        truckOrderEntity.forEach(truck -> truck.setOrder(orderEntity));
-        orderEntity.getRoutePoints().forEach(routePoint -> routePoint.setOrder(orderEntity));
-
-        orderEntity.setStatus("NOT COMPLETED");
-
-        var savedOrderEntity = orderRepository.save(orderEntity);
-
-        return orderMapper.toDomain(savedOrderEntity);
     }
 }

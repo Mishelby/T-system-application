@@ -34,6 +34,10 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     @Query("SELECT d FROM DriverEntity d WHERE d.currentTruck =:truck")
     List<DriverEntity> findAllByCurrentTruck(TruckEntity truck);
 
+    @Modifying
+    @Query("UPDATE DriverEntity d SET d.currentTruck = NULL WHERE d.currentTruck = :truck")
+    void removeCurrentTruck(@Param("truck") TruckEntity truck);
+
     @Query(value = """
             SELECT d
             FROM DriverEntity d
@@ -45,6 +49,13 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("status") String status,
             @Param("cityName") String cityName
     );
+
+    @Query("""
+            SELECT COUNT(t) = 0 FROM TruckEntity t 
+            LEFT JOIN TruckOrderEntity tor ON tor.id = t.id 
+            WHERE t =: truck
+            """)
+    boolean isTruckInOrder(TruckEntity truck);
 
     @Modifying
     @Query(value = """

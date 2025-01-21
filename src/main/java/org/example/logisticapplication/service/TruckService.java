@@ -1,15 +1,15 @@
 package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.utils.TruckMapper;
+import org.example.logisticapplication.utils.TruckValidHelper;
+import org.example.logisticapplication.web.TruckDeletionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -62,8 +62,7 @@ public class TruckService {
     ) {
         var truckEntity = truckRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException(
-                        "Truck does not exist with id=%s"
-                                .formatted(id)
+                        TruckValidHelper.getDEFAULT_MESSAGE().formatted(id)
                 )
         );
 
@@ -85,29 +84,22 @@ public class TruckService {
     }
 
     // Delete truck
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public void deleteTruck(
             Long id
     ) {
-        if (id == null) {
-            throw new IllegalArgumentException(
-                    "Id is null"
-            );
-        }
-
         var truckEntity = truckRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException(
-                        "Truck does not exist with id=%s"
-                                .formatted(id)
+                        TruckValidHelper.getDEFAULT_MESSAGE().formatted(id)
                 )
         );
 
-        var allByCurrentDrivers = driverRepository.findAllByCurrentTruck(truckEntity);
-
-        for (DriverEntity entity : allByCurrentDrivers) {
-            entity.setCurrentTruck(null);
-            driverRepository.save(entity);
+        if(!driverRepository.isTruckInOrder(truckEntity)) {
+            throw new TruckDeletionException("Truck with id = %s is currently assigned to an order"
+                    .formatted(id));
         }
+
+        driverRepository.removeCurrentTruck(truckEntity);
 
         truckRepository.deleteById(id);
     }
@@ -119,8 +111,7 @@ public class TruckService {
     ) {
         if (!truckRepository.existsById(id)) {
             throw new EntityNotFoundException(
-                    "Truck does not exist with id=%s"
-                            .formatted(id)
+                    TruckValidHelper.getDEFAULT_MESSAGE().formatted(id)
             );
         }
 

@@ -1,10 +1,8 @@
 package org.example.logisticapplication.utils;
 
-import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverOrderInfo;
-import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrder;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
@@ -13,7 +11,6 @@ import org.example.logisticapplication.domain.RoutePoint.BaseOrder;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
-import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrder;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

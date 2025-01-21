@@ -80,6 +80,10 @@ public class CargoService {
             );
         }
 
+        /**
+         * Request for the number and status of cargo
+         * Return new CargoStatusDto(String number, String status)
+         */
         String sql = """
                 SELECT c.number, c.status
                     FROM orders o

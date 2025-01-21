@@ -11,8 +11,6 @@ import org.example.logisticapplication.repository.CountryMapRepository;
 import org.example.logisticapplication.utils.CountryMapMapper;
 import org.example.logisticapplication.utils.DistanceMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
@@ -52,10 +50,13 @@ public class CountryMapService {
         );
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public CountryMap createNewCountryMap(
             CountryMap countryMap
     ) {
+        /**
+         * Checking is country map already exists?
+         */
         isCountryMapAlreadyExists(countryMap);
 
         var entity = countryMapRepository.save(
@@ -73,7 +74,7 @@ public class CountryMapService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
+    @Transactional
     public Distance addDistances(
             Distance distance,
             Long countryId

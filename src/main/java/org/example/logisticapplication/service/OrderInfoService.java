@@ -51,7 +51,8 @@ public class OrderInfoService {
 
         return lastOrders.stream()
                 .map(entity -> {
-                    var routePointInfoDtoList = entity.getRoutePoints().stream()
+                    var routePointInfoDtoList = entity.getRoutePoints()
+                            .stream()
                             .map(routePoint -> {
                                 var cargoInfoDto = routePoint.getCargo().stream()
                                         .map(cargoMapper::toDtoInfo)
@@ -61,22 +62,6 @@ public class OrderInfoService {
                             }).toList();
                     return orderMapper.toDomainInfo(entity, routePointInfoDtoList, driverOrderInfos, truckInfoDto);
                 }).toList();
-    }
-
-    private List<TruckInfoDto> getTruckInfoDto(List<OrderEntity> lastOrders) {
-        return lastOrders.stream()
-                .flatMap(entity -> entity.getTruckOrders().stream())
-                .map(TruckOrderEntity::getTruck)
-                .map(truckMapper::toInfoDto)
-                .toList();
-    }
-
-    private List<DriverOrderInfo> getDriverOrderInfo(List<OrderEntity> lastOrders) {
-        return lastOrders.stream()
-                .flatMap(entity -> entity.getDriverOrders().stream())
-                .map(DriverOrderEntity::getDriver)
-                .map(driverMapper::toOrderInfo)
-                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -97,4 +82,21 @@ public class OrderInfoService {
 
         return new DriverAndTruckDto(driverDomainList, truckDomainList);
     }
+
+    private List<TruckInfoDto> getTruckInfoDto(List<OrderEntity> lastOrders) {
+        return lastOrders.stream()
+                .flatMap(entity -> entity.getTruckOrders().stream())
+                .map(TruckOrderEntity::getTruck)
+                .map(truckMapper::toInfoDto)
+                .toList();
+    }
+
+    private List<DriverOrderInfo> getDriverOrderInfo(List<OrderEntity> lastOrders) {
+        return lastOrders.stream()
+                .flatMap(entity -> entity.getDriverOrders().stream())
+                .map(DriverOrderEntity::getDriver)
+                .map(driverMapper::toOrderInfo)
+                .toList();
+    }
+
 }

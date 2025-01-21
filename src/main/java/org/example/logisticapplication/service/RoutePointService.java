@@ -21,7 +21,7 @@ public class RoutePointService {
     private final CargoRepository cargoRepository;
 
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public RoutePoint addNewRoutePoint(
             RoutePoint routePoint
     ) {
@@ -34,9 +34,7 @@ public class RoutePointService {
         );
 
         var cargoEntity = cargoRepository.findAllById(routePoint.cargoId());
-
         var routePointentity = routePointMapper.toEntity(routePoint, cityEntity, cargoEntity);
-
         var savedRoutePoint = routePointRepository.save(routePointentity);
 
         return routePointMapper.toDomain(savedRoutePoint);

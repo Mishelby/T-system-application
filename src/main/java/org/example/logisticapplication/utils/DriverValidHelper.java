@@ -1,5 +1,6 @@
 package org.example.logisticapplication.utils;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -14,6 +15,8 @@ public class DriverValidHelper {
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
     private static final int DEFAULT_TRUCK_SEATS = 2;
+    @Getter
+    private static final String DEFAULT_MESSAGE = "Driver does not exist with id=%s";
 
     @Transactional(readOnly = true)
     public TruckEntity findTruckById(
@@ -33,8 +36,7 @@ public class DriverValidHelper {
     ) {
         return driverRepository.findById(driverId).orElseThrow(
                 () -> new IllegalArgumentException(
-                        "Driver does not exist with id=%s"
-                                .formatted(driverId)
+                        DEFAULT_MESSAGE.formatted(driverId)
                 )
         );
     }

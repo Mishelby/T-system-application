@@ -3,7 +3,6 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.*;
-import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.CityRepository;
@@ -12,16 +11,10 @@ import org.example.logisticapplication.repository.OrderRepository;
 import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.utils.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +27,7 @@ public class DriverService {
     private final CityRepository cityRepository;
     private final OrderRepository orderRepository;
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public Driver createDriver(
             Driver driver
     ) {
@@ -86,22 +79,20 @@ public class DriverService {
     ) {
         var driverEntity = driverRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException(
-                        "Driver does not exist with id=%s"
-                                .formatted(id)
+                        DriverValidHelper.getDEFAULT_MESSAGE().formatted(id)
                 )
         );
 
         return driverMapper.toDomain(driverEntity);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public void deleteDriver(
             Long id
     ) {
         var driverEntity = driverRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException(
-                        "Driver does not exist with id=%s"
-                                .formatted(id)
+                        DriverValidHelper.getDEFAULT_MESSAGE().formatted(id)
                 )
         );
 
@@ -115,15 +106,14 @@ public class DriverService {
         driverRepository.delete(driverEntity);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public Driver updateDriver(
             Long id,
             Driver updateDriver
     ) {
         if (!driverRepository.existsById(id)) {
             throw new EntityNotFoundException(
-                    "Driver does not exist with id=%s"
-                            .formatted(id)
+                    DriverValidHelper.getDEFAULT_MESSAGE().formatted(id)
             );
         }
 

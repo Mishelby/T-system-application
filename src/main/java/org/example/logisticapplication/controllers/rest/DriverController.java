@@ -43,7 +43,7 @@ public class DriverController {
     ) {
         log.info("Get request for get info for driver by id");
 
-        return ResponseEntity.ok( driverService.getInfoForDriver(orderId));
+        return ResponseEntity.ok(driverService.getInfoForDriver(orderId));
     }
 
     @PostMapping
