@@ -14,16 +14,6 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
-    boolean existsOrderEntityByUniqueNumber(String uniqueNumber);
-
-    @Query("SELECT COUNT(*) > 0 FROM OrderEntity oe WHERE oe.uniqueNumber = :uniqueNumber")
-    boolean existsByUniqueNumber(
-            @Param("uniqueNumber") String uniqueNumber
-    );
-
-    @Query("SELECT oe FROM OrderEntity oe WHERE oe.uniqueNumber = :uniqueNumber")
-    OrderEntity findByUniqueNumber(@Param("uniqueNumber") String uniqueNumber);
-
 
     @Query(value = """
             SELECT new org.example.logisticapplication.domain.Order.OrderStatusDto(o.uniqueNumber,o.status)

@@ -23,7 +23,6 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
     @Query("SELECT COUNT(t) > 0 FROM TruckEntity t WHERE t.registrationNumber = :registrationNumber")
     boolean existsByRegistrationNumber(String registrationNumber);
 
-    Optional<TruckEntity> findTruckEntityByRegistrationNumber(String registrationNumber);
 
     @Query("SELECT t FROM TruckEntity t WHERE :currentDriver MEMBER OF t.drivers")
     List<TruckEntity> findAllByCurrentDriver(DriverEntity currentDriver);
@@ -47,49 +46,6 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             @Param("truck_condition") String status,
             @Param("capacity") Double capacity,
             @Param("cityId") Long currentCityId
-    );
-
-    @Query(value = """
-            SELECT t.id, t.reg_number, t.size_of_driver_shift, t.condition, t.capacity, t.current_city_id
-            FROM truck t
-            LEFT JOIN truck_order tor ON tor.truck_id = t.id
-            WHERE t.capacity > (SELECT SUM(c.weight_kg) as total_weight
-                                FROM orders o
-                                         JOIN route_point rp ON rp.order_id = o.id
-                                         JOIN route_point_cargo rpc ON rpc.route_point_id = rp.id
-                                         JOIN cargo c ON c.id = rpc.cargo_id
-                                WHERE o.id = :orderId)
-            AND t.condition = :status             
-            AND tor.truck_id IS NULL
-            AND t.current_city_id =
-                            (SELECT city_id
-                             FROM route_point rp2
-                             WHERE rp2.order_id = :orderId
-                             AND rp2.operation_type = 'LOADING')            
-            """, nativeQuery = true)
-    List<TruckEntity> findAllCorrectTrucks(
-            @Param("status") String status,
-            @Param("orderId") Long orderId
-    );
-
-    @Query(value = """
-            SELECT t.*
-            FROM truck t
-                     LEFT JOIN truck_order tor ON t.id = tor.truck_id
-            WHERE t.condition = :condition
-              AND tor.truck_id IS NULL
-              AND t.capacity >=
-                  (SELECT SUM(c.weight_kg) as total_weight
-                   FROM route_point rp
-                            LEFT JOIN route_point_cargo rpc ON rp.id = rpc.route_point_id
-                            LEFT JOIN cargo c ON rpc.cargo_id = c.id
-                   WHERE rp.id IN (:rpId))
-              AND t.current_city_id = :cityId;
-            """, nativeQuery = true)
-    List<TruckEntity> findTrucksForOrder(
-            @Param("rpIds") List<Long> routePointsId,
-            @Param("cityId") Long loadingCargoCityId,
-            @Param("condition") String truckCondition
     );
 
     @EntityGraph(attributePaths = {"currentCity", "drivers"})
