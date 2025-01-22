@@ -49,11 +49,9 @@ public class DriverService {
                 )
         );
 
-        var savedDriver = driverRepository.save(
+        return driverMapper.toDomain(driverRepository.save(
                 driverEntity
-        );
-
-        return driverMapper.toDomain(savedDriver);
+        ));
     }
 
     @Transactional(readOnly = true)

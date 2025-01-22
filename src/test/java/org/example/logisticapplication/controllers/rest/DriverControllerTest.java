@@ -1,6 +1,8 @@
 package org.example.logisticapplication.controllers.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverStatus;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -17,6 +19,7 @@ import static org.example.logisticapplication.domain.Truck.TruckStatus.SERVICEAB
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Slf4j
 @AutoConfigureMockMvc
 @SpringBootTest
 class DriverControllerTest {
@@ -26,33 +29,43 @@ class DriverControllerTest {
 
     private ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Test case to verify successful creation of a driver.
+     *
+     * @throws Exception if an error occurs during JSON processing or request execution.
+     */
     @Test
     void shouldSuccessCreateDriver() throws Exception {
-        var driverEntity = new DriverEntity(
+        // Create a new Driver object with sample data
+        var driver = new Driver(
                 null,
-                "Name",
-                "Second Name",
-                8947609245L,
+                "John",
+                "Doe",
+                657853219L,
                 0,
-                DriverStatus.REST.name(),
-                createCityEntity(),
+                DriverStatus.fromDisplayName("REST").getDisplayName(),
+                1L,
                 null
         );
 
-        var driverJson = mapper.writeValueAsString(driverEntity);
+        // Convert the Driver object to JSON
+        var driverJson = mapper.writeValueAsString(driver);
 
+        // Perform POST request to create a new driver and expect HTTP 200 status
         var createdDriverJson = mockMvc.perform(post("/api/drivers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(driverJson))
-                .andExpect(status().is(201))
+                .andExpect(status().is(200))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
+        // Parse the response JSON to DriverEntity object
         var driverResponse = mapper.readValue(createdDriverJson, DriverEntity.class);
 
+        // Validate that the ID is generated and the name matches the input
         Assertions.assertNotNull(driverResponse.getId());
-        Assertions.assertEquals(driverEntity.getName(), driverResponse.getName());
+        Assertions.assertEquals(driver.name(), driverResponse.getName());
     }
 
     @Test

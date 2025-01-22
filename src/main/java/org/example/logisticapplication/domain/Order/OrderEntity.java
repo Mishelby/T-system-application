@@ -57,5 +57,11 @@ public class OrderEntity {
         this.truckOrders = truckOrders;
     }
 
+    public OrderEntity(String uniqueNumber, String status, CountryMapEntity countryMap) {
+        this.uniqueNumber = uniqueNumber;
+        this.status = status;
+        this.countryMap = countryMap;
+    }
+
     public OrderEntity() {}
 }

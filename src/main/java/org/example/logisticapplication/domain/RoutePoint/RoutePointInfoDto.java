@@ -7,6 +7,7 @@ import java.util.Set;
 public record RoutePointInfoDto(
         String cityName,
         Set<CargoInfoDto> cargoInfo,
-        String operationType
+        String operationType,
+        Integer distance
 ) {
 }

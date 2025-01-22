@@ -30,7 +30,7 @@ public class DriverEntity {
     private Integer numberOfHoursWorked;
 
     @Column(name = "driver_status", nullable = false)
-    @Pattern(regexp = "ACTIVE|INACTIVE|SUSPENDED", message = "Invalid driver status")
+    @Pattern(regexp = "REST|ON_SHIFT|DRIVING|THE_SECOND_DRIVER|LOADING_UNLOADING_OPERATIONS", message = "Invalid driver status")
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
