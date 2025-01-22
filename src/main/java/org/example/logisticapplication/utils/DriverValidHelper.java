@@ -6,6 +6,7 @@ import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class DriverValidHelper {
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
-    private static final int DEFAULT_TRUCK_SEATS = 2;
+
+    @Value("${truck.default-seats}")
+    @Getter
+    private static int defaultTruckSeats;
+
     @Getter
     private static final String DEFAULT_MESSAGE = "Driver does not exist with id=%s";
 
@@ -67,7 +72,7 @@ public class DriverValidHelper {
     public void validateTruckHasAvailableSeats(
             TruckEntity truckEntity
     ) {
-        if (truckEntity.getDrivers().size() >= DEFAULT_TRUCK_SEATS) {
+        if (truckEntity.getDrivers().size() >= getDefaultTruckSeats()) {
             throw new IllegalArgumentException(
                     "There are no seats in the current truck with id=%s"
                             .formatted(truckEntity.getId())

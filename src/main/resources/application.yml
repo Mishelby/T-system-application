@@ -32,3 +32,6 @@ springdoc:
 driver:
   defaultAverageSpeed: 80
   defaultNumberOfHoursWorkedLimit: 176
+
+truck:
+  default-seats: 4
