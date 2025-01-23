@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.service.BusinessLogicService;
-import org.example.logisticapplication.utils.DriverMapper;
+import org.example.logisticapplication.mapper.DriverMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

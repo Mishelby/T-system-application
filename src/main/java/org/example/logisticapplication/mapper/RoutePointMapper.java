@@ -1,10 +1,8 @@
-package org.example.logisticapplication.utils;
+package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
-import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

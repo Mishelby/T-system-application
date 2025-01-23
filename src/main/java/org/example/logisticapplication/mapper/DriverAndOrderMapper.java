@@ -1,4 +1,4 @@
-package org.example.logisticapplication.utils;
+package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Driver.DriverAndOrderDto;

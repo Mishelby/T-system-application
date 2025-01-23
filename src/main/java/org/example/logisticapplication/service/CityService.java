@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
-import org.example.logisticapplication.utils.CityMapper;
+import org.example.logisticapplication.mapper.CityMapper;
 import org.example.logisticapplication.web.EntityAlreadyExistsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,5 +85,18 @@ public class CityService {
         );
 
         return cityMapper.toDomain(cityEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<City> findAllCities() {
+        var allCities = cityRepository.findAll();
+
+        if(allCities.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return allCities.stream()
+                .map(cityMapper::toDomain)
+                .toList();
     }
 }

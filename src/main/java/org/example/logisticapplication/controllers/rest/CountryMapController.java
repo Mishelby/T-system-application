@@ -7,9 +7,8 @@ import org.example.logisticapplication.domain.CountryMap.CountryMapDto;
 import org.example.logisticapplication.domain.Distance.Distance;
 import org.example.logisticapplication.domain.Distance.DistanceDto;
 import org.example.logisticapplication.service.CountryMapService;
-import org.example.logisticapplication.utils.CountryMapMapper;
-import org.example.logisticapplication.utils.DistanceMapper;
-import org.springframework.http.HttpStatus;
+import org.example.logisticapplication.mapper.CountryMapMapper;
+import org.example.logisticapplication.mapper.DistanceMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

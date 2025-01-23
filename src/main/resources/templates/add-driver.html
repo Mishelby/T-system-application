@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Registration</title>
+    <script src="/driver-registration.js" defer></script></head>
+<body>
+<h1>Register a New Driver</h1>
+
+<form id="driver-registration-form" autocomplete="off">
+    <label for="name">First Name:</label>
+    <input type="text" id="name" name="name" required>
+    <br><br>
+
+    <label for="secondName">Last Name:</label>
+    <input type="text" id="secondName" name="secondName" required>
+    <br><br>
+
+    <label for="personNumber">Person Number:</label>
+    <input type="number" id="personNumber" name="personNumber" required>
+    <br><br>
+
+    <label for="cityName">City:</label>
+    <select id="cityName" name="cityName" required>
+        <option value="" disabled selected>Select a city</option>
+    </select>
+    <br><br>
+
+    <button type="submit">Submit</button>
+</form>
+
+
+<div id="response"></div>
+</body>
+</html>

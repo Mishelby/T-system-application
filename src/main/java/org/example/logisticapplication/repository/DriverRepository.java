@@ -19,6 +19,17 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     @Query("SELECT d FROM DriverEntity d")
     List<DriverEntity> findAllDrivers();
 
+    @Query("""
+            SELECT COUNT(*) = 0 
+            FROM DriverEntity d 
+            WHERE d.currentTruck.registrationNumber = :number
+            AND d.personNumber <> :personNumber
+            """)
+    boolean existsTruckByDriverId(
+            @Param("personNumber") Long personNumber,
+            @Param("number") String number
+    );
+
     boolean existsByPersonNumber(Long personNumber);
 
     @Modifying

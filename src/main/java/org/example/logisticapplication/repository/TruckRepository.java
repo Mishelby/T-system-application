@@ -63,4 +63,19 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             @Param("condition") String condition,
             @Param("weight") BigDecimal weight
     );
+
+    @Query("SELECT t FROM TruckEntity t WHERE t.registrationNumber = :truckNumber")
+    Optional<TruckEntity> findByNumber(@Param("truckNumber")String truckNumber);
+
+    @Query("""
+            SELECT t FROM TruckEntity t 
+            LEFT JOIN TruckOrderEntity tor ON t.id = tor.truck.id
+            WHERE t.currentCity.id = :cityId
+            AND t.status = :condition 
+            AND tor.truck.id IS NULL         
+            """)
+    List<TruckEntity> findFreeTrucks(
+            @Param("cityId") Long cityId,
+            @Param("condition") String condition
+    );
 }

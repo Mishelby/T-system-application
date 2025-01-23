@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Cargo.Cargo;
 import org.example.logisticapplication.domain.Cargo.CargoStatusDto;
 import org.example.logisticapplication.repository.CargoRepository;
-import org.example.logisticapplication.utils.CargoMapper;
+import org.example.logisticapplication.mapper.CargoMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;

@@ -38,5 +38,6 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
     );
 
     @EntityGraph(attributePaths = {"countryMap"})
+    @Query("SELECT c FROM CityEntity c WHERE c.name = :name")
     Optional<CityEntity> findCityEntityByName(String name);
 }

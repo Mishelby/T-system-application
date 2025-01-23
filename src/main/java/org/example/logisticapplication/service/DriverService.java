@@ -9,7 +9,7 @@ import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.OrderRepository;
 import org.example.logisticapplication.repository.TruckRepository;
-import org.example.logisticapplication.utils.DriverMapper;
+import org.example.logisticapplication.mapper.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +29,7 @@ public class DriverService {
 
     @Transactional
     public Driver createDriver(
-            Driver driver
+            DriverRegistrationDto driver
     ) {
         if (driverRepository.existsByPersonNumber(driver.personNumber())) {
             throw new IllegalArgumentException(
@@ -38,20 +38,26 @@ public class DriverService {
             );
         }
 
-        var driverEntity = driverMapper.toEntity(driver);
+        var cityEntity = cityRepository.findById(driver.currentCityId()).
+                orElseThrow();
 
-        driverEntity.setCurrentCity(
-                cityRepository.findById(driver.currentCityId()).orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "No City found with id=%s"
-                                        .formatted(driver.currentCityId())
-                        )
-                )
+        var driverEntity = driverMapper.toEntity(driver, cityEntity);
+
+//        if(!driverRepository.existsTruckByDriverId(
+//                driverEntity.getPersonNumber(),
+//                driver.currentTruckName())
+//        ){
+//            throw new IllegalArgumentException("Truck already exists for driver with id=%s"
+//                    .formatted(driverEntity.getId()));
+//        }else{
+//            var truckEntity = truckRepository.findByNumber(driver.currentTruckName()).orElseThrow();
+//            driverEntity.setCurrentTruck(truckEntity);
+//            truckEntity.setDrivers(List.of(driverEntity));
+//        }
+
+        return driverMapper.toDomain(
+                driverRepository.save(driverEntity)
         );
-
-        return driverMapper.toDomain(driverRepository.save(
-                driverEntity
-        ));
     }
 
     @Transactional(readOnly = true)
@@ -75,13 +81,12 @@ public class DriverService {
     public Driver findById(
             Long id
     ) {
-        var driverEntity = driverRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException(
-                        DriverValidHelper.getDEFAULT_MESSAGE().formatted(id)
-                )
-        );
-
-        return driverMapper.toDomain(driverEntity);
+        return driverMapper.toDomain(
+                driverRepository.findById(id).orElseThrow(
+                        () -> new IllegalArgumentException(
+                                DriverValidHelper.getDEFAULT_MESSAGE().formatted(id)
+                        )
+                ));
     }
 
     @Transactional

@@ -1,16 +1,15 @@
-package org.example.logisticapplication.utils;
+package org.example.logisticapplication.mapper;
 
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.City.CityInfoDto;
 import org.example.logisticapplication.domain.Driver.*;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.mapstruct.*;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public interface DriverMapper {
+public  interface DriverMapper {
 
     @Mappings({
             @Mapping(target = "status", defaultValue = "SUSPENDED"),
@@ -19,8 +18,26 @@ public interface DriverMapper {
     DriverEntity toEntity(Driver driver);
 
     @Mappings({
+            @Mapping(target = "id", ignore = true),
+            @Mapping(target = "name", source = "driver.name"),
+            @Mapping(target = "status", expression = "java(getDefaultDriverStatus())"),
+            @Mapping(target = "numberOfHoursWorked", expression = "java(getDefaultNumberOfHoursWorked())"),
+            @Mapping(target = "currentCity", source = "cityEntity")
+    })
+    DriverEntity toEntity(DriverRegistrationDto driver, CityEntity cityEntity);
+
+    @Named("defaultDriverStatus")
+    default String getDefaultDriverStatus() {
+        return DriverStatus.REST.getDisplayName();
+    }
+
+    @Named("defaultNumberOfHoursWorked")
+    default Integer getDefaultNumberOfHoursWorked() {
+        return 0;
+    }
+
+    @Mappings({
             @Mapping(target = "currentCityId", source = "currentCity.id"),
-            @Mapping(target = "currentTruckId", source = "currentTruck.id")
     })
     Driver toDomain(DriverEntity entity);
 

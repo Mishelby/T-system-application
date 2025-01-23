@@ -6,7 +6,7 @@ import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointDto;
 import org.example.logisticapplication.repository.CargoRepository;
 import org.example.logisticapplication.service.RoutePointService;
-import org.example.logisticapplication.utils.RoutePointMapper;
+import org.example.logisticapplication.mapper.RoutePointMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

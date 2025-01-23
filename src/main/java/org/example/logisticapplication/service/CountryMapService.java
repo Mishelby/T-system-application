@@ -8,8 +8,8 @@ import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Distance.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
-import org.example.logisticapplication.utils.CountryMapMapper;
-import org.example.logisticapplication.utils.DistanceMapper;
+import org.example.logisticapplication.mapper.CountryMapMapper;
+import org.example.logisticapplication.mapper.DistanceMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

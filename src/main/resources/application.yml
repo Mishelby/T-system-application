@@ -35,3 +35,6 @@ driver:
 
 truck:
   default-seats: 4
+
+default:
+  number-of-hours-worked: 0

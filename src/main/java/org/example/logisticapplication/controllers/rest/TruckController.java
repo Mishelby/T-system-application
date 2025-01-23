@@ -6,8 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckDto;
 import org.example.logisticapplication.service.TruckService;
-import org.example.logisticapplication.utils.TruckMapper;
-import org.springframework.http.HttpStatus;
+import org.example.logisticapplication.mapper.TruckMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,8 +35,23 @@ public class TruckController {
         log.info("Get request for getting all trucks");
         var allTrucks = truckService.findAll();
 
+        var dtoTrucks = allTrucks.stream()
+                .map(truckMapper::toDto)
+                .toList();
+
+
+        return ResponseEntity.ok(dtoTrucks);
+    }
+
+    @GetMapping("/free-trucks")
+    public ResponseEntity<List<TruckDto>> findFreeTrucks(
+            @RequestParam("cityId") Long cityId
+    ) {
+        log.info("Get request for free trucks");
+        var freeTrucks = truckService.findFreeTrucks(cityId);
+
         return ResponseEntity.ok(
-                allTrucks.stream()
+                freeTrucks.stream()
                         .map(truckMapper::toDto)
                         .toList()
         );
@@ -49,6 +63,7 @@ public class TruckController {
     ) {
         log.info("Get request for getting truck by id: {}", id);
         var truck = truckService.findById(id);
+        log.info("Found truck: {}", truck);
 
         return ResponseEntity.ok(truckMapper.toDto(truck));
     }

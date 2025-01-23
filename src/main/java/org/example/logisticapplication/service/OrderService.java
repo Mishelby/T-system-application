@@ -2,7 +2,6 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
@@ -18,6 +17,7 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
+import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
 import org.springframework.stereotype.Service;
@@ -46,14 +46,6 @@ public class OrderService {
     private final RoutePointMapper routePointMapper;
     private final CargoMapper cargoMapper;
 
-    /**
-     * Creates a new order with the provided base information, truck, and drivers.
-     *
-     * @param createBaseOrder The base information for the order.
-     * @param truckId         The ID of the truck to associate with the order.
-     * @param driversId       A set of driver IDs to associate with the order.
-     * @return An OrderInfo object containing information about the created order.
-     */
     @Transactional
     public OrderInfo createBaseOrder(
             CreateBaseOrder createBaseOrder,
@@ -102,12 +94,6 @@ public class OrderService {
     }
 
 
-    /**
-     * Calculate the total number of hours worked by the drivers for the order and update the driver entities.
-     *
-     * @param createBaseOrder The base information for the order.
-     * @param driverEntities  The list of driver entities associated with the order.
-     */
     private void setNewWorkingHours(
             CreateBaseOrder createBaseOrder,
             List<DriverEntity> driverEntities
@@ -124,12 +110,6 @@ public class OrderService {
         );
     }
 
-    /**
-     * Method for finding trucks and drivers for order
-     *
-     * @param routePointsDto route points for order
-     * @return DriversAndTrucksForOrderDto with drivers and trucks for order
-     */
     @Transactional(readOnly = true)
     public DriversAndTrucksForOrderDto findTrucksAndDriversForOrder(
             List<RoutePointForOrderDto> routePointsDto
@@ -181,12 +161,6 @@ public class OrderService {
         );
     }
 
-    /**
-     * Method for getting order status by id
-     *
-     * @param orderId id of order
-     * @return OrderStatusDto with order status
-     */
     @Transactional(readOnly = true)
     public OrderStatusDto getOrderStatusById(
             Long orderId
@@ -198,14 +172,6 @@ public class OrderService {
         return orderRepository.showOrderStatusByOrderId(orderId);
     }
 
-    /**
-     * Maps the given list of truck entities to a list of TruckInfoDto objects,
-     * which contain the relevant information about each truck.
-     *
-     * @param trucksForOrderByWeight The list of truck entities to be mapped.
-     * @return A list of TruckInfoDto objects containing the relevant information
-     * about each truck in the input list.
-     */
     private List<TruckInfoDto> mapTrucksToDto(
             List<TruckEntity> trucksForOrderByWeight
     ) {
@@ -215,14 +181,6 @@ public class OrderService {
                 .toList();
     }
 
-    /**
-     * Retrieves the CountryMapEntity associated with the loading city specified
-     * in the given CreateBaseOrder.
-     *
-     * @param createBaseOrder The base order containing route point information.
-     * @return The CountryMapEntity for the loading city.
-     * @throws EntityNotFoundException if no country map is found for the city.
-     */
     private CountryMapEntity getCountryMapEntity(
             CreateBaseOrder createBaseOrder
     ) {
@@ -237,13 +195,6 @@ public class OrderService {
     }
 
 
-    /**
-     * Find truck by id, create new TruckOrderEntity and return it in Set
-     *
-     * @param truckId     id of truck
-     * @param orderEntity order entity
-     * @return Set of TruckOrderEntity
-     */
     private Set<TruckOrderEntity> getTruckOrderEntities(
             Long truckId,
             OrderEntity orderEntity
@@ -260,15 +211,6 @@ public class OrderService {
                 );
     }
 
-    /**
-     * Creates a set of DriverOrderEntity instances from a list of DriverEntity and
-     * an OrderEntity.
-     *
-     * @param allDriversById The list of DriverEntity instances.
-     * @param orderEntity    The OrderEntity instance to be associated with the
-     *                       DriverOrderEntity instances.
-     * @return A set of DriverOrderEntity instances.
-     */
     private static Set<DriverOrderEntity> getDriverOrderEntities(
             List<DriverEntity> allDriversById,
             OrderEntity orderEntity
@@ -280,13 +222,6 @@ public class OrderService {
                 .collect(Collectors.toSet());
     }
 
-    /**
-     * Creates a new OrderEntity with a unique number, status set to NOT_COMPLETED
-     * and associates it with the provided CountryMapEntity.
-     *
-     * @param countryMapEntity The CountryMapEntity to be associated with the order.
-     * @return The newly created and saved OrderEntity.
-     */
     private OrderEntity createNewOrder(
             CountryMapEntity countryMapEntity
     ) {
@@ -304,13 +239,6 @@ public class OrderService {
         return orderRepository.save(orderEntity);
     }
 
-    /**
-     * Maps a list of {@link RoutePointInfoDto} to a set of {@link RoutePointEntity} and saves them to the database.
-     *
-     * @param routePointInfoDto a list of route point information
-     * @param orderEntity       the order to which the route points belong
-     * @return a set of the saved route point entities
-     */
     public Set<RoutePointEntity> saveRoutePoints(
             List<RoutePointInfoDto> routePointInfoDto,
             OrderEntity orderEntity
@@ -342,13 +270,6 @@ public class OrderService {
                 .collect(Collectors.toSet());
     }
 
-    /**
-     * Maps a list of {@link DriverEntity} to a list of {@link DriverAllInfoDto}.
-     * The mapping includes the driver's city and truck information.
-     *
-     * @param driversForOrder a list of driver entities
-     * @return a list of driver all info dtos
-     */
     private List<DriverAllInfoDto> mapDriversToDto(
             List<DriverEntity> driversForOrder
     ) {
@@ -364,12 +285,6 @@ public class OrderService {
                 .toList();
     }
 
-    /**
-     * Calculates the total distance of all loading operations in the route points.
-     *
-     * @param routePointsDto list of route points for the order
-     * @return total distance of loading operations
-     */
     private static long getTotalDistance(
             List<RoutePointForOrderDto> routePointsDto
     ) {
@@ -379,12 +294,6 @@ public class OrderService {
                 .sum();
     }
 
-    /**
-     * Calculates the total weight of all cargoes in the route points.
-     *
-     * @param routePointsDto list of route points for the order
-     * @return total weight of all cargoes
-     */
     private static long getTotalWeight(
             List<RoutePointForOrderDto> routePointsDto
     ) {
@@ -395,13 +304,6 @@ public class OrderService {
                 .sum();
     }
 
-    /**
-     * Finds a city entity by its name. If the city is not found, an
-     * {@link EntityNotFoundException} is thrown.
-     *
-     * @param loadingCityName the name of the city to find
-     * @return the city entity
-     */
     private CityEntity findCityEntityByName(
             String loadingCityName
     ) {
@@ -410,13 +312,6 @@ public class OrderService {
                         "No city for loading operation. City name: " + loadingCityName));
     }
 
-    /**
-     * Finds the city name of the first loading operation in the given route points.
-     *
-     * @param routePointsDto list of route points for the order
-     * @return the city name of the first loading operation
-     * @throws IllegalArgumentException if no loading operation is found
-     */
     private static String findLoadingCityName(
             List<RoutePointForOrderDto> routePointsDto
     ) {

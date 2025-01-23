@@ -1,4 +1,4 @@
-package org.example.logisticapplication.utils;
+package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;

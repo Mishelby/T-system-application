@@ -2,12 +2,11 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
-import org.example.logisticapplication.utils.TruckMapper;
+import org.example.logisticapplication.mapper.TruckMapper;
 import org.example.logisticapplication.utils.TruckValidHelper;
 import org.example.logisticapplication.web.TruckDeletionException;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class TruckService {
     private final CityRepository cityRepository;
 
     // Create new truck
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public Truck createNewTruck(
             Truck truck
     ) {
@@ -73,6 +72,7 @@ public class TruckService {
     @Transactional(readOnly = true)
     public List<Truck> findAll() {
         var allTrucks = truckRepository.findAll();
+
         if (allTrucks.isEmpty()) {
             return new ArrayList<>();
         }
@@ -127,5 +127,23 @@ public class TruckService {
         return truckMapper.toDomain(
                 truckRepository.findById(id).orElseThrow()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Truck> findFreeTrucks(
+            Long cityId
+    ) {
+        var freeTrucks = truckRepository.findFreeTrucks(
+                cityId,
+                TruckStatus.SERVICEABLE.name()
+        );
+
+        if(freeTrucks.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return freeTrucks.stream()
+                .map(truckMapper::toDomain)
+                .toList();
     }
 }

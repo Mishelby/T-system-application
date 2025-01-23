@@ -2,11 +2,11 @@ package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverDto;
 import org.example.logisticapplication.domain.Driver.DriverInfoDto;
+import org.example.logisticapplication.domain.Driver.DriverRegistrationDto;
 import org.example.logisticapplication.service.DriverService;
-import org.example.logisticapplication.utils.DriverMapper;
+import org.example.logisticapplication.mapper.DriverMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,8 +47,8 @@ public class DriverController {
     }
 
     @PostMapping
-    public ResponseEntity<DriverDto> addDriver(
-            @RequestBody Driver driver
+    public ResponseEntity<DriverDto> createDriver(
+            @RequestBody DriverRegistrationDto driver
     ) {
         log.info("Get request for save driver driver: {}", driver);
         var savedDriver = driverService.createDriver(driver);

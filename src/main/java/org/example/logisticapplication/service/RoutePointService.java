@@ -6,10 +6,8 @@ import org.example.logisticapplication.domain.RoutePoint.RoutePoint;
 import org.example.logisticapplication.repository.CargoRepository;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.RoutePointRepository;
-import org.example.logisticapplication.utils.RoutePointMapper;
+import org.example.logisticapplication.mapper.RoutePointMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service

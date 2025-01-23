@@ -1,4 +1,4 @@
-package org.example.logisticapplication.utils;
+package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityDto;

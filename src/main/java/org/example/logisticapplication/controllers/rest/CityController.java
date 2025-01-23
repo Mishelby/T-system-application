@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityDto;
 import org.example.logisticapplication.service.CityService;
-import org.example.logisticapplication.utils.CityMapper;
+import org.example.logisticapplication.mapper.CityMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +28,17 @@ public class CityController {
         var newCity = cityService.addNewCity(city);
 
         return ResponseEntity.ok(cityMapper.toDto(newCity));
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<CityDto>> getAllCities() {
+        log.info("Get request for all cities");
+
+        var allCities = cityService.findAllCities();
+
+        return ResponseEntity.ok(allCities.stream()
+                .map(cityMapper::toDto)
+                .toList());
     }
 
     @GetMapping("/{id}")

@@ -1,10 +1,8 @@
-package org.example.logisticapplication.utils;
+package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.Cargo.*;
+import org.example.logisticapplication.utils.CargoNumberGenerator;
 import org.mapstruct.*;
-
-
-import java.util.List;
 
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
