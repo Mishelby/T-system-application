@@ -4,33 +4,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Registration</title>
-    <script src="/driver-registration.js" defer></script></head>
+    <script src="/driver-registration.js" defer></script>
+    <style>
+        /* Основной стиль страницы */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 1.5em;
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        label {
+            font-size: 1.1em;
+            margin-bottom: 0.5em;
+            color: #555;
+            display: block;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 1em;
+            margin-bottom: 1.5em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Стиль для ошибок */
+        #response p {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Стиль для успешных сообщений */
+        #response.success p {
+            color: green;
+        }
+
+        /* Анимация загрузки */
+        .loading {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1em auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Стили для адаптивности */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+
+            form {
+                width: 100%;
+            }
+
+            button {
+                padding: 1em;
+            }
+        }
+    </style>
+</head>
 <body>
-<h1>Register a New Driver</h1>
+<div class="container">
+    <h1>Register a New Driver</h1>
 
-<form id="driver-registration-form" autocomplete="off">
-    <label for="name">First Name:</label>
-    <input type="text" id="name" name="name" required>
-    <br><br>
+    <form id="driver-registration-form" autocomplete="off">
+        <label for="name">First Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br><br>
 
-    <label for="secondName">Last Name:</label>
-    <input type="text" id="secondName" name="secondName" required>
-    <br><br>
+        <label for="secondName">Last Name:</label>
+        <input type="text" id="secondName" name="secondName" required>
+        <br><br>
 
-    <label for="personNumber">Person Number:</label>
-    <input type="number" id="personNumber" name="personNumber" required>
-    <br><br>
+        <label for="personNumber">Person Number:</label>
+        <input type="number" id="personNumber" name="personNumber" required>
+        <br><br>
 
-    <label for="cityName">City:</label>
-    <select id="cityName" name="cityName" required>
-        <option value="" disabled selected>Select a city</option>
-    </select>
-    <br><br>
+        <label for="cityName">City:</label>
+        <select id="cityName" name="cityName" required>
+            <option value="" disabled selected>Select a city</option>
+        </select>
+        <br><br>
 
-    <button type="submit">Submit</button>
-</form>
+        <button type="submit">Submit</button>
+    </form>
 
+    <!-- Индикатор загрузки -->
+    <div class="loading" id="loading-spinner"></div>
 
-<div id="response"></div>
+    <!-- Ответ от сервера -->
+    <div id="response"></div>
+</div>
 </body>
 </html>
+

@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const citySelect = document.getElementById('cityName');
-    const truckSelect = document.getElementById('truckName');
     const form = document.getElementById('driver-registration-form');
     const responseDiv = document.getElementById('response');
+    const loadingSpinner = document.getElementById('loading-spinner');
 
     // Функция для загрузки городов
     async function loadCities() {
         try {
+            loadingSpinner.style.display = 'block'; // Показываем индикатор загрузки
             const response = await fetch('/api/cities');
             if (!response.ok) {
                 throw new Error(`Failed to fetch cities: ${response.statusText}`);
@@ -17,20 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cities.forEach(city => {
                 const option = document.createElement('option');
-                option.value = city.id; // ID города
-                option.textContent = city.name; // Название города
+                option.value = city.id;
+                option.textContent = city.name;
                 citySelect.appendChild(option);
             });
         } catch (error) {
             console.error('Error loading cities:', error);
             responseDiv.innerHTML = `<p style="color: red;">Failed to load cities: ${error.message}</p>`;
+        } finally {
+            loadingSpinner.style.display = 'none'; // Скрываем индикатор загрузки
         }
     }
 
     // Функция для отправки данных о водителе
     async function registerDriver(event) {
         event.preventDefault();
-
         const name = document.getElementById('name').value;
         const secondName = document.getElementById('secondName').value;
         const personNumber = document.getElementById('personNumber').value;
@@ -50,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
+            loadingSpinner.style.display = 'block'; // Показываем индикатор загрузки
             const response = await fetch('/api/drivers', {
                 method: 'POST',
                 headers: {
@@ -60,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 const result = await response.json();
-                responseDiv.innerHTML = `<p>Driver registered successfully: ${JSON.stringify(result)}</p>`;
+                responseDiv.innerHTML = `<p class="success">Driver registered successfully: ${JSON.stringify(result)}</p>`;
                 form.reset();
             } else {
                 const error = await response.text();
@@ -69,15 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error registering driver:', error);
             responseDiv.innerHTML = `<p style="color: red;">Request failed: ${error.message}</p>`;
+        } finally {
+            loadingSpinner.style.display = 'none'; // Скрываем индикатор загрузки
         }
     }
 
-    // Загружаем данные при загрузке страницы
+    // Загружаем города при загрузке страницы
     loadCities();
 
     // Устанавливаем обработчик события для отправки формы
     form.addEventListener('submit', registerDriver);
 });
+
 
 
 
