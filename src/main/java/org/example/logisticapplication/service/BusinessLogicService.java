@@ -26,6 +26,7 @@ public class BusinessLogicService implements DriverLogicService {
     private final DriverMapper driverMapper;
     private final DriverValidHelper driverValidHelper;
     private final DriverShiftRepository driverShiftRepository;
+    private final ShiftSchedulerService shiftSchedulerService;
 
     @Override
     @Transactional
@@ -70,35 +71,35 @@ public class BusinessLogicService implements DriverLogicService {
         BusinessLogicHelper.isValidShiftStatus(status);
 
         var driverEntity = getDriverEntity(driverId);
-        var currentShift = driverShiftRepository.findByDriverId(driverId).orElseThrow(
-                () -> new IllegalStateException("Driver has no active shift")
-        );
+        var currentShift = getDriverShift(driverId);
 
         switch (ShiftStatus.valueOf(status)) {
             case ON_SHIFT -> {
-                if (currentShift.getEndShift() == null) {
+                if (currentShift != null && currentShift.getEndShift() == null) {
                     throw new IllegalStateException("Driver is already on shift and cannot start a new one");
                 }
 
-                var shift = new DriverShift(
-                        driverEntity,
-                        LocalDateTime.now()
-                );
-
+                var shift = new DriverShift(driverEntity, LocalDateTime.now());
                 driverShiftRepository.save(shift);
+
+                shiftSchedulerService.autoCloseExpiredShifts(currentShift);
             }
             case REST -> {
-                if (currentShift.getEndShift() == null) {
+                if (currentShift == null) {
                     throw new IllegalStateException("Cannot end shift: no active shift found for the driver");
+                }
+                if (currentShift.getEndShift() != null) {
+                    throw new IllegalStateException("Cannot end shift: the shift is already ended");
                 }
 
                 var endShift = LocalDateTime.now();
                 currentShift.setEndShift(endShift);
 
                 long workedMinutes = Duration.between(currentShift.getStartShift(), endShift).toMinutes();
-                int totalWorkedHours = driverEntity.getNumberOfHoursWorked();
-                totalWorkedHours += (int) (workedMinutes / 60);
-                driverEntity.setNumberOfHoursWorked(totalWorkedHours);
+                int extraHours = workedMinutes % 60 >= 30 ? 1 : 0;
+                driverEntity.setNumberOfHoursWorked(
+                        driverEntity.getNumberOfHoursWorked() + (int) (workedMinutes / 60) + extraHours
+                );
 
                 driverRepository.save(driverEntity);
             }
@@ -108,12 +109,15 @@ public class BusinessLogicService implements DriverLogicService {
         driverRepository.changeShiftForDriverById(driverId, status);
     }
 
+    private DriverShift getDriverShift(Long driverId) {
+        return driverShiftRepository.findByDriverId(driverId).orElse(null);
+    }
+
     private DriverEntity getDriverEntity(Long driverId) {
         return driverRepository.findById(driverId).orElseThrow(
                 () -> new EntityNotFoundException("Driver with id=%s not found".formatted(driverId))
         );
     }
-
 
     @Transactional
     public void changeDriverStatus(
