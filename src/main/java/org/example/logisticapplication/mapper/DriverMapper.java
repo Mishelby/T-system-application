@@ -3,6 +3,7 @@ package org.example.logisticapplication.mapper;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.City.CityInfoDto;
 import org.example.logisticapplication.domain.Driver.*;
+import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.mapstruct.*;
 
@@ -28,7 +29,7 @@ public  interface DriverMapper {
 
     @Named("defaultDriverStatus")
     default String getDefaultDriverStatus() {
-        return DriverStatus.REST.getDisplayName();
+        return ShiftStatus.REST.getStatusName();
     }
 
     @Named("defaultNumberOfHoursWorked")

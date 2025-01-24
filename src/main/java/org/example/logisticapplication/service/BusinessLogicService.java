@@ -76,7 +76,7 @@ public class BusinessLogicService implements DriverLogicService {
 
         switch (ShiftStatus.valueOf(status)) {
             case ON_SHIFT -> {
-                if (currentShift != null && currentShift.getEndShift() == null) {
+                if (currentShift.getEndShift() == null) {
                     throw new IllegalStateException("Driver is already on shift and cannot start a new one");
                 }
 
@@ -88,19 +88,19 @@ public class BusinessLogicService implements DriverLogicService {
                 driverShiftRepository.save(shift);
             }
             case REST -> {
-                if (currentShift == null || currentShift.getEndShift() == null) {
+                if (currentShift.getEndShift() == null) {
                     throw new IllegalStateException("Cannot end shift: no active shift found for the driver");
                 }
 
                 var endShift = LocalDateTime.now();
                 currentShift.setEndShift(endShift);
 
+                long workedMinutes = Duration.between(currentShift.getStartShift(), endShift).toMinutes();
                 int totalWorkedHours = driverEntity.getNumberOfHoursWorked();
-                totalWorkedHours += (int) Math.floor(
-                        Duration.between(currentShift.getStartShift(),
-                                endShift).toMinutes() / 60.0
-                );
+                totalWorkedHours += (int) (workedMinutes / 60);
                 driverEntity.setNumberOfHoursWorked(totalWorkedHours);
+
+                driverRepository.save(driverEntity);
             }
             default -> throw new IllegalStateException("Invalid shift status: %s".formatted(status));
         }
