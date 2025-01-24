@@ -18,7 +18,6 @@ import java.util.Set;
 @Slf4j
 public class OrderController {
     private final OrderService orderService;
-//    private final OrderMapper orderMapper;
 
     @PostMapping("/create-order")
     public ResponseEntity<OrderInfo> createOrder(
@@ -33,12 +32,6 @@ public class OrderController {
                 .body(newOrder);
     }
 
-//    @PostMapping("/{id}")
-//    public ResponseEntity<OrderDto> addRoutePoints(
-//            @PathVariable("id") Long orderId
-//    ) {
-//        return null;
-//    }
 
     @GetMapping("/trucks-drivers")
     public ResponseEntity<DriversAndTrucksForOrderDto> getTruckAndDriversForOrder(

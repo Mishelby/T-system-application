@@ -29,5 +29,10 @@ public class DriverShift {
     @Column(name = "hours_worked")
     private Integer hoursWorked;
 
+    public DriverShift(DriverEntity driver, LocalDateTime startShift) {
+        this.driver = driver;
+        this.startShift = startShift;
+    }
+
     public DriverShift() {}
 }

@@ -1,6 +1,7 @@
 package org.example.logisticapplication.utils;
 
 import org.example.logisticapplication.domain.Driver.DriverStatus;
+import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -13,14 +14,25 @@ public class BusinessLogicHelper {
      *
      * @param status the status to be validated
      */
-    public static void isValidStatus(String status) {
+    public static void isValidShiftStatus(String status) {
+        boolean isValid = Arrays.stream(ShiftStatus.values())
+                .anyMatch(value -> value.name().equalsIgnoreCase(status));
+
+        if (!isValid) {
+            throw new IllegalArgumentException(
+                    "Invalid shift status = %s"
+                            .formatted(status)
+            );
+        }
+    }
+
+    public static void isValidDriverStatus(String status) {
         boolean isValid = Arrays.stream(DriverStatus.values())
                 .anyMatch(value -> value.name().equalsIgnoreCase(status));
 
-        // If the status is not valid, throw an exception
         if (!isValid) {
             throw new IllegalArgumentException(
-                    "Invalid status value =%s"
+                    "Invalid driver status = %s"
                             .formatted(status)
             );
         }

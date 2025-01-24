@@ -1,8 +1,6 @@
 package org.example.logisticapplication.domain.Driver;
 
 public enum DriverStatus {
-    REST("REST"),
-    ON_SHIFT("ON_SHIFT"),
     DRIVING("DRIVING"),
     THE_SECOND_DRIVER("THE_SECOND_DRIVER"),
     LOADING_UNLOADING_OPERATIONS("LOADING_UNLOADING_OPERATIONS");

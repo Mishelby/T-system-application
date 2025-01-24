@@ -2,6 +2,7 @@ package org.example.logisticapplication.utils;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.repository.DriverRepository;
@@ -10,15 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DriverValidHelper {
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
 
-    @Value("${truck.default-seats}")
     @Getter
-    private static int defaultTruckSeats;
+    @Value("${truck.default-seats}")
+    private int defaultTruckSeats;
 
     @Getter
     private static final String DEFAULT_MESSAGE = "Driver does not exist with id=%s";
@@ -72,6 +75,15 @@ public class DriverValidHelper {
     public void validateTruckHasAvailableSeats(
             TruckEntity truckEntity
     ) {
+
+        if(truckEntity.getDrivers() == null){
+            log.warn("Drivers collection is null for truck id={}",truckEntity.getId());
+            throw new IllegalArgumentException("Truck data is incomplete");
+        }
+
+        log.info("Truck entity drivers size before validation: {}", truckEntity.getDrivers().size());
+        log.info("Default truck seats before validation: {}", defaultTruckSeats);
+
         if (truckEntity.getDrivers().size() >= getDefaultTruckSeats()) {
             throw new IllegalArgumentException(
                     "There are no seats in the current truck with id=%s"
