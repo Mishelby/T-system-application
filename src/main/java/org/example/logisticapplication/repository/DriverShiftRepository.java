@@ -9,7 +9,12 @@ import java.util.Optional;
 
 public interface DriverShiftRepository extends JpaRepository<DriverShift, Long> {
 
-    @Query("SELECT ds FROM DriverShift ds WHERE ds.driver.id = :driverId")
+    @Query("""
+            SELECT ds 
+            FROM DriverShift ds 
+            WHERE ds.driver.id = :driverId
+            AND ds.endShift IS NULL
+            """)
     Optional<DriverShift> findByDriverId(
             @Param("driverId") Long driverId
     );

@@ -40,7 +40,7 @@ public class ShiftSchedulerService {
 
     private void closeShift(DriverShift driverShift) {
         if (driverShift.getEndShift() != null) {
-            log.info("Shift already closed for driver: " + driverShift.getDriver().getId());
+            log.info("Shift already closed for driver: {}", driverShift.getDriver().getId());
             return;
         }
 
@@ -48,23 +48,26 @@ public class ShiftSchedulerService {
             var endShift = driverShift.getStartShift().plusHours(12);
             driverShift.setEndShift(endShift);
 
-            var driverEntity = driverShift.getDriver();
-            var totalWorkedHours = driverEntity.getNumberOfHoursWorked();
-            totalWorkedHours += (int) Duration.between(driverShift.getStartShift(), endShift).toHours();
-            driverEntity.setNumberOfHoursWorked(totalWorkedHours);
+            var driver = driverShift.getDriver();
+
+            var workedMinutes = Duration.between(driverShift.getStartShift(), endShift).toMinutes();
+            var extraHours = workedMinutes % 60 >= 30 ? 1 : 0;
+
+            var totalWorkedHours = driver.getNumberOfHoursWorked() + (int) (workedMinutes / 60) + extraHours;
+            driver.setNumberOfHoursWorked(totalWorkedHours);
 
             driverShiftRepository.save(driverShift);
-            driverRepository.save(driverEntity);
+            driverRepository.save(driver);
 
-            log.info("Shift closed for driver: %s".formatted(driverEntity.getId()));
+            log.info("Shift closed for driver: {}", driver.getId());
         } catch (Exception e) {
-            log.warn("Error while closing shift: %s".formatted(e.getMessage()));
+            log.error("Error while closing shift for driver {}: {}", driverShift.getDriver().getId(), e.getMessage(), e);
         }
     }
 
     @Transactional
     public void updateExecutorServiceBasedOnDriversInShift() {
-        Integer driversInShift = driverRepository.findDriversInShift(ShiftStatus.ON_SHIFT.name());
+        var driversInShift = driverRepository.findDriversInShift(ShiftStatus.ON_SHIFT.name());
         int poolSize = Math.max(driversInShift, 1);
 
         executorService.shutdown();

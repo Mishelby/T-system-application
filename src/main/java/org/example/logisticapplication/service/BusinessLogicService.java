@@ -13,8 +13,10 @@ import org.example.logisticapplication.utils.BusinessLogicHelper;
 import org.example.logisticapplication.mapper.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -27,6 +29,9 @@ public class BusinessLogicService implements DriverLogicService {
     private final DriverValidHelper driverValidHelper;
     private final DriverShiftRepository driverShiftRepository;
     private final ShiftSchedulerService shiftSchedulerService;
+
+    private final Clock clock = Clock.systemDefaultZone();
+
 
     @Override
     @Transactional
@@ -75,11 +80,12 @@ public class BusinessLogicService implements DriverLogicService {
 
         switch (ShiftStatus.valueOf(status)) {
             case ON_SHIFT -> {
+                // TODO нужна ли эта проверка?
                 if (currentShift != null && currentShift.getEndShift() == null) {
-                    throw new IllegalArgumentException("Driver already on shift: %s".formatted(driverId));
+                    throw new TransactionSystemException("Driver already on shift: %s".formatted(driverId));
                 }
 
-                var newShift = new DriverShift(driverEntity, LocalDateTime.now());
+                var newShift = new DriverShift(driverEntity, LocalDateTime.now(clock));
 
                 driverShiftRepository.save(newShift);
                 shiftSchedulerService.autoCloseExpiredShifts(currentShift);
@@ -92,14 +98,11 @@ public class BusinessLogicService implements DriverLogicService {
                     throw new IllegalArgumentException("Driver already rested: %s".formatted(driverId));
                 }
 
-                var endShift = LocalDateTime.now();
+                var endShift = LocalDateTime.now(clock);
                 currentShift.setEndShift(endShift);
 
-                long workedMinutes = Duration.between(currentShift.getStartShift(), endShift).toMinutes();
-                int extraHours = workedMinutes % 60 >= 30 ? 1 : 0;
-                driverEntity.setNumberOfHoursWorked(
-                        driverEntity.getNumberOfHoursWorked() + (int) (workedMinutes / 60) + extraHours
-                );
+                var workedMinutes = Duration.between(currentShift.getStartShift(), endShift);
+                driverEntity.setNumberOfHoursWorked(calculateWorkHours(workedMinutes));
 
                 driverRepository.save(driverEntity);
             }
@@ -107,6 +110,12 @@ public class BusinessLogicService implements DriverLogicService {
         }
 
         driverRepository.changeShiftForDriverById(driverId, status);
+    }
+
+    private int calculateWorkHours(Duration workedDuration) {
+        long minutes = workedDuration.toMinutes();
+        int extraHours = minutes % 60 >= 30 ? 1 : 0;
+        return (int) (minutes / 60) + extraHours;
     }
 
     private DriverShift getDriverShift(Long driverId) {

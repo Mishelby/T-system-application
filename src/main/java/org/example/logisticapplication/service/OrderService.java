@@ -78,8 +78,6 @@ public class OrderService {
         orderEntity.setDriverOrders(drivers);
         orderEntity.setTruckOrders(truckEntitySet);
 
-//        setNewWorkingHours(createBaseOrder, allDriversById);
-
         // Save and update the order entity in the repository
         var updatedOrder = orderRepository.save(orderEntity);
 
@@ -92,22 +90,6 @@ public class OrderService {
         );
     }
 
-
-//    private void setNewWorkingHours(
-//            CreateBaseOrder createBaseOrder,
-//            List<DriverEntity> driverEntities
-//    ) {
-//        // Sum up distances of all route points
-//        var sumOfHours = createBaseOrder.routePointInfoDto()
-//                .stream()
-//                .map(RoutePointInfoDto::distance)
-//                .reduce(0, Integer::sum);
-//
-//        // Update the drivers with the calculated number of hours worked
-//        driverEntities.forEach(driver -> driver.setNumberOfHoursWorked(
-//                (int) (sumOfHours / defaultValues.getAverageSpeed()))
-//        );
-//    }
 
     @Transactional(readOnly = true)
     public DriversAndTrucksForOrderDto findTrucksAndDriversForOrder(
