@@ -99,11 +99,9 @@ public class BusinessLogicService implements DriverLogicService {
                 }
 
                 var endShift = LocalDateTime.now(clock);
-                currentShift.setEndShift(endShift);
+                updateShiftAndDriver(currentShift, endShift, driverEntity);
 
-                var workedMinutes = Duration.between(currentShift.getStartShift(), endShift);
-                driverEntity.setNumberOfHoursWorked(calculateWorkHours(workedMinutes));
-
+                driverShiftRepository.save(currentShift);
                 driverRepository.save(driverEntity);
             }
             default -> throw new IllegalArgumentException("Invalid shift status: %s".formatted(status));
@@ -112,10 +110,21 @@ public class BusinessLogicService implements DriverLogicService {
         driverRepository.changeShiftForDriverById(driverId, status);
     }
 
-    private int calculateWorkHours(Duration workedDuration) {
+    private static void updateShiftAndDriver(
+            DriverShift currentShift,
+            LocalDateTime endShift,
+            DriverEntity driverEntity
+    ) {
+        var workedDuration = Duration.between(currentShift.getStartShift(), endShift);
         long minutes = workedDuration.toMinutes();
         int extraHours = minutes % 60 >= 30 ? 1 : 0;
-        return (int) (minutes / 60) + extraHours;
+        int countOfWorkedHours = (int) (minutes / 60) + extraHours;
+
+        currentShift.setEndShift(endShift);
+        currentShift.setHoursWorked(countOfWorkedHours);
+        driverEntity.setNumberOfHoursWorked(
+                driverEntity.getNumberOfHoursWorked() + countOfWorkedHours
+        );
     }
 
     private DriverShift getDriverShift(Long driverId) {

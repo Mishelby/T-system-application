@@ -30,7 +30,7 @@ public class CargoController {
         return ResponseEntity.ok(cargoMapper.toDto(newCargo));
     }
 
-    @GetMapping("{id}/status")
+    @GetMapping("/{id}/status")
     public ResponseEntity<List<CargoStatusDto>> getCargoStatus(
             @PathVariable Long id
     ) {
