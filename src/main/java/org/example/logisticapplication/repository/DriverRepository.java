@@ -143,4 +143,13 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("total") Long total
     );
 
+    @Query("""
+            SELECT COUNT(d) 
+            FROM DriverEntity d 
+            WHERE d.status = :status
+            """)
+    Integer findDriversInShift(
+            @Param("status") String status
+    );
+
 }
