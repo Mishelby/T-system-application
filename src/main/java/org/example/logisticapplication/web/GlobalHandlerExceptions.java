@@ -36,16 +36,6 @@ public class GlobalHandlerExceptions {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    private static String constructMethodArgumentNotValidMessage(
-            MethodArgumentNotValidException ex
-    ) {
-        return ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> error.getField() + " " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-    }
-
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             EntityNotFoundException ex
@@ -57,6 +47,19 @@ public class GlobalHandlerExceptions {
         );
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = UserNotFoundExecution.class)
+    public ResponseEntity<String> userNotFoundExecution(
+            UserNotFoundExecution ex
+    ){
+//        var response = new ErrorMessageResponse(
+//                "User not found!",
+//                ex.getMessage(),
+//                LocalDateTime.now()
+//        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(value = NoSuchElementException.class)
@@ -96,5 +99,15 @@ public class GlobalHandlerExceptions {
         );
 
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    private static String constructMethodArgumentNotValidMessage(
+            MethodArgumentNotValidException ex
+    ) {
+        return ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + " " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
     }
 }

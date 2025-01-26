@@ -25,9 +25,6 @@ public class RoutePointEntity {
     @JoinColumn(name = "city_id")
     private CityEntity city;
 
-//    @Version
-//    private Long version;
-
     @Column(name = "operation_type")
     @Pattern(regexp = "LOADING|UNLOADING", message = "Invalid operation type")
     private String operationType;

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информация о водителе</title>
+    <style>
+        /* Общие стили для страницы */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+
+        /* Основной контейнер */
+        .container {
+            width: 80%;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        /* Информационные блоки */
+        .info {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .info p {
+            margin: 12px 0;
+        }
+
+        .info strong {
+            color: #555;
+        }
+
+        /* Стиль для блока заказа */
+        .order-info {
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-info h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .order-info ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .order-info ul li {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f2f2f2;
+            border-radius: 6px;
+        }
+
+        .order-info ul li p {
+            margin: 5px 0;
+        }
+
+        .order-info ul li strong {
+            color: #4CAF50;
+        }
+
+        /* Стиль для информации о грузе и грузовиках */
+        .cargo-info, .truck-info {
+            margin-top: 20px;
+        }
+
+        .cargo-info li, .truck-info li {
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .cargo-info li p, .truck-info li p {
+            margin: 5px 0;
+        }
+
+        /* Стили для кнопки возврата */
+        a {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 30px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #45a049;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .order-info h2 {
+                font-size: 20px;
+            }
+
+            .info p {
+                font-size: 14px;
+            }
+
+            .cargo-info li, .truck-info li {
+                font-size: 14px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Информация о водителе</h1>
+
+    <div class="info">
+        <p><strong>Имя:</strong> <span th:text="${driverInfo.name}"></span></p>
+        <p><strong>Телефон:</strong> <span th:text="${driverInfo.phone}"></span></p>
+
+        <!-- Информация о заказе -->
+        <div class="order-info">
+            <h2>Информация о заказе</h2>
+            <p><strong>Уникальный номер заказа:</strong> <span th:text="${driverInfo.orderInfoDto.uniqueNumber}"></span></p>
+            <p><strong>Статус заказа:</strong> <span th:text="${driverInfo.orderInfoDto.orderStatus}"></span></p>
+            <p><strong>Название карты округа:</strong> <span th:text="${driverInfo.orderInfoDto.countyMapName}"></span></p>
+
+            <h3>Маршрутные точки:</h3>
+            <ul class="route-points">
+                <li th:each="routePoint : ${driverInfo.orderInfoDto.routePoints}">
+                    <p><strong>Город:</strong> <span th:text="${routePoint.cityName}"></span></p>
+                    <p><strong>Тип операции:</strong> <span th:text="${routePoint.operationType}"></span></p>
+                    <p><strong>Расстояние:</strong> <span th:text="${routePoint.distance}"></span> км</p>
+
+                    <h4>Грузовая информация:</h4>
+                    <ul class="cargo-info">
+                        <li th:each="cargo : ${routePoint.cargoInfo}">
+                            <p><strong>Номер:</strong> <span th:text="${cargo.number}"></span></p>
+                            <p><strong>Название:</strong> <span th:text="${cargo.name}"></span></p>
+                            <p><strong>Вес:</strong> <span th:text="${cargo.weightKg}"></span> кг</p>
+                            <p><strong>Статус:</strong> <span th:text="${cargo.status}"></span></p>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Грузовики в заказе:</h3>
+            <ul class="truck-info">
+                <li th:each="truck : ${driverInfo.orderInfoDto.truckOrder}">
+                    <p><strong>Регистрационный номер:</strong> <span th:text="${truck.registrationNumber}"></span></p>
+                    <p><strong>Смены водителя:</strong> <span th:text="${truck.driversShift}"></span></p>
+                    <p><strong>Статус:</strong> <span th:text="${truck.status}"></span></p>
+                    <p><strong>Вместимость:</strong> <span th:text="${truck.capacity}"></span> куб.м.</p>
+                    <p><strong>Текущее местоположение:</strong> <span th:text="${truck.currentCityName}"></span></p>
+                </li>
+            </ul>
+        </div>
+
+        <a href="/driver/login">Вернуться на страницу логина</a>
+    </div>
+</div>
+
+</body>
+</html>
+
+
+
+
+
+
+

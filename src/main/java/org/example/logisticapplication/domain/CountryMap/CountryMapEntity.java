@@ -1,16 +1,11 @@
 package org.example.logisticapplication.domain.CountryMap;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Distance.DistanceEntity;
-import org.springframework.data.jpa.repository.EntityGraph;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -35,7 +30,7 @@ public class CountryMapEntity {
     @OneToMany(mappedBy = "countryMap", fetch = FetchType.LAZY)
     private Set<CityEntity> cities;
 
-    @OneToMany(mappedBy = "countryMap", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "countryMap", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<DistanceEntity> distances;
 
 

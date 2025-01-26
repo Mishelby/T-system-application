@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -32,4 +33,14 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             LEFT JOIN FETCH o.truckOrders             
             """)
     List<OrderEntity> findLast(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"countryMap"})
+    @Query("""
+            SELECT o FROM OrderEntity o
+            LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
+            WHERE doe.driver.id = :driverId
+            """)
+    Optional<OrderEntity> findOrderEntitiesByDriverId(
+            @Param("driverId") Long driverId
+    );
 }

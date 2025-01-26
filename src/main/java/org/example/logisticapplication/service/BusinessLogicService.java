@@ -116,9 +116,9 @@ public class BusinessLogicService implements DriverLogicService {
             DriverEntity driverEntity
     ) {
         var workedDuration = Duration.between(currentShift.getStartShift(), endShift);
-        long minutes = workedDuration.toMinutes();
-        int extraHours = minutes % 60 >= 30 ? 1 : 0;
-        int countOfWorkedHours = (int) (minutes / 60) + extraHours;
+        var minutes = workedDuration.toMinutes();
+        var extraHours = minutes % 60 >= 30 ? 1 : 0;
+        var countOfWorkedHours = (int) (minutes / 60) + extraHours;
 
         currentShift.setEndShift(endShift);
         currentShift.setHoursWorked(countOfWorkedHours);

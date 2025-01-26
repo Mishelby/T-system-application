@@ -2,20 +2,29 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
+import org.example.logisticapplication.domain.Distance.DistanceEntity;
 import org.example.logisticapplication.domain.Driver.*;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
+import org.example.logisticapplication.domain.Order.OrderEntity;
+import org.example.logisticapplication.domain.Order.OrderMainInfo;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.domain.Truck.TruckInfoDto;
+import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
+import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.OrderRepository;
 import org.example.logisticapplication.repository.TruckRepository;
-import org.example.logisticapplication.mapper.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +35,9 @@ public class DriverService {
     private final DriverMapper driverMapper;
     private final CityRepository cityRepository;
     private final OrderRepository orderRepository;
+    private final RoutePointMapper routePointMapper;
+    private final CargoMapper cargoMapper;
+    private final TruckMapper truckMapper;
 
     @Transactional
     public Driver createDriver(
@@ -43,17 +55,6 @@ public class DriverService {
 
         var driverEntity = driverMapper.toEntity(driver, cityEntity);
 
-//        if(!driverRepository.existsTruckByDriverId(
-//                driverEntity.getPersonNumber(),
-//                driver.currentTruckName())
-//        ){
-//            throw new IllegalArgumentException("Truck already exists for driver with id=%s"
-//                    .formatted(driverEntity.getId()));
-//        }else{
-//            var truckEntity = truckRepository.findByNumber(driver.currentTruckName()).orElseThrow();
-//            driverEntity.setCurrentTruck(truckEntity);
-//            truckEntity.setDrivers(List.of(driverEntity));
-//        }
 
         return driverMapper.toDomain(
                 driverRepository.save(driverEntity)
@@ -137,39 +138,119 @@ public class DriverService {
     }
 
     @Transactional(readOnly = true)
-    public DriverInfoDto getInfoForDriver(
-            Long orderId
+    public DriverInfo getDriverInfo(
+            Long driverId
     ) {
+        var driverEntity = driverRepository.findById(driverId).orElseThrow();
+        var orderEntity = orderRepository.findOrderEntitiesByDriverId(driverEntity.getId()).orElse(null);
 
-        var orderEntity = orderRepository.findById(orderId).orElseThrow(
-                () -> new IllegalArgumentException(
-                        "Order does not exist with id=%s"
-                                .formatted(orderId)
-                )
-        );
-
-        var driversForOrderId = driverRepository.findDriversForOrderId(orderId);
-
-        if (orderEntity.getDriverOrders().size() != driversForOrderId.size()) {
-            throw new IllegalArgumentException(
-                    "Order does not contain drivers with id=%s"
-                            .formatted(orderId)
+        if (orderEntity == null) {
+            return new DriverMainInfoWithoutOrder(
+                    driverEntity.getName(),
+                    driverEntity.getPersonNumber().toString(),
+                    "No orders"
             );
         }
 
-        var firstDriver = driversForOrderId.getFirst();
+        var routePointInfoDto = getRoutePointInfoDto(orderEntity, driverEntity);
+        var truckInfoDto = getTruckInfoDto(orderEntity);
+        var orderMainInfo = getOrderMainInfo(orderEntity, routePointInfoDto, truckInfoDto);
+
+        return new DriverMainInfoDto(
+                driverEntity.getName(),
+                driverEntity.getPersonNumber().toString(),
+                orderMainInfo
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public DriverInfoDto getInfoForDriver(
+            Long driverId
+    ) {
+        var driverEntity = driverRepository.findById(driverId).orElseThrow();
+        var orderEntity = getOrderEntity(driverId);
+
+        var allDriverInOrder = orderEntity.getDriverOrders()
+                .stream()
+                .filter(driverOrderEntity -> !driverOrderEntity.getDriver().getId().equals(driverId))
+                .flatMap(dor -> dor.getDriver().getCurrentTruck().getDrivers().stream())
+                .toList();
+
+        var firstDriver = allDriverInOrder.getFirst();
 
         return new DriverInfoDto(
-                firstDriver.getPersonNumber().toString(),
-                firstDriver.getCurrentTruck().getDrivers()
-                        .stream()
-                        .filter(driver -> !driver.getId().equals(firstDriver.getId()))
-                        .map(DriverEntity::getPersonNumber)
-                        .map(String::valueOf).collect(Collectors.toSet()),
+                driverEntity.getPersonNumber().toString(),
+                getNumbersAnotherDrivers(allDriverInOrder),
                 firstDriver.getCurrentTruck().getRegistrationNumber(),
                 orderEntity.getUniqueNumber(),
-                orderEntity.getRoutePoints().stream().map(RoutePointEntity::getId).toList()
+                getRoutePointInfoDto(orderEntity, driverEntity)
         );
+    }
+
+    private static OrderMainInfo getOrderMainInfo(
+            OrderEntity orderEntity,
+            List<RoutePointInfoDto> routePointInfoDto,
+            List<TruckInfoDto> truckInfoDto
+    ) {
+        return new OrderMainInfo(
+                orderEntity.getUniqueNumber(),
+                orderEntity.getStatus(),
+                orderEntity.getCountryMap().getCountryName(),
+                routePointInfoDto,
+                truckInfoDto
+        );
+    }
+
+    private List<TruckInfoDto> getTruckInfoDto(
+            OrderEntity orderEntity
+    ) {
+        return orderEntity.getTruckOrders()
+                .stream()
+                .map(TruckOrderEntity::getTruck)
+                .map(truckMapper::toInfoDto)
+                .toList();
+    }
+
+    private OrderEntity getOrderEntity(Long orderId) {
+        return orderRepository.findOrderEntitiesByDriverId(orderId).orElseThrow(
+                () -> new IllegalArgumentException(
+                        "Order does not exist with id = %s"
+                                .formatted(orderId)
+                )
+        );
+    }
+
+    private List<RoutePointInfoDto> getRoutePointInfoDto(
+            OrderEntity orderEntity,
+            DriverEntity driverEntity
+    ) {
+        var distanceEntity = orderEntity.getCountryMap().getDistances()
+                .stream()
+                .filter(distances -> distances.getFromCity().getId().equals(driverEntity.getCurrentCity().getId()))
+                .findFirst().orElseThrow(
+                        () -> new IllegalArgumentException("No distances for city with %s and %s")
+                );
+
+        var routePointInfoDto = orderEntity.getRoutePoints().stream()
+                .map(rp -> {
+                    var cargoInfoDtoSet = rp.getCargo().stream()
+                            .map(cargoMapper::toDtoInfo)
+                            .collect(Collectors.toSet());
+
+                    return routePointMapper.toInfoDto(rp, cargoInfoDtoSet);
+                })
+                .toList();
+
+        routePointInfoDto.forEach(rp -> rp.setDistance(distanceEntity.getDistance()));
+
+        return routePointInfoDto;
+    }
+
+    private static Set<String> getNumbersAnotherDrivers(List<DriverEntity> drivers) {
+        return drivers.stream()
+                .map(DriverEntity::getPersonNumber)
+                .map(Object::toString)
+                .collect(Collectors.toSet());
     }
 
 }

@@ -12,4 +12,5 @@ public class RegistrationViewController {
     public String redirectToDriverCreation() {
         return "redirect:/driver/create";
     }
+
 }

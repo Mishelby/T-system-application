@@ -26,17 +26,16 @@ public class DistanceEntity {
     private CityEntity toCity;
 
     @Column(name = "distance", nullable = false)
-    private Integer distance;
+    private Long distance;
 
     @ManyToOne
     @JoinColumn(name = "country_map_id", nullable = false)
     private CountryMapEntity countryMap;
 
-
     public DistanceEntity(
             CityEntity fromCity,
             CityEntity toCity,
-            Integer distance,
+            Long distance,
             CountryMapEntity countryMap
     ) {
         this.fromCity = fromCity;

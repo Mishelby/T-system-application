@@ -168,9 +168,9 @@ public class OrderService {
         // Stream through route points to find the first loading operation
         return createBaseOrder.routePointInfoDto()
                 .stream()
-                .filter(rp -> rp.operationType().equals(OperationType.LOADING.name()))
+                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
                 .findFirst()
-                .map(RoutePointInfoDto::cityName)
+                .map(RoutePointInfoDto::getCityName)
                 .flatMap(countryMapRepository::findByCityName)
                 .orElseThrow(() -> new EntityNotFoundException("Country map for city not found"));
     }
@@ -229,16 +229,16 @@ public class OrderService {
                 .stream()
                 .map(rp -> {
                     // Get the cargo entities for the route point
-                    var cargoEntityList = rp.cargoInfo()
+                    var cargoEntityList = rp.getCargoInfo()
                             .stream()
                             .map(cargoMapper::toEntity)
                             .toList();
 
                     // Get the city entity for the route point
-                    var cityEntity = cityRepository.findCityEntityByName(rp.cityName())
+                    var cityEntity = cityRepository.findCityEntityByName(rp.getCityName())
                             .orElseThrow(
                                     () -> new EntityNotFoundException("City with name = %s not found"
-                                            .formatted(rp.cityName()))
+                                            .formatted(rp.getCityName()))
                             );
 
                     // Create a new route point entity and set its order
@@ -304,4 +304,10 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("No loading operation found"));
     }
 
+    public static Long calculationTimeToOrder(
+            Long distance,
+            Long averageSpeed
+    ){
+      return Math.ceilDiv(distance, averageSpeed);
+    }
 }

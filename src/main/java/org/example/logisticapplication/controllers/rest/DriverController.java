@@ -2,9 +2,7 @@ package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.logisticapplication.domain.Driver.DriverDto;
-import org.example.logisticapplication.domain.Driver.DriverInfoDto;
-import org.example.logisticapplication.domain.Driver.DriverRegistrationDto;
+import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.service.DriverService;
 import org.example.logisticapplication.mapper.DriverMapper;
 import org.springframework.http.ResponseEntity;
@@ -36,14 +34,13 @@ public class DriverController {
         );
     }
 
-    @GetMapping("/get-info/{orderId}")
-    public ResponseEntity<DriverInfoDto> findById(
-            @PathVariable("orderId") Long orderId
-
+    @GetMapping("/driver/{driverId}")
+    public ResponseEntity<DriverInfo> findInformationById(
+            @PathVariable("driverId") Long driverId
     ) {
         log.info("Get request for get info for driver by id");
 
-        return ResponseEntity.ok(driverService.getInfoForDriver(orderId));
+        return ResponseEntity.ok(driverService.getDriverInfo(driverId));
     }
 
     @PostMapping

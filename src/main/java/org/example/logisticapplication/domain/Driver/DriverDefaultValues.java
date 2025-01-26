@@ -11,15 +11,12 @@ import org.springframework.stereotype.Component;
 public class DriverDefaultValues {
     private Long averageSpeed;
     private Integer numberOfHoursWorkedLimit;
-    private static Integer defaultNumberOfHoursWorked;
 
     public DriverDefaultValues(
             @Value("${driver.defaultAverageSpeed}")
             Long averageSpeed,
             @Value("${driver.defaultNumberOfHoursWorkedLimit}")
-            Integer numberOfHoursWorkedLimit,
-            @Value("${default.number-of-hours-worked}")
-            Integer defaultNumberOfHoursWorked
+            Integer numberOfHoursWorkedLimit
 
     ) {
         this.averageSpeed = averageSpeed;

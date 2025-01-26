@@ -2,6 +2,7 @@ package org.example.logisticapplication.domain.Driver;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 
 import java.util.List;
 import java.util.Set;
@@ -16,9 +17,8 @@ public record DriverInfoDto(
         @JsonProperty("regTruckNumber")
         String registrationTruckNumber,
 
-        String orderId,
+        String orderNumber,
 
-        List<Long> routePointsId
+        List<RoutePointInfoDto> routePoints
 ) {
-
 }

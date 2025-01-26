@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -152,4 +153,8 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("status") String status
     );
 
+    List<DriverEntity> findDriverEntityByName(String name);
+
+    @Query("SELECT d FROM DriverEntity d WHERE d.personNumber = :personNumber")
+    Optional<DriverEntity> findDriverEntityByPersonNumber(Long personNumber);
 }
