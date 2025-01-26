@@ -15,7 +15,7 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
     @PostMapping("/login")
-    public ResponseEntity<Boolean> checkRegistration(
+    public ResponseEntity<String> checkRegistration(
             @RequestBody @Valid UserParamDto userParamDto
     ) {
         log.info("User data for checking: {}", userParamDto);
@@ -25,4 +25,16 @@ public class RegistrationController {
                         userParamDto
                 ));
     }
+
+    @PostMapping("/current-id")
+    public ResponseEntity<Long> getCurrentId(
+            @RequestBody Long userNumber
+    ) {
+        log.info("Get current id for user number: {}", userNumber);
+        var driverId = registrationService.getDriverIdByUserNumber(userNumber);
+
+        return ResponseEntity.ok()
+                .body(driverId);
+    }
+
 }

@@ -22,21 +22,16 @@ public class DriverInfoViewController {
             Model model
     ) {
         log.info("Fetching driver info for id={}", id);
+        var driverInfo = driverService.getDriverInfo(id);
 
-        try {
-            var driverInfo = driverService.getDriverInfo(id);
-            if(driverInfo.getCurrentOrder()){
-                model.addAttribute("driverInfo", driverInfo);
-                return "driver-info";
-            }else{
-                model.addAttribute("driverInfo", driverInfo);
-                return "driver-info-without-order";
-            }
-        } catch (Exception e) {
-            log.error("Error fetching driver info: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Не удалось загрузить данные о водителе.");
-            return "error-page";
+        if(driverInfo.getCurrentOrder()){
+            model.addAttribute("driverInfo", driverInfo);
+            return "driver-info";
+        }else{
+            model.addAttribute("driverInfo", driverInfo);
+            return "driver-info-without-order";
         }
+
     }
 }
 

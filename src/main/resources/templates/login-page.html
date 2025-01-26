@@ -3,92 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 300px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .response-message {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #f44336;
-            display: none;
-        }
-    </style>
+    <title>Вход для водителей</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<div class="container">
-    <h1>Login</h1>
-    <form action="/driver/login" method="post">
-        <label for="userName">Имя пользователя:</label>
-        <input type="text" id="userName" name="userName" required>
 
-        <label for="userNumber">Номер пользователя:</label>
-        <input type="number" id="userNumber" name="userNumber" required>
+<h1>Вход</h1>
+<form id="loginForm">
+    <label for="userName">Имя пользователя:</label>
+    <input type="text" id="userName" name="userName" required><br><br>
 
-        <button type="submit">Войти</button>
-    </form>
+    <label for="userNumber">Номер пользователя:</label>
+    <input type="number" id="userNumber" name="userNumber" required><br><br>
 
-    <div class="response-message">
-        <h3>Результат:</h3>
-        <p th:text="${responseMessage}"></p>
-    </div>
-</div>
+    <button type="submit">Войти</button>
+</form>
+
+<div id="errorMessage" style="color: red; display: none;"></div>
+<div id="successMessage" style="color: green; display: none;"></div>
+
+<script>
+    $(document).ready(function() {
+        $("#loginForm").on("submit", function(event) {
+            event.preventDefault();
+
+            var userName = $("#userName").val();
+            var userNumber = $("#userNumber").val();
+
+            $.ajax({
+                url: "/api/login",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    userName: userName,
+                    userNumber: userNumber
+                }),
+                success: function(response) {
+                    $("#successMessage").text(response).show();
+                    $("#errorMessage").hide();
+
+                    $.ajax({
+                        url: "/api/current-id",
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(userNumber),
+                        success: function(driverId) {
+                            setTimeout(function() {
+                                window.location.href = `/driver/${driverId}`;
+                            }, 2000);
+                        },
+                        error: function(xhr) {
+                            console.error('Error fetching driver ID:', xhr.responseText);
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    $("#errorMessage").text(xhr.responseText).show();
+                    $("#successMessage").hide();
+                }
+            });
+        });
+    });
+</script>
+
+
 </body>
 </html>
+
 

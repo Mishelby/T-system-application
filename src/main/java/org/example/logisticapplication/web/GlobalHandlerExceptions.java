@@ -53,13 +53,20 @@ public class GlobalHandlerExceptions {
     public ResponseEntity<String> userNotFoundExecution(
             UserNotFoundExecution ex
     ){
-//        var response = new ErrorMessageResponse(
-//                "User not found!",
-//                ex.getMessage(),
-//                LocalDateTime.now()
-//        );
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(value = IncorrectUserDataForLogin.class)
+    public ResponseEntity<ErrorMessageResponse> incorrectUserDataForLogin(
+            IncorrectUserDataForLogin ex
+    ){
+        var response = new ErrorMessageResponse(
+                "Incorrect user data for login!",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(value = NoSuchElementException.class)

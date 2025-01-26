@@ -63,9 +63,19 @@ public class OrderViewController {
                 distance
         );
 
-        model.addAttribute("calculatedTime", time);
+        model.addAttribute("calculatedTime", formatTime(time));
         model.addAttribute("orderDto", baseRoutePoints);
 
         return "order-summary";
+    }
+
+    private String formatTime(long time) {
+        if (time % 10 == 1 && time % 100 != 11) {
+            return time + " час";
+        } else if ((time % 10 >= 2 && time % 10 <= 4) && (time % 100 < 10 || time % 100 >= 20)) {
+            return time + " часа";
+        } else {
+            return time + " часов";
+        }
     }
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.controllers.rest.UserParamDto;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.RegistrationRepository;
+import org.example.logisticapplication.web.IncorrectUserDataForLogin;
 import org.example.logisticapplication.web.UserNotFoundExecution;
 import org.springframework.stereotype.Service;
 
@@ -12,17 +13,25 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RegistrationService {
     private final RegistrationRepository registrationRepository;
-    private static final String GREETING = "Welcome %s!";
+    private static final String GREETING = "Welcome!";
     private final DriverRepository driverRepository;
 
     @Transactional
-    public boolean checkUserData(
+    public String checkUserData(
             UserParamDto userParamDto
     ) {
-        return registrationRepository.checkDriverInSystem(
+        var isExists = registrationRepository.checkDriverInSystem(
                 userParamDto.userName(),
                 userParamDto.userNumber()
         );
+
+        if(!isExists){
+            throw new IncorrectUserDataForLogin("Incorrect login or number: %s, %s"
+                    .formatted(userParamDto.userName(), userParamDto.userNumber())
+            );
+        }
+
+        return GREETING.concat(" %s".formatted(userParamDto.userName()));
     }
 
     @Transactional
