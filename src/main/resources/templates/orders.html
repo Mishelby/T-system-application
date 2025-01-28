@@ -71,29 +71,27 @@
     }
   </style>
 </head>
-<body>
-<div class="container">
-  <h1>Заявки на заказы</h1>
-  <table>
+<body class="bg-gray-100 font-sans">
+<div class="container mx-auto p-8">
+  <h1 class="text-3xl font-bold mb-6 text-center">Orders for Submission</h1>
+
+  <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
     <thead>
     <tr>
-      <th>Город отправления</th>
-      <th>Город прибытия</th>
-      <th>Вес груза (кг)</th>
-      <th>Расстояние (км)</th>
-      <th>Действия</th>
+      <th class="py-2 px-4 border-b text-left">Order Number</th>
+      <th class="py-2 px-4 border-b text-left">Status</th>
+      <th class="py-2 px-4 border-b text-left">City</th>
+      <th class="py-2 px-4 border-b text-left">Operation Type</th>
+      <th class="py-2 px-4 border-b text-left">Distance</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="order : ${orders}">
-      <td th:text="${order.cityFrom}"></td>
-      <td th:text="${order.cityTo}"></td>
-      <td th:text="${order.weightKg}"></td>
-      <td th:text="${order.distance}"></td>
-      <td>
-        <a href="/approve-order/${order.id}" class="approve-btn">Подтвердить</a>
-        <a href="/reject-order/${order.id}" class="reject-btn">Отклонить</a>
-      </td>
+      <td class="py-2 px-4 border-b" th:text="${order.uniqueNumber}"></td>
+      <td class="py-2 px-4 border-b" th:text="${order.orderStatus}"></td>
+      <td class="py-2 px-4 border-b" th:text="${order.countyMapName}"></td>
+      <td class="py-2 px-4 border-b" th:text="${order.operationType}"></td>
+      <td class="py-2 px-4 border-b" th:text="${order.distance}"></td>
     </tr>
     </tbody>
   </table>

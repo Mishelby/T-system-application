@@ -43,4 +43,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     Optional<OrderEntity> findOrderEntitiesByDriverId(
             @Param("driverId") Long driverId
     );
+
+    @EntityGraph(attributePaths = {"countryMap", "routePoints"})
+    @Query("""
+            SELECT o FROM OrderEntity o
+            LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
+            LEFT JOIN FETCH TruckOrderEntity toe ON o.id = toe.order.id
+            WHERE doe.driver.id IS NULL AND toe.truck.id IS NULL
+            """)
+    List<OrderEntity> findOrdersForSubmit();
 }

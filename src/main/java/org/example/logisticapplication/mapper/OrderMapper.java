@@ -65,6 +65,17 @@ public interface OrderMapper {
             CountryMapEntity countryMapEntity
     );
 
+    @Mappings({
+            @Mapping(target = "uniqueNumber", source = "entity.uniqueNumber"),
+            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
+            @Mapping(target = "routePoints", source = "routePoints"),
+    })
+    OrderInfo toOrderInfo(
+            OrderEntity entity,
+            List<RoutePointInfoDto> routePoints
+    );
+
     Order toDomain(OrderDto orderDto);
 
     OrderDto toDto(Order order);

@@ -1,62 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders List</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
 <div class="container mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center">Orders List</h1>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <!-- Check Orders Button -->
-    <button
-            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-lg shadow-md transition duration-300"
-            onclick="checkOrders()">
-      Проверить заявки на заказы
-    </button>
+    <div class="mb-6">
+        <button id="fetch-orders"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300">
+            Загрузить заказы
+        </button>
+    </div>
 
-    <!-- Add Country Button -->
-    <button
-            class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-lg shadow-md transition duration-300"
-            onclick="addCountry()">
-      Добавить новую страну
-    </button>
-
-    <!-- Add City Button -->
-    <button
-            class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 px-6 rounded-lg shadow-md transition duration-300"
-            onclick="addCity()">
-      Добавить новый город
-    </button>
-
-    <!-- Add Truck Button -->
-    <button
-            class="bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 rounded-lg shadow-md transition duration-300"
-            onclick="addTruck()">
-      Добавить новый грузовик
-    </button>
-  </div>
+    <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Здесь будут отображены заказы -->
+    </div>
 </div>
 
 <script>
-  function checkOrders() {
-    alert('Проверка заявок на заказы. Реализуйте логику на стороне сервера.');
-  }
+    document.getElementById('fetch-orders').addEventListener('click', fetchOrders);
 
-  function addCountry() {
-    alert('Добавление новой страны. Реализуйте форму и логику отправки данных на сервер.');
-  }
+    async function fetchOrders() {
+        try {
+            // Запрос к API для получения заказов
+            const response = await fetch('/api/orders/submitting');
+            if (!response.ok) {
+                throw new Error(`Ошибка запроса: ${response.status}`);
+            }
 
-  function addCity() {
-    alert('Добавление нового города. Реализуйте форму и логику отправки данных на сервер.');
-  }
+            const orders = await response.json(); // Парсинг JSON-ответа
+            displayOrders(orders); // Отображение заказов на странице
+        } catch (error) {
+            console.error('Ошибка при загрузке заказов:', error);
+            alert('Не удалось загрузить заказы. Проверьте консоль для деталей.');
+        }
+    }
 
-  function addTruck() {
-    alert('Добавление нового грузовика. Реализуйте форму и логику отправки данных на сервер.');
-  }
+    function displayOrders(orders) {
+        const container = document.getElementById('orders-container');
+        container.innerHTML = ''; // Очистка контейнера
+
+        if (orders.length === 0) {
+            container.innerHTML = '<p class="text-gray-500">Нет доступных заказов.</p>';
+            return;
+        }
+
+        // Создание таблицы
+        const table = document.createElement('table');
+        table.className = 'min-w-full bg-white border border-gray-300 rounded-lg shadow-md';
+
+        // Заголовки таблицы
+        table.innerHTML = `
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="py-2 px-4 border-b text-left">Order Number</th>
+                    <th class="py-2 px-4 border-b text-left">Status</th>
+                    <th class="py-2 px-4 border-b text-left">County Map Name</th>
+                    <th class="py-2 px-4 border-b text-left">Route Points</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        `;
+
+        const tbody = table.querySelector('tbody');
+
+        // Добавление строк с заказами
+        orders.forEach(order => {
+            const routePoints = order.routePoints
+                .map(rp => `
+                    <div class="mb-2">
+                        <p><strong>City:</strong> ${rp.cityName}</p>
+                        <p><strong>Operation:</strong> ${rp.operationType}</p>
+                        <p><strong>Distance:</strong> ${rp.distance} km</p>
+                        <p><strong>Cargos:</strong></p>
+                        <ul>
+                            ${Array.from(rp.cargoInfo).map(cargo => `
+                                <li>
+                                    Number: ${cargo.number},
+                                    Name: ${cargo.name},
+                                    Weight: ${cargo.weightKg} kg,
+                                    Status: ${cargo.status}
+                                </li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+
+            const row = `
+                <tr>
+                    <td class="py-2 px-4 border-b">${order.uniqueNumber}</td>
+                    <td class="py-2 px-4 border-b">${order.orderStatus}</td>
+                    <td class="py-2 px-4 border-b">${order.countyMapName}</td>
+                    <td class="py-2 px-4 border-b">${routePoints}</td>
+                </tr>
+            `;
+
+            tbody.innerHTML += row;
+        });
+
+        container.appendChild(table);
+    }
 </script>
 </body>
 </html>
+

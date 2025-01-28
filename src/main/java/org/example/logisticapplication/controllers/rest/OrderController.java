@@ -64,4 +64,13 @@ public class OrderController {
         return ResponseEntity.ok()
                 .body(orderStatusById);
     }
+
+    @GetMapping("/submitting")
+    public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(){
+        log.info("Get request for submitting orders");
+        var orderInfo = orderService.gerOrdersForSubmit();
+
+        return ResponseEntity.ok()
+                .body(orderInfo);
+    }
 }

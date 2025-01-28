@@ -4,6 +4,8 @@ import org.example.logisticapplication.domain.Cargo.*;
 import org.example.logisticapplication.utils.CargoNumberGenerator;
 import org.mapstruct.*;
 
+import java.math.BigDecimal;
+
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CargoMapper {
@@ -29,14 +31,10 @@ public interface CargoMapper {
             @Mapping(target = "weightKg", source = "cargoDto.weight"),
             @Mapping(target = "number", source = "uniqueNumber")
     })
-    CargoEntity toEntity(CargoForOrderDto cargoDto, String uniqueNumber);
-
-//    @Mappings({
-//            @Mapping(target = "name", source = "cargoDto.name"),
-//            @Mapping(target = "weightKg", source = "cargoDto.weight"),
-//            @Mapping(target = "number", source = "uniqueNumber")
-//    })
-//    List<CargoEntity> toEntity(List<CargoForOrderDto> cargoDto, String uniqueNumber);
+    CargoEntity toEntity(
+            CargoForOrderDto cargoDto,
+            String uniqueNumber
+    );
 
 
     @Named("numberForCargo")
@@ -51,6 +49,19 @@ public interface CargoMapper {
             @Mapping(target = "status", source = "cargoInfoDto.status")
     })
     CargoEntity toEntity(CargoInfoDto cargoInfoDto);
+
+    @Mappings({
+            @Mapping(target = "number", source = "cargoNumber"),
+            @Mapping(target = "name", source = "cargoName"),
+            @Mapping(target = "weightKg", source = "weightKg"),
+            @Mapping(target = "status", source = "cargoStatus")
+    })
+    CargoInfoDto toInfoDto(
+            BigDecimal weightKg,
+            String cargoNumber,
+            String cargoName,
+            String cargoStatus
+    );
 
     Cargo toDomain(CargoEntity entity);
 
