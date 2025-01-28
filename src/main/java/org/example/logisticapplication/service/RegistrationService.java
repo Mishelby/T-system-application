@@ -2,7 +2,7 @@ package org.example.logisticapplication.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.controllers.rest.UserParamDto;
+import org.example.logisticapplication.utils.UserParamDto;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.RegistrationRepository;
 import org.example.logisticapplication.web.IncorrectUserDataForLogin;

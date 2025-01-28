@@ -2,13 +2,9 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
-import org.example.logisticapplication.domain.Distance.DistanceEntity;
 import org.example.logisticapplication.domain.Driver.*;
-import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
@@ -38,6 +34,8 @@ public class DriverService {
     private final RoutePointMapper routePointMapper;
     private final CargoMapper cargoMapper;
     private final TruckMapper truckMapper;
+
+    public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
 
     @Transactional
     public Driver createDriver(
@@ -148,7 +146,7 @@ public class DriverService {
             return new DriverMainInfoWithoutOrder(
                     driverEntity.getName(),
                     driverEntity.getPersonNumber().toString(),
-                    "No orders"
+                    NO_CURRENT_ORDERS_MESSAGE
             );
         }
 
@@ -246,7 +244,9 @@ public class DriverService {
         return routePointInfoDto;
     }
 
-    private static Set<String> getNumbersAnotherDrivers(List<DriverEntity> drivers) {
+    private static Set<String> getNumbersAnotherDrivers(
+            List<DriverEntity> drivers
+    ) {
         return drivers.stream()
                 .map(DriverEntity::getPersonNumber)
                 .map(Object::toString)

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заявки на заказы</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 80%;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .approve-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 5px 10px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .approve-btn:hover {
+      background-color: #218838;
+    }
+
+    .reject-btn {
+      background-color: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .reject-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Заявки на заказы</h1>
+  <table>
+    <thead>
+    <tr>
+      <th>Город отправления</th>
+      <th>Город прибытия</th>
+      <th>Вес груза (кг)</th>
+      <th>Расстояние (км)</th>
+      <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="order : ${orders}">
+      <td th:text="${order.cityFrom}"></td>
+      <td th:text="${order.cityTo}"></td>
+      <td th:text="${order.weightKg}"></td>
+      <td th:text="${order.distance}"></td>
+      <td>
+        <a href="/approve-order/${order.id}" class="approve-btn">Подтвердить</a>
+        <a href="/reject-order/${order.id}" class="reject-btn">Отклонить</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

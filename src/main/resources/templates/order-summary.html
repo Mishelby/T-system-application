@@ -91,20 +91,71 @@
     <h1>Ваш заказ</h1>
 
     <div class="order-summary">
-        <p><strong>Город отправления:</strong> <span th:text="${orderDto.cityFrom}"></span></p>
-        <p><strong>Город прибытия:</strong> <span th:text="${orderDto.cityTo}"></span></p>
-        <p><strong>Расстояние:</strong> <span th:text="${orderDto.distance}"></span> км</p>
+        <p><strong>Город отправления:</strong> <span id="cityFrom" th:text="${orderDto.cityFrom}"></span></p>
+        <p><strong>Город прибытия:</strong> <span id="cityTo" th:text="${orderDto.cityTo}"></span></p>
+        <p><strong>Расстояние:</strong> <span id="distance" th:text="${orderDto.distance}"></span> км</p>
 
         <h3>Груз</h3>
-        <p><strong>Вес груза:</strong> <span th:text="${orderDto.cargoDtoList[0].weightKg}"></span> кг</p>
+        <p><strong>Вес груза:</strong> <span id="weightKg" th:text="${orderDto.cargoDto.weightKg}"></span> кг</p>
 
         <h3>Примерное время доставки</h3>
-        <p><strong>Расчетное время в пути:</strong> <span th:text="${calculatedTime}"></span> </p>
+        <p><strong>Расчетное время в пути:</strong> <span id="calculatedTime" th:text="${calculatedTime}"></span></p>
 
-
-        <a href="/driver/login">Подтвердить заказ?</a>
+        <a href="javascript:void(0);" onclick="confirmAndCreateOrder()">Подтвердить заказ?</a>
     </div>
 </div>
+
+<script>
+    function confirmAndCreateOrder() {
+        // Собираем данные для запроса
+        const cityFrom = document.getElementById('cityFrom').textContent;
+        const cityTo = document.getElementById('cityTo').textContent;
+        const distance = document.getElementById('distance').textContent;
+        const weightKg = document.getElementById('weightKg').textContent;
+        const calculatedTime = document.getElementById('calculatedTime').textContent;
+
+        // Создаем объект BaseRoutePoints для первого запроса
+        const routePoint = {
+            cityFrom: cityFrom,
+            cityTo: cityTo,
+            cargoDto: { weightKg: weightKg },
+            distance: distance
+        };
+
+        // Отправляем первый запрос на /confirm-order
+        fetch('/api/orders/confirm-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(routePoint)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Order confirmed:', data);
+
+                // После успешного подтверждения заказа, отправляем второй запрос на /create-order
+                const baseOrder = data; // Предполагаем, что метод /confirm-order возвращает объект CreateBaseOrder
+
+                fetch('/api/orders/create-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(baseOrder)
+                })
+                    .then(response => response.json())
+                    .then(createOrderData => {
+                        console.log('Order created:', createOrderData);
+                        // Можно, например, перенаправить пользователя на страницу успешного завершения
+                        window.location.href = '/order/success';
+                    })
+                    .catch(error => console.error('Error creating order:', error));
+            })
+            .catch(error => console.error('Error confirming order:', error));
+    }
+</script>
+
 
 </body>
 </html>

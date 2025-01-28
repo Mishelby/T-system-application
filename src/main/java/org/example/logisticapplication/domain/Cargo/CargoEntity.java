@@ -2,17 +2,8 @@ package org.example.logisticapplication.domain.Cargo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
-import org.hibernate.proxy.HibernateProxy;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "cargo")
@@ -32,8 +23,8 @@ public class CargoEntity {
     @Column(name = "weight_kg", nullable = false, precision = 10, scale = 2)
     private Long weightKg;
 
-    @Column(name = "status", nullable = true)
-    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED", message = "Invalid cargo status")
+    @Column(name = "status", nullable = false)
+    @Pattern(regexp = "PREPARED|SHIPPED|DELIVERED|NOT_SHIPPED", message = "Invalid cargo status")
     private String status;
 
     public CargoEntity(

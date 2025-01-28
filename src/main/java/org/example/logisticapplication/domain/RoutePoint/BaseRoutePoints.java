@@ -6,8 +6,6 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.example.logisticapplication.domain.Cargo.BaseCargoDto;
 
-import java.util.List;
-
 import static lombok.AccessLevel.PRIVATE;
 
 @FieldDefaults(level = PRIVATE)
@@ -17,7 +15,6 @@ import static lombok.AccessLevel.PRIVATE;
 public class BaseRoutePoints {
     String cityFrom;
     String cityTo;
-    String operationType;
-    List<BaseCargoDto> cargoDtoList;
+    BaseCargoDto cargoDto;
     Long distance;
 }

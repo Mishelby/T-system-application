@@ -91,7 +91,9 @@ public class OrderInfoService {
                 .toList();
     }
 
-    private List<DriverOrderInfo> getDriverOrderInfo(List<OrderEntity> lastOrders) {
+    private List<DriverOrderInfo> getDriverOrderInfo(
+            List<OrderEntity> lastOrders
+    ) {
         return lastOrders.stream()
                 .flatMap(entity -> entity.getDriverOrders().stream())
                 .map(DriverOrderEntity::getDriver)

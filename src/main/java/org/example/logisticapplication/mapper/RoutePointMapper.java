@@ -64,4 +64,11 @@ public interface RoutePointMapper {
     RoutePoint toDomain(RoutePointEntity entity);
 
 
+//    BaseRoutePointEntity toBaseEntity(
+//            List<BaseCargoEntity> cargoEntity,
+//            String cityFrom,
+//            String cityTo,
+//            Long distance
+//    );
+
 }

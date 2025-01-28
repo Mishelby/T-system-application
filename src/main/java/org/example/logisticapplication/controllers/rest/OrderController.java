@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
+import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointForOrderDto;
 import org.example.logisticapplication.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -21,15 +21,24 @@ public class OrderController {
 
     @PostMapping("/create-order")
     public ResponseEntity<OrderInfo> createOrder(
-            @RequestBody CreateBaseOrder baseOrder,
-            @RequestParam("truckId") Long truckId,
-            @RequestParam("driversId") Set<Long> driversId
+            @RequestBody CreateBaseOrder baseOrder
     ) {
         log.info("Get request for creating order: {}", baseOrder);
-        var newOrder = orderService.createBaseOrder(baseOrder, truckId, driversId);
+        var newOrder = orderService.createBaseOrder(baseOrder);
 
         return ResponseEntity.ok()
                 .body(newOrder);
+    }
+
+    @PostMapping("/confirm-order")
+    public ResponseEntity<CreateBaseOrder> confirmOrder(
+            @RequestBody BaseRoutePoints routePoint
+    ){
+        log.info("Get request for confirming order: {}", routePoint);
+        var createBaseOrder = orderService.sendBaseOrder(routePoint);
+
+        return ResponseEntity.ok()
+                .body(createBaseOrder);
     }
 
 

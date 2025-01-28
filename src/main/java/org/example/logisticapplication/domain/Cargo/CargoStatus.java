@@ -3,5 +3,6 @@ package org.example.logisticapplication.domain.Cargo;
 public enum CargoStatus {
     PREPARED,
     SHIPPED,
-    DELIVERED
+    DELIVERED,
+    NOT_SHIPPED
 }

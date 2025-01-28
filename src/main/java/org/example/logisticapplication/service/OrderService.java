@@ -3,6 +3,8 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
+import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
+import org.example.logisticapplication.domain.Cargo.CargoStatus;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
@@ -48,20 +50,10 @@ public class OrderService {
 
     @Transactional
     public OrderInfo createBaseOrder(
-            CreateBaseOrder createBaseOrder,
-            Long truckId,
-            Set<Long> driversId
+            CreateBaseOrder createBaseOrder
     ) {
         // Retrieve the CountryMapEntity for the loading city specified in the base order
         var countryMapEntity = getCountryMapEntity(createBaseOrder);
-
-        // Find all driver entities by their IDs
-        var allDriversById = driverRepository.findAllById(driversId);
-
-        // Find the truck entity by its ID or throw an exception if not found
-        var truckEntity = truckRepository.findById(truckId).orElseThrow(
-                () -> new EntityNotFoundException("Truck with id = %s not found".formatted(truckId))
-        );
 
         // Create a new order entity with the country map
         var orderEntity = createNewOrder(countryMapEntity);
@@ -69,14 +61,10 @@ public class OrderService {
         // Save route point entities associated with the order
         var routePointEntities = saveRoutePoints(createBaseOrder.routePointInfoDto(), orderEntity);
 
-        // Create a set of truck order entities and driver order entities for the order
-        var truckEntitySet = getTruckOrderEntities(truckId, orderEntity);
-        var drivers = getDriverOrderEntities(allDriversById, orderEntity);
-
         // Set route points, driver orders, and truck orders on the order entity
         orderEntity.setRoutePoints(routePointEntities);
-        orderEntity.setDriverOrders(drivers);
-        orderEntity.setTruckOrders(truckEntitySet);
+        orderEntity.setDriverOrders(null);
+        orderEntity.setTruckOrders(null);
 
         // Save and update the order entity in the repository
         var updatedOrder = orderRepository.save(orderEntity);
@@ -84,9 +72,7 @@ public class OrderService {
         // Return OrderInfo with details about the created order
         return orderMapper.toDomainInfo(
                 updatedOrder,
-                createBaseOrder.routePointInfoDto(),
-                driverMapper.toOrderInfo(allDriversById),
-                truckMapper.toInfoDto(List.of(truckEntity))
+                createBaseOrder.routePointInfoDto()
         );
     }
 
@@ -151,6 +137,53 @@ public class OrderService {
 
         // Return order status by order id
         return orderRepository.showOrderStatusByOrderId(orderId);
+    }
+
+    @Transactional
+    public CreateBaseOrder sendBaseOrder(
+            BaseRoutePoints routePoint
+    ) {
+        var routePointInfoDto = new ArrayList<RoutePointInfoDto>();
+        addRoutePoints(routePoint, routePointInfoDto);
+
+
+        return new CreateBaseOrder(routePointInfoDto);
+    }
+
+    private static void addRoutePoints(
+            BaseRoutePoints routePoint,
+            List<RoutePointInfoDto> routePointInfoDto
+    ) {
+        var cargoNumber = CargoGenerateInfo.generateCargoNumber();
+        var cargoName = CargoGenerateInfo.generateCargoName();
+
+        routePointInfoDto.add(
+                new RoutePointInfoDto(
+                        routePoint.getCityFrom(),
+                        Set.of(new CargoInfoDto(
+                                cargoNumber,
+                                cargoName,
+                                new BigDecimal(routePoint.getCargoDto().getWeightKg()),
+                                CargoStatus.NOT_SHIPPED.name()
+                        )),
+                        OperationType.LOADING.name(),
+                        routePoint.getDistance()
+                )
+        );
+
+        routePointInfoDto.add(
+                new RoutePointInfoDto(
+                        routePoint.getCityTo(),
+                        Set.of(new CargoInfoDto(
+                                cargoNumber,
+                                cargoName,
+                                new BigDecimal(routePoint.getCargoDto().getWeightKg()),
+                                CargoStatus.NOT_SHIPPED.name()
+                        )),
+                        OperationType.UNLOADING.name(),
+                        routePoint.getDistance()
+                )
+        );
     }
 
     private List<TruckInfoDto> mapTrucksToDto(
@@ -280,6 +313,7 @@ public class OrderService {
     ) {
         // Stream through the route points and then the cargoes of each route point
         return routePointsDto.stream()
+                .filter(rp -> OperationType.LOADING.toString().equals(rp.operationType()))
                 .flatMap(rp -> rp.cargos().stream())
                 .mapToLong(CargoForOrderDto::weight)
                 .sum();
@@ -310,4 +344,5 @@ public class OrderService {
     ){
       return Math.ceilDiv(distance, averageSpeed);
     }
+
 }

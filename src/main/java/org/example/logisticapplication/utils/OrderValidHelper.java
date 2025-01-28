@@ -32,19 +32,6 @@ public class OrderValidHelper {
     private final RoutePointRepository routePointRepository;
 
     protected final AtomicLong orderCounter;
-//    protected final StringBuilder uniqueNumber;
-
-//    @Transactional(readOnly = true)
-//    public void isOrderHasBeenCreated(
-//            CreateBaseOrder baseOrder
-//    ) {
-//        if (orderRepository.existsOrderEntityByUniqueNumber(baseOrder.())) {
-//            throw new IllegalArgumentException(
-//                    "Order with number=%s already exists"
-//                            .formatted(baseOrder.orderUniqueNumber())
-//            );
-//        }
-//    }
 
     @Transactional(readOnly = true)
     public void validateOrderAndFetch(

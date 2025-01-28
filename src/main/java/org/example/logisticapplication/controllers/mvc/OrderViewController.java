@@ -7,15 +7,14 @@ import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.service.OrderService;
+import org.example.logisticapplication.utils.OrderValidHelper;
+import org.example.logisticapplication.utils.TimeFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.List;
-
 
 @Slf4j
 @Controller
@@ -41,13 +40,12 @@ public class OrderViewController {
     public String handleOrderSubmit(
             @RequestParam String departureCity,
             @RequestParam String arrivalCity,
-            @RequestParam String operationType,
             @RequestParam Long cargoWeight,
             @RequestParam Long distance,
             Model model
     ) {
 
-        log.info("Submitting order {}, {}, {}, {}, {}", departureCity, arrivalCity, operationType, cargoWeight, distance);
+        log.info("Submitting order {}, {}, {}, {}", departureCity, arrivalCity, cargoWeight, distance);
         var baseCargoDto = new BaseCargoDto(cargoWeight);
 
         var time = OrderService.calculationTimeToOrder(
@@ -58,24 +56,19 @@ public class OrderViewController {
         var baseRoutePoints = new BaseRoutePoints(
                 departureCity,
                 arrivalCity,
-                operationType,
-                List.of(baseCargoDto),
+                baseCargoDto,
                 distance
         );
 
-        model.addAttribute("calculatedTime", formatTime(time));
+        model.addAttribute("calculatedTime", TimeFormatter.formatHours(time));
         model.addAttribute("orderDto", baseRoutePoints);
 
         return "order-summary";
     }
 
-    private String formatTime(long time) {
-        if (time % 10 == 1 && time % 100 != 11) {
-            return time + " час";
-        } else if ((time % 10 >= 2 && time % 10 <= 4) && (time % 100 < 10 || time % 100 >= 20)) {
-            return time + " часа";
-        } else {
-            return time + " часов";
-        }
+    @GetMapping("/success")
+    public String showOrderSuccessPage(){
+        return "order-success";
     }
+
 }
