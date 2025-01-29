@@ -20,7 +20,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create-order")
-    public ResponseEntity<OrderInfo> createOrder(
+    public ResponseEntity<BaseOrderInfo> createOrder(
             @RequestBody CreateBaseOrder baseOrder
     ) {
         log.info("Get request for creating order: {}", baseOrder);

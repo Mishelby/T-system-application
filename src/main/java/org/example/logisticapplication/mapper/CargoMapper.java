@@ -1,7 +1,6 @@
 package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.Cargo.*;
-import org.example.logisticapplication.utils.CargoNumberGenerator;
 import org.mapstruct.*;
 
 import java.math.BigDecimal;
@@ -24,7 +23,6 @@ public interface CargoMapper {
     })
     CargoInfoDto toDtoInfo(CargoEntity cargo);
 
-//    BaseCargoEntity toBaseEntity(CargoInfoDto cargoInfoDto);
 
     @Mappings({
             @Mapping(target = "name", source = "cargoDto.name"),
@@ -36,11 +34,6 @@ public interface CargoMapper {
             String uniqueNumber
     );
 
-
-    @Named("numberForCargo")
-    default String numberForCargo() {
-        return CargoNumberGenerator.generateNumber();
-    }
 
     @Mappings({
             @Mapping(target = "number", source = "cargoInfoDto.number"),

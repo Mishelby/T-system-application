@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -27,9 +28,13 @@ public class OrderValidHelper {
     private final RoutePointMapper routePointMapper;
     private final CityRepository cityRepository;
     private final CargoRepository cargoRepository;
-    private static final String ORDER_NAME = "Order";
     private final CargoMapper cargoMapper;
     private final RoutePointRepository routePointRepository;
+
+    private static final String ORDER_NAME = "ORDER-";
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int LENGTH = 8;
+    private final Random random = new Random();
 
     protected final AtomicLong orderCounter;
 
@@ -43,18 +48,6 @@ public class OrderValidHelper {
                             .formatted(orderId)
             );
         }
-    }
-
-    @Transactional(readOnly = true)
-    public CityEntity getCityEntity(
-            RoutePoint routePoint
-    ) {
-        return cityRepository.findById(routePoint.cityId()).orElseThrow(
-                () -> new EntityNotFoundException(
-                        "City Map with id=%s Not Found"
-                                .formatted(routePoint.cityId())
-                )
-        );
     }
 
     @Transactional(readOnly = true)
@@ -80,6 +73,17 @@ public class OrderValidHelper {
                 .toList();
     }
 
+    public CityEntity getCityEntity(
+            RoutePoint routePoint
+    ) {
+        return cityRepository.findById(routePoint.cityId()).orElseThrow(
+                () -> new EntityNotFoundException(
+                        "City Map with id=%s Not Found"
+                                .formatted(routePoint.cityId())
+                )
+        );
+    }
+
     public Set<RoutePointEntity> saveRoutePoints(List<RoutePointForOrderDto> routePointDto) {
         return routePointDto.stream()
                 .map(routePoint -> {
@@ -90,7 +94,7 @@ public class OrderValidHelper {
 
                     var cargoEntities = routePoint.cargos().stream()
                             .map(cargo ->
-                                    cargoMapper.toEntity(cargo, CargoNumberGenerator.generateNumber()))
+                                    cargoMapper.toEntity(cargo, CargoGenerateInfo.generateCargoNumber()))
                             .toList();
 
                     return routePointRepository.save(routePointMapper.toEntity(routePoint, cityEntityByName, cargoEntities));
@@ -116,9 +120,13 @@ public class OrderValidHelper {
     }
 
     public String generateUniqueNumber() {
-        return ORDER_NAME
-                .concat("-")
-                .concat(String.valueOf(orderCounter.incrementAndGet()));
+        var sb = new StringBuilder(ORDER_NAME);
+
+        for (int i = 0; i < LENGTH; i++) {
+            sb.append(CHARACTERS.charAt(random.nextInt(0, CHARACTERS.length())));
+        }
+
+        return sb.toString();
     }
 
 }

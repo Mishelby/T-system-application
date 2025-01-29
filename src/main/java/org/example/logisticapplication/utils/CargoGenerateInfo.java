@@ -3,28 +3,30 @@ package org.example.logisticapplication.utils;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class CargoGenerateInfo {
-    private static final String DEFAULT_NAME = "Cargo";
-    private static final String DEFAULT_SYMBOLS = "*&%$#@";
+    private static final String DEFAULT_NAME = "CARGO-";
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final Integer DEFAULT_LENGTH = 6;
-    private static final AtomicLong CARGO_ID_GENERATOR = new AtomicLong();
     private static final Random random = new Random();
 
     public static String generateCargoNumber() {
-        return DEFAULT_NAME.concat("-" + CARGO_ID_GENERATOR.incrementAndGet());
+        var builder = new StringBuilder(DEFAULT_NAME);
+
+        for (int i = 0; i < DEFAULT_LENGTH; i++) {
+            builder.append(CHARACTERS.charAt(random.nextInt(1, 10)));
+        }
+
+        return builder.toString();
     }
 
     public static String generateCargoName() {
-        var builder = new StringBuilder();
+        var builder = new StringBuilder(DEFAULT_NAME);
 
         for (int i = 0; i < DEFAULT_LENGTH; i++) {
-            builder.append(random.nextInt(1, 10))
-                    .append(DEFAULT_NAME.charAt(random.nextInt(0, DEFAULT_NAME.length())))
-                    .append(DEFAULT_SYMBOLS.charAt(random.nextInt(0, DEFAULT_NAME.length())));
-            if(i % 3 == 0){
+            builder.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+            if (i == DEFAULT_LENGTH / 2) {
                 builder.append("-");
             }
         }

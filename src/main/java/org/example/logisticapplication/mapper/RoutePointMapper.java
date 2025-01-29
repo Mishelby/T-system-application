@@ -52,9 +52,24 @@ public interface RoutePointMapper {
     @Mappings({
             @Mapping(target = "cityName", source = "routePoint.city.name"),
             @Mapping(target = "operationType", source = "routePoint.operationType"),
-            @Mapping(target = "cargoInfo", source = "cargoInfoDto")
+            @Mapping(target = "cargoInfo", source = "cargoInfoDto"),
+            @Mapping(target = "distance", source = "distance")
     })
-    RoutePointInfoDto toInfoDto(RoutePointEntity routePoint, Set<CargoInfoDto> cargoInfoDto);
+    RoutePointInfoDto toInfoDto(
+            RoutePointEntity routePoint,
+            Set<CargoInfoDto> cargoInfoDto,
+            Long distance
+    );
+
+    @Mappings({
+            @Mapping(target = "cityName", source = "routePoint.city.name"),
+            @Mapping(target = "operationType", source = "routePoint.operationType"),
+            @Mapping(target = "cargoInfo", source = "cargoInfoDto"),
+    })
+    RoutePointInfoDto toInfoDto(
+            RoutePointEntity routePoint,
+            Set<CargoInfoDto> cargoInfoDto
+    );
 
 
     RoutePoint toDomain(RoutePointDto routePoint);

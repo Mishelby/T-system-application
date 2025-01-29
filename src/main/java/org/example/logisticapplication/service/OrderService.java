@@ -13,6 +13,7 @@ import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
+import org.example.logisticapplication.domain.OrderDistanceEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -48,32 +49,28 @@ public class OrderService {
     private final RoutePointMapper routePointMapper;
     private final CargoMapper cargoMapper;
     private final DistanceRepository distanceRepository;
+    private final OrderDistanceRepository orderDistanceRepository;
 
     @Transactional
-    public OrderInfo createBaseOrder(
+    public BaseOrderInfo createBaseOrder(
             CreateBaseOrder createBaseOrder
     ) {
         var countryMapEntity = getCountryMapEntity(createBaseOrder);
         var orderEntity = createNewOrder(countryMapEntity);
         var routePointEntities = saveRoutePoints(createBaseOrder.routePointInfoDto(), orderEntity);
 
+        var distances = getDistanceEntity(routePointEntities);
+
         setRoutePointsForOrder(orderEntity, routePointEntities);
-
         var updatedOrder = orderRepository.save(orderEntity);
+        var routePointInfoDto = getRoutePointInfoDto(routePointEntities, distances);
 
-        return orderMapper.toDomainInfo(
+        saveDistanceForOrder(orderEntity, distances);
+
+        return orderMapper.toBaseOrderInfo(
                 updatedOrder,
-                createBaseOrder.routePointInfoDto()
+                routePointInfoDto
         );
-    }
-
-    private static void setRoutePointsForOrder(
-            OrderEntity orderEntity,
-            Set<RoutePointEntity> routePointEntities
-    ) {
-        orderEntity.setRoutePoints(routePointEntities);
-        orderEntity.setDriverOrders(null);
-        orderEntity.setTruckOrders(null);
     }
 
 
@@ -125,14 +122,8 @@ public class OrderService {
 
         return ordersForSubmit.stream()
                 .map(order -> {
-                    var routePointInfoDto = order.getRoutePoints().stream()
-                            .map(rp -> {
-                                var cargoInfo = rp.getCargo().stream()
-                                        .map(cargoMapper::toDtoInfo)
-                                        .collect(Collectors.toSet());
-
-                                return routePointMapper.toInfoDto(rp, cargoInfo);
-                            }).toList();
+                    var distanceEntity = getDistanceEntity(order);
+                    var routePointInfoDto = getRoutePointInfoDto(order.getRoutePoints(), distanceEntity);
 
                     return orderMapper.toOrderInfo(order, routePointInfoDto);
                 })
@@ -164,6 +155,87 @@ public class OrderService {
         return new CreateBaseOrder(routePointInfoDto);
     }
 
+    private DistanceEntity getDistanceEntity(
+            OrderEntity orderEntity
+    ) {
+      return   orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId())
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
+                                .formatted(orderEntity.getId())
+                ));
+    }
+
+    private DistanceEntity getDistanceEntity(
+            Set<RoutePointEntity> routePointEntities
+    ) {
+        var cityEntityFrom = routePointEntities.stream()
+                .filter(rp -> OperationType.LOADING.name().equals(rp.getOperationType()))
+                .map(RoutePointEntity::getCity)
+                .toList().getFirst();
+
+        var cityEntityTo = routePointEntities.stream()
+                .filter(rp -> OperationType.UNLOADING.name().equals(rp.getOperationType()))
+                .map(RoutePointEntity::getCity)
+                .toList().getFirst();
+
+        return cityEntityFrom.getCountryMap().getDistances()
+                .stream()
+                .filter(distanceEntity ->
+                        distanceEntity.getFromCity().getId().equals(cityEntityFrom.getId()) &&
+                                distanceEntity.getToCity().getId().equals(cityEntityTo.getId()))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private List<RoutePointInfoDto> getRoutePointInfoDto(
+            Set<RoutePointEntity> routePointEntities,
+            DistanceEntity distanceEntity
+    ) {
+        return routePointEntities.stream()
+                .map(rp -> {
+                    var cargoList = rp.getCargo().stream()
+                            .map(cargoMapper::toDtoInfo)
+                            .collect(Collectors.toSet());
+
+                    return routePointMapper.toInfoDto(rp, cargoList, distanceEntity.getDistance());
+                }).toList();
+    }
+
+    private List<RoutePointInfoDto> getRoutePointInfoDto(
+            Set<RoutePointEntity> routePointEntities
+    ) {
+        return routePointEntities.stream()
+                .map(rp -> {
+                    var cargoList = rp.getCargo().stream()
+                            .map(cargoMapper::toDtoInfo)
+                            .collect(Collectors.toSet());
+
+                    return routePointMapper.toInfoDto(rp, cargoList);
+                }).toList();
+    }
+
+    private static void setRoutePointsForOrder(
+            OrderEntity orderEntity,
+            Set<RoutePointEntity> routePointEntities
+    ) {
+        orderEntity.setRoutePoints(routePointEntities);
+        orderEntity.setDriverOrders(null);
+        orderEntity.setTruckOrders(null);
+    }
+
+    public void saveDistanceForOrder(
+            OrderEntity order,
+            DistanceEntity distanceEntity
+    ) {
+        var orderDistanceEntity = new OrderDistanceEntity(
+                order,
+                distanceEntity
+        );
+
+        orderDistanceRepository.save(orderDistanceEntity);
+    }
+
+
     public void saveDistance(
             String cityFrom,
             String cityTo,
@@ -173,14 +245,20 @@ public class OrderService {
         var cityEntityTo = cityRepository.findCityEntityByName(cityTo).orElseThrow();
         var countryMapEntity = countryMapRepository.findByCityName(cityFrom).orElseThrow();
 
-        var distanceEntity = new DistanceEntity(
-                cityEntityFrom,
-                cityEntityTo,
-                distance,
-                countryMapEntity
-        );
+        if (!distanceRepository.isExistsDistanceEntity(
+                List.of(cityEntityFrom.getId(), cityEntityTo.getId()),
+                distance)
+        ) {
+            var distanceEntity = new DistanceEntity(
+                    cityEntityFrom,
+                    cityEntityTo,
+                    distance,
+                    countryMapEntity
+            );
 
-        distanceRepository.save(distanceEntity);
+            distanceRepository.save(distanceEntity);
+        }
+
     }
 
     private void addRoutePoints(

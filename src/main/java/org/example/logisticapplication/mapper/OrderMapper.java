@@ -107,6 +107,16 @@ public interface OrderMapper {
     );
 
     @Mappings({
+            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
+            @Mapping(target = "routePoints", source = "routePointInfoDto")
+    })
+    BaseOrderInfo toBaseOrderInfo(
+            OrderEntity entity,
+            List<RoutePointInfoDto> routePointInfoDto
+    );
+
+    @Mappings({
             @Mapping(target = "drivers", source = "driversDto"),
             @Mapping(target = "trucks", source = "trucksDto")
     })
