@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointForOrderDto;
 import org.example.logisticapplication.service.OrderService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,15 +42,26 @@ public class OrderController {
     }
 
 
-    @GetMapping("/trucks-drivers")
+    @GetMapping("/{orderNumber}")
     public ResponseEntity<DriversAndTrucksForOrderDto> getTruckAndDriversForOrder(
-            @RequestBody List<RoutePointForOrderDto> routePointDto
+            @PathVariable("orderNumber") String orderNumber
     ) {
         log.info("Get request for getting trucks for order");
-        var truckForOrder = orderService.findTrucksAndDriversForOrder(routePointDto);
+        var truckForOrder = orderService.findTrucksAndDriversForOrder(orderNumber);
 
         return ResponseEntity.ok()
                 .body(truckForOrder);
+    }
+    
+    @PostMapping("/{orderNumber}/apply")
+    public ResponseEntity<Void> applyForOrder(
+            @PathVariable("orderNumber") String orderNumber,
+            @RequestBody AssignDriversAndTrucksRequest driversAndTrucks
+    ){
+        log.info("Post request for applying drivers and truck for order: {}", orderNumber);
+        orderService.applyForOrder(orderNumber, driversAndTrucks);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
 

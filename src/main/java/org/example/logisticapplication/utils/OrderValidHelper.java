@@ -32,11 +32,10 @@ public class OrderValidHelper {
     private final RoutePointRepository routePointRepository;
 
     private static final String ORDER_NAME = "ORDER-";
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int LENGTH = 8;
+    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int LENGTH = 10;
     private final Random random = new Random();
 
-    protected final AtomicLong orderCounter;
 
     @Transactional(readOnly = true)
     public void validateOrderAndFetch(

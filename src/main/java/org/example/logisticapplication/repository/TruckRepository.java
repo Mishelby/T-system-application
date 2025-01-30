@@ -78,4 +78,9 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             @Param("cityId") Long cityId,
             @Param("condition") String condition
     );
+
+    @Query("SELECT t FROM TruckEntity t WHERE t.id IN(:truckId)")
+    List<TruckEntity> findTrucksById(
+            List<Long> truckId
+    );
 }

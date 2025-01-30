@@ -157,4 +157,9 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
 
     @Query("SELECT d FROM DriverEntity d WHERE d.personNumber = :personNumber")
     Optional<DriverEntity> findDriverEntityByPersonNumber(Long personNumber);
+
+    @Query("SELECT d FROM DriverEntity d WHERE d.id IN (:id)")
+    List<DriverEntity> findDriversById(
+            List<Long> id
+    );
 }

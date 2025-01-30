@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
-import org.example.logisticapplication.domain.Driver.DriverStatus;
 import org.example.logisticapplication.domain.DriverShift.DriverShift;
 import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 import org.example.logisticapplication.repository.DriverRepository;

@@ -2,15 +2,15 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.CargoForOrderDto;
+import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.Cargo.CargoStatus;
-import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Distance.DistanceEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.OrderDistanceEntity;
@@ -76,17 +76,20 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public DriversAndTrucksForOrderDto findTrucksAndDriversForOrder(
-            List<RoutePointForOrderDto> routePointsDto
+            String orderNumber
     ) {
-        var loadingCityName = findLoadingCityName(routePointsDto);
-        var loadingCityEntity = findCityEntityByName(loadingCityName);
-        long totalWeight = getTotalWeight(routePointsDto);
+
+        var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
+        var loadingOperationCityId = getOperationCityId(orderEntity);
+        long totalCargoWeight = totalWeight(orderEntity);
 
         var trucksForOrderByWeight = truckRepository.findTrucksForOrderByWeight(
-                loadingCityEntity.getId(),
+                loadingOperationCityId,
                 TruckStatus.SERVICEABLE.toString(),
-                new BigDecimal(totalWeight)
+                new BigDecimal(totalCargoWeight)
         );
+
+        var distanceEntity = findDistanceEntityByOrderId(orderEntity);
 
         var trucksId = trucksForOrderByWeight
                 .stream()
@@ -94,11 +97,10 @@ public class OrderService {
                 .map(Truck::currentCityId)
                 .collect(Collectors.toSet());
 
-        long totalDistance = getTotalDistance(routePointsDto);
 
         var driversForOrder = driverRepository.findDriversByTruckId(
                 trucksId,
-                totalDistance,
+                distanceEntity.getDistance(),
                 defaultValues.getAverageSpeed(),
                 defaultValues.getAverageSpeed()
         );
@@ -110,6 +112,31 @@ public class OrderService {
                 driverAllInfo,
                 truckInfoDto
         );
+    }
+
+    private DistanceEntity findDistanceEntityByOrderId(OrderEntity orderEntity) {
+        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
+                        .formatted(orderEntity.getId()))
+        );
+    }
+
+    private static long totalWeight(OrderEntity orderEntity) {
+        return orderEntity.getRoutePoints().stream()
+                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
+                .flatMap(rp -> rp.getCargo().stream())
+                .map(CargoEntity::getWeightKg)
+                .mapToLong(Long::longValue)
+                .sum();
+    }
+
+    private static Long getOperationCityId(OrderEntity orderEntity) {
+        return orderEntity.getRoutePoints().stream()
+                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
+                .map(RoutePointEntity::getCity)
+                .findFirst()
+                .get()
+                .getId();
     }
 
     @Transactional(readOnly = true)
@@ -158,11 +185,35 @@ public class OrderService {
     private DistanceEntity getDistanceEntity(
             OrderEntity orderEntity
     ) {
-      return   orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId())
+        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId())
                 .orElseThrow(
                         () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
                                 .formatted(orderEntity.getId())
-                ));
+                        ));
+    }
+
+    @Transactional
+    public void applyForOrder(
+            String orderNumber,
+            AssignDriversAndTrucksRequest driversAndTrucks
+    ) {
+        var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
+        var driversById = driverRepository.findDriversById(driversAndTrucks.driverIds());
+        var trucksById = truckRepository.findTrucksById(driversAndTrucks.truckIds());
+
+        var driverOrderEntities = driversById.stream()
+                .map(driver -> new DriverOrderEntity(orderEntity, driver))
+                .collect(Collectors.toSet());
+
+        var truckOrderEntities = trucksById.stream()
+                .map(truck -> new TruckOrderEntity(orderEntity, truck))
+                .collect(Collectors.toSet());
+
+        orderEntity.getDriverOrders().clear();
+        orderEntity.getTruckOrders().clear();
+
+        orderEntity.getDriverOrders().addAll(driverOrderEntities);
+        orderEntity.getTruckOrders().addAll(truckOrderEntities);
     }
 
     private DistanceEntity getDistanceEntity(
@@ -198,19 +249,6 @@ public class OrderService {
                             .collect(Collectors.toSet());
 
                     return routePointMapper.toInfoDto(rp, cargoList, distanceEntity.getDistance());
-                }).toList();
-    }
-
-    private List<RoutePointInfoDto> getRoutePointInfoDto(
-            Set<RoutePointEntity> routePointEntities
-    ) {
-        return routePointEntities.stream()
-                .map(rp -> {
-                    var cargoList = rp.getCargo().stream()
-                            .map(cargoMapper::toDtoInfo)
-                            .collect(Collectors.toSet());
-
-                    return routePointMapper.toInfoDto(rp, cargoList);
                 }).toList();
     }
 
@@ -343,23 +381,6 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Country map for city not found"));
     }
 
-
-    private Set<TruckOrderEntity> getTruckOrderEntities(
-            Long truckId,
-            OrderEntity orderEntity
-    ) {
-        return truckRepository.findById(truckId)
-                .map(truck -> new TruckOrderEntity(orderEntity, truck))
-                .map(truck -> {
-                    Set<TruckOrderEntity> set = new HashSet<>();
-                    set.add(truck);
-                    return set;
-                })
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Truck with id = %s not found".formatted(truckId))
-                );
-    }
-
     private OrderEntity createNewOrder(
             CountryMapEntity countryMapEntity
     ) {
@@ -395,7 +416,6 @@ public class OrderService {
 
                     var routePoint = routePointMapper.toEntity(rp, cargoEntityList, cityEntity);
                     routePoint.setOrder(orderEntity);
-
                     return routePointRepository.save(routePoint);
                 })
                 .collect(Collectors.toSet());
@@ -413,43 +433,6 @@ public class OrderService {
                         )
                 )
                 .toList();
-    }
-
-    private static long getTotalDistance(
-            List<RoutePointForOrderDto> routePointsDto
-    ) {
-        return routePointsDto.stream()
-                .filter(rp -> OperationType.LOADING.toString().equals(rp.operationType()))
-                .mapToLong(RoutePointForOrderDto::distance)
-                .sum();
-    }
-
-    private static long getTotalWeight(
-            List<RoutePointForOrderDto> routePointsDto
-    ) {
-        return routePointsDto.stream()
-                .filter(rp -> OperationType.LOADING.toString().equals(rp.operationType()))
-                .flatMap(rp -> rp.cargos().stream())
-                .mapToLong(CargoForOrderDto::weight)
-                .sum();
-    }
-
-    private CityEntity findCityEntityByName(
-            String loadingCityName
-    ) {
-        return cityRepository.findCityEntityByName(loadingCityName)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "No city for loading operation. City name: " + loadingCityName));
-    }
-
-    private static String findLoadingCityName(
-            List<RoutePointForOrderDto> routePointsDto
-    ) {
-        return routePointsDto.stream()
-                .filter(rp -> rp.operationType().equals(OperationType.LOADING.toString()))
-                .map(RoutePointForOrderDto::cityName)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No loading operation found"));
     }
 
     public static Long calculationTimeToOrder(

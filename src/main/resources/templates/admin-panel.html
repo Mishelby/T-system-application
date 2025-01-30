@@ -22,39 +22,64 @@
     </div>
 </div>
 
+<!-- Модальное окно -->
+<div id="modal" class="fixed inset-0 flex items-center justify-center hidden bg-gray-800 bg-opacity-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
+        <h2 class="text-xl font-bold mb-4">Выбор водителя и грузовика</h2>
+
+        <div id="drivers-list" class="mb-4">
+            <h3 class="font-semibold">Водители:</h3>
+            <div id="drivers-container"></div>
+        </div>
+
+        <div id="trucks-list" class="mb-4">
+            <h3 class="font-semibold">Грузовики:</h3>
+            <div id="trucks-container"></div>
+        </div>
+
+        <div class="flex justify-end">
+            <button onclick="closeModal()"
+                    class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-lg mr-2">
+                Отмена
+            </button>
+            <button onclick="submitSelection()"
+                    class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg">
+                Назначить
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     document.getElementById('fetch-orders').addEventListener('click', fetchOrders);
 
     async function fetchOrders() {
         try {
-            // Запрос к API для получения заказов
             const response = await fetch('/api/orders/submitting');
             if (!response.ok) {
                 throw new Error(`Ошибка запроса: ${response.status}`);
             }
 
-            const orders = await response.json(); // Парсинг JSON-ответа
-            displayOrders(orders); // Отображение заказов на странице
+            const orders = await response.json();
+            displayOrders(orders);
         } catch (error) {
             console.error('Ошибка при загрузке заказов:', error);
-            alert('Не удалось загрузить заказы. Проверьте консоль для деталей.');
+            alert('Не удалось загрузить заказы.');
         }
     }
 
     function displayOrders(orders) {
         const container = document.getElementById('orders-container');
-        container.innerHTML = ''; // Очистка контейнера
+        container.innerHTML = '';
 
         if (orders.length === 0) {
             container.innerHTML = '<p class="text-gray-500">Нет доступных заказов.</p>';
             return;
         }
 
-        // Создание таблицы
         const table = document.createElement('table');
         table.className = 'min-w-full bg-white border border-gray-300 rounded-lg shadow-md';
 
-        // Заголовки таблицы
         table.innerHTML = `
             <thead class="bg-gray-200">
                 <tr>
@@ -62,6 +87,7 @@
                     <th class="py-2 px-4 border-b text-left">Status</th>
                     <th class="py-2 px-4 border-b text-left">County Map Name</th>
                     <th class="py-2 px-4 border-b text-left">Route Points</th>
+                    <th class="py-2 px-4 border-b text-left">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,33 +96,19 @@
 
         const tbody = table.querySelector('tbody');
 
-        // Добавление строк с заказами
         orders.forEach(order => {
-            const routePoints = order.routePoints
-                .map(rp => `
-                    <div class="mb-2">
-                        <p><strong>City:</strong> ${rp.cityName}</p>
-                        <p><strong>Operation:</strong> ${rp.operationType}</p>
-                        <p><strong>Distance:</strong> ${rp.distance} km</p>
-                        <p><strong>Cargos:</strong></p>
-                        <ul>
-                            ${Array.from(rp.cargoInfo).map(cargo => `
-                                <li>
-                                    Number: ${cargo.number},
-                                    Name: ${cargo.name},
-                                    Weight: ${cargo.weightKg} kg,
-                                    Status: ${cargo.status}
-                                </li>`).join('')}
-                        </ul>
-                    </div>
-                `).join('');
-
             const row = `
                 <tr>
                     <td class="py-2 px-4 border-b">${order.uniqueNumber}</td>
                     <td class="py-2 px-4 border-b">${order.orderStatus}</td>
                     <td class="py-2 px-4 border-b">${order.countyMapName}</td>
-                    <td class="py-2 px-4 border-b">${routePoints}</td>
+                    <td class="py-2 px-4 border-b">...</td>
+                    <td class="py-2 px-4 border-b">
+                        <button onclick="fetchDriversAndTrucks('${order.uniqueNumber}')"
+                                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
+                            Подобрать водителя и грузовик
+                        </button>
+                    </td>
                 </tr>
             `;
 
@@ -105,7 +117,76 @@
 
         container.appendChild(table);
     }
+
+    async function fetchDriversAndTrucks(orderNumber) {
+        try {
+            const response = await fetch(`/api/orders/${orderNumber}`);
+            if (!response.ok) {
+                throw new Error(`Ошибка запроса: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayModal(data, orderNumber);
+        } catch (error) {
+            console.error('Ошибка при загрузке данных:', error);
+            alert('Не удалось загрузить водителей и грузовики.');
+        }
+    }
+
+    function displayModal(data, orderNumber) {
+        document.getElementById('drivers-container').innerHTML = data.drivers.map(driver => `
+            <label class="block">
+                <input type="checkbox" class="driver-checkbox" value="${driver.id}">
+                ${driver.id} ${driver.name} ${driver.secondName} (${driver.status})
+            </label>
+        `).join('');
+
+        document.getElementById('trucks-container').innerHTML = data.trucks.map(truck => `
+            <label class="block">
+                <input type="checkbox" class="truck-checkbox" value="${truck.id}">
+               ${truck.id} ${truck.registrationNumber} (${truck.status})
+            </label>
+        `).join('');
+
+        document.getElementById('modal').classList.remove('hidden');
+        document.getElementById('modal').dataset.orderNumber = orderNumber;
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.add('hidden');
+    }
+
+    async function submitSelection() {
+        const orderNumber = document.getElementById('modal').dataset.orderNumber;
+        const selectedDrivers = [...document.querySelectorAll('.driver-checkbox:checked')].map(cb => cb.value);
+        const selectedTrucks = [...document.querySelectorAll('.truck-checkbox:checked')].map(cb => cb.value);
+
+        if (selectedDrivers.length === 0 || selectedTrucks.length === 0) {
+            alert('Выберите хотя бы одного водителя и один грузовик.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/orders/${orderNumber}/apply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ driverIds: selectedDrivers.map(Number), truckIds: selectedTrucks.map(Number) })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Ошибка запроса: ${response.status}`);
+            }
+
+            alert('Водитель и грузовик успешно назначены!');
+            closeModal();
+        } catch (error) {
+            console.error('Ошибка при отправке данных:', error);
+            alert('Не удалось назначить водителя и грузовик.');
+        }
+    }
 </script>
 </body>
 </html>
+
+
 
