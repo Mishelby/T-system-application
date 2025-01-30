@@ -34,7 +34,16 @@ public class DriverController {
         );
     }
 
-    @GetMapping("/driver/{driverId}")
+    @GetMapping(value = "/without-truck")
+    public ResponseEntity<List<DriverWithoutTruckDto>> findAllWithoutTruck() {
+        log.info("Ger request for find all drivers without truck");
+        var allDiversWithoutTruck = driverService.findAllDiversWithoutTruck();
+
+        return ResponseEntity.ok()
+                .body(allDiversWithoutTruck);
+    }
+
+    @GetMapping(value = "/driver/{driverId}")
     public ResponseEntity<DriverInfo> findInformationById(
             @PathVariable("driverId") Long driverId
     ) {
@@ -53,7 +62,7 @@ public class DriverController {
         return ResponseEntity.ok(driverMapper.toDto(savedDriver));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}")
     public ResponseEntity<DriverDto> updateDriver(
             @PathVariable("id") Long id,
             @RequestBody DriverDto driverDto
@@ -67,7 +76,7 @@ public class DriverController {
         return ResponseEntity.ok(driverMapper.toDto(updatedDriver));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<DriverDto> getDriverById(
             @PathVariable Long id
     ) {
@@ -78,7 +87,7 @@ public class DriverController {
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteDriverById(
             @PathVariable Long id
     ) {

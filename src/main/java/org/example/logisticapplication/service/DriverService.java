@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -253,4 +254,15 @@ public class DriverService {
                 .collect(Collectors.toSet());
     }
 
+    public List<DriverWithoutTruckDto> findAllDiversWithoutTruck() {
+        var driversWithoutTruck = driverRepository.findDriversWithoutTruck();
+
+        if(driversWithoutTruck.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return driversWithoutTruck.stream()
+                .map(driverMapper::toDtoWithoutTruck)
+                .toList();
+    }
 }

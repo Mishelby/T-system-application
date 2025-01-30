@@ -20,16 +20,13 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     @Query("SELECT d FROM DriverEntity d")
     List<DriverEntity> findAllDrivers();
 
+    @EntityGraph(attributePaths = {"currentCity", "currentTruck"})
     @Query("""
-            SELECT COUNT(*) = 0 
-            FROM DriverEntity d 
-            WHERE d.currentTruck.registrationNumber = :number
-            AND d.personNumber <> :personNumber
+            SELECT d 
+            FROM DriverEntity d
+            WHERE d.currentTruck IS NULL
             """)
-    boolean existsTruckByDriverId(
-            @Param("personNumber") Long personNumber,
-            @Param("number") String number
-    );
+    List<DriverEntity> findDriversWithoutTruck();
 
     boolean existsByPersonNumber(Long personNumber);
 
@@ -79,24 +76,6 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("truckId") Long currentTruckId
     );
 
-    @EntityGraph(attributePaths = {
-            "currentTruck",
-            "currentTruck.drivers",
-            "personNumber",
-            "currentTruck.registrationNumber",
-    })
-    @Query("""
-                SELECT d
-                FROM DriverEntity d
-                WHERE d.id IN (
-                    SELECT dor.driver.id
-                    FROM DriverOrderEntity dor
-                    WHERE dor.order.id = :orderId
-                )
-            """)
-    List<DriverEntity> findDriversForOrderId(
-            @Param("orderId") Long orderId
-    );
 
     @Modifying
     @Query(value = """
@@ -153,7 +132,6 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("status") String status
     );
 
-    List<DriverEntity> findDriverEntityByName(String name);
 
     @Query("SELECT d FROM DriverEntity d WHERE d.personNumber = :personNumber")
     Optional<DriverEntity> findDriverEntityByPersonNumber(Long personNumber);

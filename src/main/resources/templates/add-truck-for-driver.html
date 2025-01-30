@@ -41,7 +41,7 @@
             margin-bottom: 0.5em;
         }
 
-        input, button {
+        select, button {
             width: 100%;
             padding: 0.8em;
             margin-bottom: 1.5em;
@@ -82,52 +82,135 @@
 <div class="container">
     <h1>Add Truck to Driver</h1>
 
-    <form id="add-truck-form" autocomplete="off">
-        <label for="driverId">Driver ID:</label>
-        <input type="number" id="driverId" name="driverId" required placeholder="Enter Driver ID">
+    <!-- Выпадающий список водителей -->
+    <label for="driverSelect">Select Driver:</label>
+    <select id="driverSelect">
+        <option value="">Loading...</option>
+    </select>
 
-        <label for="truckId">Truck ID:</label>
-        <input type="number" id="truckId" name="truckId" required placeholder="Enter Truck ID">
+    <!-- Выпадающий список грузовиков -->
+    <label for="truckSelect">Select Truck:</label>
+    <select id="truckSelect" disabled>
+        <option value="">Select a driver first</option>
+    </select>
 
-        <button type="submit">Add Truck</button>
-    </form>
+    <button id="assignTruckBtn" disabled>Add Truck</button>
 
     <div id="response"></div>
 </div>
 
 <script>
-    document.getElementById('add-truck-form').addEventListener('submit', async (event) => {
-        event.preventDefault();
+    document.addEventListener("DOMContentLoaded", async () => {
+        const driverSelect = document.getElementById("driverSelect");
+        const truckSelect = document.getElementById("truckSelect");
+        const assignTruckBtn = document.getElementById("assignTruckBtn");
+        const responseDiv = document.getElementById("response");
 
-        const driverId = document.getElementById('driverId').value;
-        const truckId = document.getElementById('truckId').value;
-        const responseDiv = document.getElementById('response');
+        // 1. Загрузка списка водителей без грузовиков
+        async function loadDrivers() {
+            try {
+                const response = await fetch("/api/drivers/without-truck");
+                if (!response.ok) throw new Error("Failed to load drivers");
 
-        responseDiv.textContent = 'Processing...';
-        responseDiv.className = '';
+                const drivers = await response.json();
+                driverSelect.innerHTML = '<option value="">Select a driver</option>';
 
-        try {
-            const response = await fetch(`/api/drivers/${driverId}/add-truck/${truckId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+                drivers.forEach(driver => {
+                    const option = document.createElement("option");
+                    option.value = driver.id || driver.driverId;
+                    option.textContent = `ID: ${driver.id || driver.driverId} - ${driver.name}`;
+                    driverSelect.appendChild(option);
+                });
 
-            if (response.ok) {
-                const result = await response.json();
-                responseDiv.textContent = `Truck successfully added to driver: ${JSON.stringify(result)}`;
-                responseDiv.className = 'success';
-            } else {
-                const error = await response.text();
-                responseDiv.textContent = `Error: ${error}`;
-                responseDiv.className = 'error';
+            } catch (error) {
+                driverSelect.innerHTML = '<option value="">Error loading drivers</option>';
+                console.error(error);
             }
-        } catch (error) {
-            responseDiv.textContent = `Request failed: ${error.message}`;
-            responseDiv.className = 'error';
         }
+
+        // 2. Загрузка списка доступных грузовиков при выборе водителя
+        async function loadTrucksForDriver(driverId) {
+            truckSelect.innerHTML = '<option value="">Loading...</option>';
+            truckSelect.disabled = true;
+            assignTruckBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/trucks/for-driver?driverId=${driverId}`);
+                if (!response.ok) throw new Error("Failed to load trucks");
+
+                const trucks = await response.json();
+                truckSelect.innerHTML = '<option value="">Select a truck</option>';
+
+                trucks.forEach(truck => {
+                    const option = document.createElement("option");
+                    option.value = truck.id;
+                    option.textContent = `№${truck.registrationNumber} - ${truck.capacity} tons`;
+                    truckSelect.appendChild(option);
+                });
+
+                truckSelect.disabled = false;
+
+            } catch (error) {
+                truckSelect.innerHTML = '<option value="">Error loading trucks</option>';
+                console.error(error);
+            }
+        }
+
+        // 3. Обработчик выбора водителя
+        driverSelect.addEventListener("change", () => {
+            const driverId = driverSelect.value;
+            if (driverId) {
+                loadTrucksForDriver(driverId);
+            } else {
+                truckSelect.innerHTML = '<option value="">Select a driver first</option>';
+                truckSelect.disabled = true;
+                assignTruckBtn.disabled = true;
+            }
+        });
+
+        // 4. Обработчик выбора грузовика
+        truckSelect.addEventListener("change", () => {
+            assignTruckBtn.disabled = !truckSelect.value;
+        });
+
+        // 5. Отправка запроса на назначение грузовика водителю
+        assignTruckBtn.addEventListener("click", async () => {
+            const driverId = driverSelect.value;
+            const truckId = truckSelect.value;
+
+            if (!driverId || !truckId) return;
+
+            responseDiv.textContent = "Processing...";
+            responseDiv.className = "";
+
+            try {
+                const response = await fetch(`/api/drivers/${driverId}/add-truck/${truckId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    responseDiv.textContent = `Truck successfully added to driver: ${JSON.stringify(result)}`;
+                    responseDiv.className = "success";
+                    await loadDrivers(); // Обновляем список водителей после назначения
+                } else {
+                    const error = await response.text();
+                    responseDiv.textContent = `Error: ${error}`;
+                    responseDiv.className = "error";
+                }
+            } catch (error) {
+                responseDiv.textContent = `Request failed: ${error.message}`;
+                responseDiv.className = "error";
+            }
+        });
+
+        // Запускаем загрузку водителей при старте страницы
+        await loadDrivers();
     });
 </script>
 </body>
 </html>
+

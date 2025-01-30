@@ -51,6 +51,9 @@ public class OrderService {
     private final DistanceRepository distanceRepository;
     private final OrderDistanceRepository orderDistanceRepository;
 
+    private static final String LOADING_OPERATION = OperationType.LOADING.name();
+    private static final String UNLOADING_OPERATION = OperationType.UNLOADING.name();
+
     @Transactional
     public BaseOrderInfo createBaseOrder(
             CreateBaseOrder createBaseOrder
@@ -123,7 +126,7 @@ public class OrderService {
 
     private static long totalWeight(OrderEntity orderEntity) {
         return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
+                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
                 .flatMap(rp -> rp.getCargo().stream())
                 .map(CargoEntity::getWeightKg)
                 .mapToLong(Long::longValue)
@@ -132,7 +135,7 @@ public class OrderService {
 
     private static Long getOperationCityId(OrderEntity orderEntity) {
         return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
+                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
                 .map(RoutePointEntity::getCity)
                 .findFirst()
                 .get()
@@ -220,12 +223,12 @@ public class OrderService {
             Set<RoutePointEntity> routePointEntities
     ) {
         var cityEntityFrom = routePointEntities.stream()
-                .filter(rp -> OperationType.LOADING.name().equals(rp.getOperationType()))
+                .filter(rp -> LOADING_OPERATION.equals(rp.getOperationType()))
                 .map(RoutePointEntity::getCity)
                 .toList().getFirst();
 
         var cityEntityTo = routePointEntities.stream()
-                .filter(rp -> OperationType.UNLOADING.name().equals(rp.getOperationType()))
+                .filter(rp -> LOADING_OPERATION.equals(rp.getOperationType()))
                 .map(RoutePointEntity::getCity)
                 .toList().getFirst();
 
@@ -332,7 +335,7 @@ public class OrderService {
                 new RoutePointInfoDto(
                         cityFrom,
                         Set.of(cargoInfoDto),
-                        OperationType.LOADING.name(),
+                        LOADING_OPERATION,
                         distance
                 )
         );
@@ -341,7 +344,7 @@ public class OrderService {
                 new RoutePointInfoDto(
                         cityTo,
                         Set.of(cargoInfoDto),
-                        OperationType.UNLOADING.name(),
+                        UNLOADING_OPERATION,
                         distance
                 )
         );
@@ -374,7 +377,7 @@ public class OrderService {
     ) {
         return createBaseOrder.routePointInfoDto()
                 .stream()
-                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
+                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
                 .findFirst()
                 .map(RoutePointInfoDto::getCityName)
                 .flatMap(countryMapRepository::findByCityName)
@@ -404,7 +407,7 @@ public class OrderService {
                 .map(rp -> {
                     var cargoEntityList = rp.getCargoInfo()
                             .stream()
-                            .filter(cargo -> OperationType.LOADING.name().equals(rp.getOperationType()))
+                            .filter(cargo -> LOADING_OPERATION.equals(rp.getOperationType()))
                             .map(cargoMapper::toEntity)
                             .toList();
 

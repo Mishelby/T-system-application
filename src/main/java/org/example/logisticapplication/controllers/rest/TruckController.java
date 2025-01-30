@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckDto;
+import org.example.logisticapplication.domain.Truck.TruckForDriverDto;
 import org.example.logisticapplication.service.TruckService;
 import org.example.logisticapplication.mapper.TruckMapper;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,17 @@ public class TruckController {
 
 
         return ResponseEntity.ok(dtoTrucks);
+    }
+
+    @GetMapping(value = "/for-driver")
+    public ResponseEntity<List<TruckForDriverDto>> findTrucksForDriver(
+            @RequestParam("driverId") Long driverId
+    ){
+        log.info("Get request for find trucks for driver");
+        var truckForDriver = truckService.findTruckForDriver(driverId);
+
+        return ResponseEntity.ok()
+                .body(truckForDriver);
     }
 
     @GetMapping("/free-trucks")

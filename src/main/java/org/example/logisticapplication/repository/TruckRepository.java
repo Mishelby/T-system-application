@@ -23,6 +23,18 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
     @Query("SELECT COUNT(t) > 0 FROM TruckEntity t WHERE t.registrationNumber = :registrationNumber")
     boolean existsByRegistrationNumber(String registrationNumber);
 
+    @Query("""
+            SELECT t 
+            FROM TruckEntity t
+            LEFT JOIN FETCH TruckOrderEntity tor ON t.id = tor.truck.id
+            WHERE t.currentCity.id = :cityId            
+            AND t.status = :status            
+            AND tor.truck.id IS NULL            
+            """)
+    List<TruckEntity>findTruckForDriver(
+            @Param("cityId") Long cityId,
+            @Param("status") String truckStatus
+    );
 
     @Query("SELECT t FROM TruckEntity t WHERE :currentDriver MEMBER OF t.drivers")
     List<TruckEntity> findAllByCurrentDriver(DriverEntity currentDriver);

@@ -2,6 +2,7 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -144,6 +146,25 @@ public class TruckService {
 
         return freeTrucks.stream()
                 .map(truckMapper::toDomain)
+                .toList();
+    }
+
+    public List<TruckForDriverDto> findTruckForDriver(
+            Long driverId
+    ) {
+        var driverEntity = driverRepository.findById(driverId).orElseThrow();
+
+        var truckForDriver = truckRepository.findTruckForDriver(
+                driverEntity.getCurrentCity().getId(),
+                TruckStatus.SERVICEABLE.name()
+        );
+
+        if(truckForDriver.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return truckForDriver.stream()
+                .map(truckMapper::toDto)
                 .toList();
     }
 }

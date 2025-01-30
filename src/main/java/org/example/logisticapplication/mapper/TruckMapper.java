@@ -1,9 +1,6 @@
 package org.example.logisticapplication.mapper;
 
-import org.example.logisticapplication.domain.Truck.Truck;
-import org.example.logisticapplication.domain.Truck.TruckDto;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
-import org.example.logisticapplication.domain.Truck.TruckInfoDto;
+import org.example.logisticapplication.domain.Truck.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -26,6 +23,13 @@ public interface TruckMapper {
     Truck toDomain(TruckEntity truck);
 
     TruckDto toDto(Truck truck);
+
+    @Mappings({
+            @Mapping(target = "id", source = "entity.id"),
+            @Mapping(target = "registrationNumber", source = "entity.registrationNumber"),
+            @Mapping(target = "capacity", source = "entity.capacity"),
+    })
+    TruckForDriverDto toDto(TruckEntity entity);
 
     Truck toDomain(TruckDto truckDto);
 

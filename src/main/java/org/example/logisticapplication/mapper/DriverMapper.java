@@ -74,4 +74,12 @@ public  interface DriverMapper {
     })
     List<DriverOrderInfo> toOrderInfo(List<DriverEntity> entity);
 
+    @Mappings({
+            @Mapping(target = "driverId", source = "entity.id"),
+            @Mapping(target = "name", source = "entity.name"),
+            @Mapping(target = "secondName", source = "entity.secondName"),
+            @Mapping(target = "currentCityName", source = "entity.currentCity.name"),
+    })
+    DriverWithoutTruckDto toDtoWithoutTruck(DriverEntity entity);
+
 }
