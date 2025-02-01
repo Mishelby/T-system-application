@@ -1,7 +1,7 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Distance.DistanceEntity;
-import org.example.logisticapplication.domain.OrderDistanceEntity;
+import org.example.logisticapplication.domain.OrderDistanceEntity.OrderDistanceEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

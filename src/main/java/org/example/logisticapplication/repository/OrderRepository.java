@@ -52,7 +52,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             WHERE doe.driver.id IS NULL AND toe.truck.id IS NULL
             ORDER BY o.id ASC
             """)
-    List<OrderEntity> findOrdersForSubmit();
+    List<OrderEntity> findOrdersForSubmit(Pageable pageable);
 
     @Query("SELECT o FROM OrderEntity o WHERE o.uniqueNumber = :number")
     Optional<OrderEntity> findOrderEntityByNumber(

@@ -38,3 +38,4 @@ truck:
 
 default:
   number-of-hours-worked: 0
+  size-of-submitting-orders: 10

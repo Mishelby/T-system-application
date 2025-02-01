@@ -30,6 +30,9 @@ public class TruckEntity {
     @Column(name = "size_of_driver_shift")
     private Integer driversShift;
 
+    @Column(name = "seats", nullable = false)
+    private Integer numberOfSeats;
+
     @Column(name = "condition")
     @Pattern(regexp = "SERVICEABLE|FAULTY", message = "Invalid truck condition")
     private String status;
@@ -61,4 +64,5 @@ public class TruckEntity {
     }
 
     public TruckEntity() {}
+
 }

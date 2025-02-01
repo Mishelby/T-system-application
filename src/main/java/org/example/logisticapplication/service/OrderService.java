@@ -13,7 +13,7 @@ import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
-import org.example.logisticapplication.domain.OrderDistanceEntity;
+import org.example.logisticapplication.domain.OrderDistanceEntity.OrderDistanceEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -23,6 +23,9 @@ import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,8 @@ public class OrderService {
     private final DistanceRepository distanceRepository;
     private final OrderDistanceRepository orderDistanceRepository;
 
+    @Value("${default.size-of-submitting-orders}")
+    private int defaultSize;
     private static final String LOADING_OPERATION = OperationType.LOADING.name();
     private static final String UNLOADING_OPERATION = OperationType.UNLOADING.name();
 
@@ -117,34 +122,22 @@ public class OrderService {
         );
     }
 
-    private DistanceEntity findDistanceEntityByOrderId(OrderEntity orderEntity) {
-        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId()).orElseThrow(
-                () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
-                        .formatted(orderEntity.getId()))
-        );
-    }
-
-    private static long totalWeight(OrderEntity orderEntity) {
-        return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
-                .flatMap(rp -> rp.getCargo().stream())
-                .map(CargoEntity::getWeightKg)
-                .mapToLong(Long::longValue)
-                .sum();
-    }
-
-    private static Long getOperationCityId(OrderEntity orderEntity) {
-        return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
-                .map(RoutePointEntity::getCity)
-                .findFirst()
-                .get()
-                .getId();
-    }
-
     @Transactional(readOnly = true)
-    public List<OrderInfo> gerOrdersForSubmit() {
-        var ordersForSubmit = orderRepository.findOrdersForSubmit();
+    public List<OrderInfo> gerOrdersForSubmit(
+            DefaultSubmittingSize defaultSubmittingSize
+    ) {
+
+        if (defaultSubmittingSize == null) {
+            defaultSubmittingSize = new DefaultSubmittingSize(0, defaultSize);
+        }
+
+        var pageRequest = PageRequest.of(
+                defaultSubmittingSize.page(),
+                defaultSubmittingSize.size() != null ? defaultSubmittingSize.size() : defaultSize,
+                Sort.by(Sort.Direction.ASC, "id")
+        );
+
+        var ordersForSubmit = orderRepository.findOrdersForSubmit(pageRequest);
 
         if (ordersForSubmit.isEmpty()) {
             return Collections.emptyList();
@@ -185,15 +178,6 @@ public class OrderService {
         return new CreateBaseOrder(routePointInfoDto);
     }
 
-    private DistanceEntity getDistanceEntity(
-            OrderEntity orderEntity
-    ) {
-        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId())
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
-                                .formatted(orderEntity.getId())
-                        ));
-    }
 
     @Transactional
     public void applyForOrder(
@@ -204,6 +188,7 @@ public class OrderService {
         var driversById = driverRepository.findDriversById(driversAndTrucks.driverIds());
         var trucksById = truckRepository.findTrucksById(driversAndTrucks.truckIds());
 
+
         var driverOrderEntities = driversById.stream()
                 .map(driver -> new DriverOrderEntity(orderEntity, driver))
                 .collect(Collectors.toSet());
@@ -212,11 +197,69 @@ public class OrderService {
                 .map(truck -> new TruckOrderEntity(orderEntity, truck))
                 .collect(Collectors.toSet());
 
-        orderEntity.getDriverOrders().clear();
-        orderEntity.getTruckOrders().clear();
+        addDriverToTruck(trucksById, driversById);
+        clearOrderDriversAndTruckInfo(orderEntity);
 
         orderEntity.getDriverOrders().addAll(driverOrderEntities);
         orderEntity.getTruckOrders().addAll(truckOrderEntities);
+    }
+
+    private void addDriverToTruck(
+            List<TruckEntity> trucksById,
+            List<DriverEntity> driversById
+    ) {
+        int counter = 0;
+
+        if (trucksById.size() < 2) {
+            var firstTruck = trucksById.getFirst();
+            addDriversToTruck(firstTruck, driversById);
+            driversById.forEach(driver -> driver.setCurrentTruck(firstTruck));
+        }
+
+        if(trucksById.size() >= 2){
+            if(driversById.size() == 1) throw new IllegalArgumentException("Can't have more than 2 trucks");
+
+            for (DriverEntity driverEntity : driversById) {
+                var truckEntity = trucksById.get(counter);
+                truckEntity.getDrivers().add(driverEntity);
+                driverEntity.setCurrentTruck(truckEntity);
+                counter++;
+
+                if(counter >= trucksById.size()) counter = 0;
+            }
+
+        }
+
+    }
+
+
+    private void addDriversToTruck(
+            TruckEntity truck,
+            List<DriverEntity> drivers
+    ) {
+        if ((truck.getDrivers().size() + drivers.size()) <= truck.getNumberOfSeats()) {
+            truck.getDrivers().addAll(drivers);
+        } else {
+            throw new IllegalArgumentException("There is not enough space in the truck with number = %s!"
+                    .formatted(truck.getRegistrationNumber()));
+        }
+    }
+
+    private static void clearOrderDriversAndTruckInfo(
+            OrderEntity orderEntity
+    ) {
+        orderEntity.getDriverOrders().clear();
+        orderEntity.getTruckOrders().clear();
+    }
+
+    private DistanceEntity getDistanceEntity(
+            OrderEntity orderEntity
+    ) {
+        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId())
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
+                                .formatted(orderEntity.getId())
+                        ));
     }
 
     private DistanceEntity getDistanceEntity(
@@ -228,7 +271,7 @@ public class OrderService {
                 .toList().getFirst();
 
         var cityEntityTo = routePointEntities.stream()
-                .filter(rp -> LOADING_OPERATION.equals(rp.getOperationType()))
+                .filter(rp -> UNLOADING_OPERATION.equals(rp.getOperationType()))
                 .map(RoutePointEntity::getCity)
                 .toList().getFirst();
 
@@ -276,6 +319,30 @@ public class OrderService {
         orderDistanceRepository.save(orderDistanceEntity);
     }
 
+    private DistanceEntity findDistanceEntityByOrderId(OrderEntity orderEntity) {
+        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
+                        .formatted(orderEntity.getId()))
+        );
+    }
+
+    private static long totalWeight(OrderEntity orderEntity) {
+        return orderEntity.getRoutePoints().stream()
+                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
+                .flatMap(rp -> rp.getCargo().stream())
+                .map(CargoEntity::getWeightKg)
+                .mapToLong(Long::longValue)
+                .sum();
+    }
+
+    private static Long getOperationCityId(OrderEntity orderEntity) {
+        return orderEntity.getRoutePoints().stream()
+                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
+                .map(RoutePointEntity::getCity)
+                .findFirst()
+                .get()
+                .getId();
+    }
 
     public void saveDistance(
             String cityFrom,

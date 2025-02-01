@@ -11,6 +11,7 @@ public record OrderMainInfo(
         String uniqueNumber,
         String orderStatus,
         String countyMapName,
+        List<String> driversNumbers,
         List<RoutePointInfoDto> routePoints,
         List<TruckInfoDto> truckOrder
 ) {

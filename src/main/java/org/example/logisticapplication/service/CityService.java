@@ -6,6 +6,8 @@ import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
 import org.example.logisticapplication.mapper.CityMapper;
+import org.example.logisticapplication.web.CityNotFoundException;
+import org.example.logisticapplication.web.CountryMapNotFoundException;
 import org.example.logisticapplication.web.EntityAlreadyExistsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,14 +42,12 @@ public class CityService {
     public City addNewCity(
             City city
     ) {
-        /**
-         * Checking is city already exists?
-         */
         validateCityDoesNotExist(city.name());
 
-        var countryMapEntity = countryMapRepository.findById(city.countryMapId()).orElseThrow(
-                () -> entityNotFound("Country Map", city.countryMapId())
-        );
+        var countryMapEntity = countryMapRepository.findByCountryName(city.countryMapName())
+                .orElseThrow(
+                        () -> countryMapNotFound(city.countryMapName())
+                );
 
         var savedCity = cityRepository.save(
                 cityMapper.toEntity(city, countryMapEntity)
@@ -55,6 +55,30 @@ public class CityService {
 
 
         return cityMapper.toDomain(savedCity);
+    }
+
+    @Transactional(readOnly = true)
+    public City findById(
+            Long id
+    ) {
+        var cityEntity = cityRepository.findById(id).orElseThrow(
+                () -> cityNotFound(id)
+        );
+
+        return cityMapper.toDomain(cityEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<City> findAllCities() {
+        var allCities = cityRepository.findAll();
+
+        if (allCities.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return allCities.stream()
+                .map(cityMapper::toDomain)
+                .toList();
     }
 
     public void validateCityDoesNotExist(
@@ -73,30 +97,17 @@ public class CityService {
                 .formatted(entityName, id));
     }
 
-    @Transactional(readOnly = true)
-    public City findById(
-            Long id
+    private CountryMapNotFoundException countryMapNotFound(
+            String name
     ) {
-        var cityEntity = cityRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException(
-                        "City with id=%s not found!"
-                                .formatted(id)
-                )
-        );
-
-        return cityMapper.toDomain(cityEntity);
+        return new CountryMapNotFoundException("Country Map with name = %s not found"
+                .formatted(name));
     }
 
-    @Transactional(readOnly = true)
-    public List<City> findAllCities() {
-        var allCities = cityRepository.findAll();
-
-        if(allCities.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return allCities.stream()
-                .map(cityMapper::toDomain)
-                .toList();
+    private <T> CityNotFoundException cityNotFound(
+            T param
+    ) {
+        return new CityNotFoundException("City with param = %s not found"
+                .formatted(param));
     }
 }

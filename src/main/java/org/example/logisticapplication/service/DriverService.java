@@ -3,6 +3,7 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.*;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
@@ -151,9 +152,11 @@ public class DriverService {
             );
         }
 
+        var driverNumbers = getDriverNumbers(driverId, orderEntity);
+
         var routePointInfoDto = getRoutePointInfoDto(orderEntity, driverEntity);
         var truckInfoDto = getTruckInfoDto(orderEntity);
-        var orderMainInfo = getOrderMainInfo(orderEntity, routePointInfoDto, truckInfoDto);
+        var orderMainInfo = getOrderMainInfo(orderEntity, routePointInfoDto, driverNumbers, truckInfoDto);
 
         return new DriverMainInfoDto(
                 driverEntity.getName(),
@@ -189,15 +192,29 @@ public class DriverService {
     private static OrderMainInfo getOrderMainInfo(
             OrderEntity orderEntity,
             List<RoutePointInfoDto> routePointInfoDto,
+            List<String> anotherDriverNumbers,
             List<TruckInfoDto> truckInfoDto
     ) {
         return new OrderMainInfo(
                 orderEntity.getUniqueNumber(),
                 orderEntity.getStatus(),
                 orderEntity.getCountryMap().getCountryName(),
+                anotherDriverNumbers,
                 routePointInfoDto,
                 truckInfoDto
         );
+    }
+
+    private static List<String> getDriverNumbers(
+            Long driverId,
+            OrderEntity orderEntity
+    ) {
+        return orderEntity.getDriverOrders().stream()
+                .map(DriverOrderEntity::getDriver)
+                .filter(driver -> !driver.getId().equals(driverId))
+                .map(DriverEntity::getPersonNumber)
+                .map(String::valueOf)
+                .toList();
     }
 
     private List<TruckInfoDto> getTruckInfoDto(
@@ -257,7 +274,7 @@ public class DriverService {
     public List<DriverWithoutTruckDto> findAllDiversWithoutTruck() {
         var driversWithoutTruck = driverRepository.findDriversWithoutTruck();
 
-        if(driversWithoutTruck.isEmpty()) {
+        if (driversWithoutTruck.isEmpty()) {
             return Collections.emptyList();
         }
 

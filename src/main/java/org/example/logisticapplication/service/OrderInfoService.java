@@ -38,11 +38,11 @@ public class OrderInfoService {
     public List<OrderInfo> findLastOrders(
             Integer countOfLastOrders
     ) {
-
         Pageable pageable = PageRequest.of(
                 0,
                 countOfLastOrders != null ? countOfLastOrders : 3,
-                Sort.by(Sort.Direction.DESC, "id"));
+                Sort.by(Sort.Direction.DESC, "id")
+        );
 
         var lastOrders = orderRepository.findLast(pageable);
 

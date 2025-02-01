@@ -7,67 +7,269 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
+
 <div class="container mx-auto p-8">
     <h1 class="text-3xl font-bold mb-6 text-center">Панель администратора</h1>
 
-    <div class="mb-6">
-        <button id="fetch-orders"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300">
-            Показать текущие заявки на заказ
-        </button>
+    <!-- Грид для формы создания грузовика и других разделов -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Форма создания грузовика -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Создать новый грузовик</h2>
+            <form id="truck-form" class="space-y-4">
+                <div>
+                    <label class="block mb-2 font-semibold">Количество мест:</label>
+                    <input type="number" id="numberOfSeats" required min="1" class="w-full p-2 border rounded-md mb-4">
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Город:</label>
+                    <select id="cityList" required class="w-full p-2 border rounded-md mb-4">
+                        <option value="">Загрузка...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Грузоподъемность:</label>
+                    <input type="number" id="capacity" required step="0.01" class="w-full p-2 border rounded-md mb-4">
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Статус:</label>
+                    <select id="status" required class="w-full p-2 border rounded-md mb-4">
+                        <option value="SERVICEABLE">SERVICEABLE</option>
+                        <option value="FAULTY">FAULTY</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md w-full">
+                        Создать грузовик
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Форма создания карты страны -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Создание карты страны</h2>
+            <form id="countryForm" class="space-y-4">
+                <div>
+                    <label for="countryName" class="block mb-2 font-semibold">Введите название страны:</label>
+                    <input type="text" id="countryName" name="name" required class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md w-full">
+                        Создать карту
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Форма создания города -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Создание города</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2 font-semibold">Название города</label>
+                    <input type="text" id="city-name" class="w-full border rounded-lg px-4 py-2" placeholder="Введите название города">
+                </div>
+
+                <div>
+                    <label class="block mb-2 font-semibold">Страна</label>
+                    <select id="country-select" class="w-full border rounded-lg px-4 py-2">
+                        <option value="">Выберите страну</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button onclick="createCity()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg w-full">
+                        Создать город
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно для выбора водителя и грузовика -->
+        <div id="modal" class="fixed inset-0 flex items-center justify-center hidden bg-gray-800 bg-opacity-50">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
+                <h2 class="text-xl font-bold mb-4">Выбор водителя и грузовика</h2>
+
+                <div id="drivers-list" class="mb-4">
+                    <h3 class="font-semibold">Водители:</h3>
+                    <div id="drivers-container"></div>
+                </div>
+
+                <div id="trucks-list" class="mb-4">
+                    <h3 class="font-semibold">Грузовики:</h3>
+                    <div id="trucks-container"></div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="closeModal()" class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-lg mr-2">
+                        Отмена
+                    </button>
+                    <button onclick="submitSelection()" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg">
+                        Назначить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопка загрузки заказов -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Заказы</h2>
+            <button id="fetch-orders" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300">
+                Показать текущие заявки на заказ
+            </button>
+        </div>
     </div>
 
-    <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md">
+    <!-- Контейнер для заказов -->
+    <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md mt-6">
         <!-- Здесь будут отображены заказы -->
     </div>
 </div>
 
-<!-- Модальное окно -->
-<div id="modal" class="fixed inset-0 flex items-center justify-center hidden bg-gray-800 bg-opacity-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
-        <h2 class="text-xl font-bold mb-4">Выбор водителя и грузовика</h2>
+</body>
+</html>
 
-        <div id="drivers-list" class="mb-4">
-            <h3 class="font-semibold">Водители:</h3>
-            <div id="drivers-container"></div>
-        </div>
-
-        <div id="trucks-list" class="mb-4">
-            <h3 class="font-semibold">Грузовики:</h3>
-            <div id="trucks-container"></div>
-        </div>
-
-        <div class="flex justify-end">
-            <button onclick="closeModal()"
-                    class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-lg mr-2">
-                Отмена
-            </button>
-            <button onclick="submitSelection()"
-                    class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg">
-                Назначить
-            </button>
-        </div>
-    </div>
-</div>
 
 <script>
-    document.getElementById('fetch-orders').addEventListener('click', fetchOrders);
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCities();
+    });
 
-    async function fetchOrders() {
+    document.getElementById('fetch-orders').addEventListener('click', fetchOrders);
+    document.getElementById('truck-form').addEventListener('submit', submitTruck);
+
+    // Загрузка списка городов
+    async function loadCities() {
         try {
-            const response = await fetch('/api/orders/submitting');
+            const response = await fetch('/api/cities');
+            if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+
+            const cities = await response.json();
+            const citySelect = document.getElementById('cityList');
+            citySelect.innerHTML = cities.map(city =>
+                `<option value="${city.name}">${city.name}</option>`).join('');
+        } catch (error) {
+            console.error('Ошибка загрузки городов:', error);
+            alert('Не удалось загрузить список городов.');
+        }
+    }
+
+    async function loadCountries() {
+        try {
+            const response = await fetch('/api/countries');
+            if (!response.ok) throw new Error('Ошибка: ' + response.status);
+
+            const countries = await response.json();
+            const countriesSelect = document.getElementById('country-select');
+            countriesSelect.innerHTML = countries.map(country =>
+                `<option value="${country.name}">${country.name}</option>`).join('');
+        } catch (error) {
+            console.error(error);
+            alert('Не удалось загрузить список стран!');
+        }
+    }
+
+    async function createCity() {
+        const cityName = document.getElementById('city-name').value.trim();
+        const countryName = document.getElementById('country-select').value;
+
+        if (!cityName || !countryName) {
+            alert('Заполните все поля!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/cities/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: cityName, countryMapName: countryName })
+            });
+
             if (!response.ok) {
                 throw new Error(`Ошибка запроса: ${response.status}`);
             }
 
+            alert('Город успешно создан!');
+            document.getElementById('city-name').value = '';
+            document.getElementById('country-select').value = '';
+        } catch (error) {
+            console.error('Ошибка при создании города:', error);
+            alert('Не удалось создать город.');
+        }
+    }
+    window.onload = loadCountries;
+
+    document.getElementById("countryForm").addEventListener("submit", function(event) {
+        event.preventDefault();  // Предотвращаем стандартное поведение формы
+
+        // Получаем значение имени страны
+        var countryName = document.getElementById("countryName").value;
+
+        // Отправляем запрос на сервер
+        fetch("/api/countries", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name: countryName })  // Отправляем имя страны в теле запроса
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Вы можете обработать ответ от сервера здесь
+                console.log("Response from server:", data);
+                alert("Country map created successfully!");
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to create country map.");
+            });
+    });
+
+    // Отправка формы создания грузовика
+    async function submitTruck(event) {
+        event.preventDefault();
+
+        const truckData = {
+            numberOfSeats: parseInt(document.getElementById('numberOfSeats').value, 10),
+            currentCityName: document.getElementById('cityList').value,
+            capacity: parseFloat(document.getElementById('capacity').value),
+            status: document.getElementById('status').value
+        };
+
+        try {
+            const response = await fetch('/api/trucks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(truckData)
+            });
+
+            if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+
+            alert('Грузовик успешно создан!');
+            document.getElementById('truck-form').reset();
+        } catch (error) {
+            console.error('Ошибка при создании грузовика:', error);
+            alert('Не удалось создать грузовик.');
+        }
+    }
+
+    // Загрузка заказов
+    async function fetchOrders() {
+        try {
+            const response = await fetch('/api/orders/submitting');
+            if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+
             const orders = await response.json();
             displayOrders(orders);
         } catch (error) {
-            console.error('Ошибка при загрузке заказов:', error);
+            console.error('Ошибка загрузки заказов:', error);
             alert('Не удалось загрузить заказы.');
         }
     }
 
+    // Отображение заказов
     function displayOrders(orders) {
         const container = document.getElementById('orders-container');
         container.innerHTML = '';
@@ -90,8 +292,7 @@
                     <th class="py-2 px-4 border-b text-left">Actions</th>
                 </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
         `;
 
         const tbody = table.querySelector('tbody');
@@ -111,7 +312,6 @@
                     </td>
                 </tr>
             `;
-
             tbody.innerHTML += row;
         });
 
@@ -124,7 +324,6 @@
             if (!response.ok) {
                 throw new Error(`Ошибка запроса: ${response.status}`);
             }
-
             const data = await response.json();
             displayModal(data, orderNumber);
         } catch (error) {
@@ -144,7 +343,7 @@
         document.getElementById('trucks-container').innerHTML = data.trucks.map(truck => `
             <label class="block">
                 <input type="checkbox" class="truck-checkbox" value="${truck.id}">
-               ${truck.id} ${truck.registrationNumber} (${truck.status})
+                ${truck.id} ${truck.registrationNumber} (${truck.status})
             </label>
         `).join('');
 
@@ -184,6 +383,7 @@
             alert('Не удалось назначить водителя и грузовик.');
         }
     }
+
 </script>
 </body>
 </html>

@@ -54,9 +54,6 @@ public class CountryMapService {
     public CountryMap createNewCountryMap(
             CountryMap countryMap
     ) {
-        /**
-         * Checking is country map already exists?
-         */
         isCountryMapAlreadyExists(countryMap);
 
         var entity = countryMapRepository.save(
@@ -65,7 +62,9 @@ public class CountryMapService {
         return countryMapMapper.toDomain(entity);
     }
 
-    private void isCountryMapAlreadyExists(CountryMap countryMap) {
+    private void isCountryMapAlreadyExists(
+            CountryMap countryMap
+    ) {
         if (countryMapRepository.existsCountryMapEntitiesByCountryName(countryMap.name())) {
             throw new IllegalArgumentException(
                     "Country with name=%s already exists"

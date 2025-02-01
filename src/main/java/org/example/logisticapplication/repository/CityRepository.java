@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface CityRepository extends JpaRepository<CityEntity, Long> {
-    @Query("SELECT COUNT(*) > 0 FROM CityEntity c WHERE c.name =:name")
+    @Query("SELECT COUNT(*) > 0 FROM CityEntity c WHERE c.name = :name")
     boolean existsCityEntityByName(@Param("name") String name);
 
     @Query(value = """

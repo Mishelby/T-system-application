@@ -77,9 +77,11 @@ public class OrderController {
     }
 
     @GetMapping("/submitting")
-    public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(){
+    public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(
+            @RequestParam(value = "defaultValue", required = false) DefaultSubmittingSize defaultSubmittingSize
+    ){
         log.info("Get request for submitting orders");
-        var orderInfo = orderService.gerOrdersForSubmit();
+        var orderInfo = orderService.gerOrdersForSubmit(defaultSubmittingSize);
 
         return ResponseEntity.ok()
                 .body(orderInfo);

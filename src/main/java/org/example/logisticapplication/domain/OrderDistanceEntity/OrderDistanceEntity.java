@@ -1,4 +1,4 @@
-package org.example.logisticapplication.domain;
+package org.example.logisticapplication.domain.OrderDistanceEntity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

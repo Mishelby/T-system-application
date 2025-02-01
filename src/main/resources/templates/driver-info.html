@@ -153,6 +153,7 @@
         <!-- Информация о заказе -->
         <div class="order-info">
             <h2>Информация о заказе</h2>
+            <p><strong>Номера напарников:</strong> <span th:text="${driverInfo.orderInfoDto.driversNumbers}"></span></p>
             <p><strong>Уникальный номер заказа:</strong> <span th:text="${driverInfo.orderInfoDto.uniqueNumber}"></span></p>
             <p><strong>Статус заказа:</strong> <span th:text="${driverInfo.orderInfoDto.orderStatus}"></span></p>
             <p><strong>Название карты округа:</strong> <span th:text="${driverInfo.orderInfoDto.countyMapName}"></span></p>

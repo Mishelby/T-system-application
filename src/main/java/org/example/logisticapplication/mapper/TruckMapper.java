@@ -1,11 +1,12 @@
 package org.example.logisticapplication.mapper;
 
+import org.example.logisticapplication.domain.City.City;
+import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.Mappings;
+import org.mapstruct.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
@@ -23,6 +24,34 @@ public interface TruckMapper {
     Truck toDomain(TruckEntity truck);
 
     TruckDto toDto(Truck truck);
+
+    @Mappings({
+            @Mapping(target = "id", ignore = true),
+            @Mapping(target = "registrationNumber", source = "generatedNumber"),
+            @Mapping(target = "numberOfSeats", source = "truckDto.numberOfSeats"),
+            @Mapping(target = "status", source = "truckDto.status"),
+            @Mapping(target = "currentCity", source = "city"),
+            @Mapping(target = "capacity", source = "truckDto.capacity")
+    })
+    TruckEntity toEntity(
+            CreateTruckDto truckDto,
+            String generatedNumber,
+            CityEntity city
+    );
+
+    @AfterMapping
+    default void defaultListOfDrivers(@MappingTarget TruckEntity truck) {
+       if(truck.getDrivers() == null) {
+           truck.setDrivers(new ArrayList<>());
+       }
+    }
+
+    @AfterMapping
+    default void setDefaultDriversShift(@MappingTarget TruckEntity truck) {
+        if (truck.getDriversShift() == null) {
+            truck.setDriversShift(0);
+        }
+    }
 
     @Mappings({
             @Mapping(target = "id", source = "entity.id"),

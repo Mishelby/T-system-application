@@ -3,6 +3,7 @@ package org.example.logisticapplication.controllers.rest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.domain.Truck.CreateTruckDto;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckDto;
 import org.example.logisticapplication.domain.Truck.TruckForDriverDto;
@@ -23,7 +24,7 @@ public class TruckController {
 
     @PostMapping
     public ResponseEntity<TruckDto> createTruck(
-            @Valid @RequestBody Truck truck
+            @Valid @RequestBody CreateTruckDto truck
     ) {
         log.info("Get request for creating truck: {}", truck);
         var savedTruck = truckService.createNewTruck(truck);

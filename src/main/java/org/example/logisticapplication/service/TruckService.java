@@ -2,13 +2,16 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Truck.*;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.TruckRepository;
 import org.example.logisticapplication.mapper.TruckMapper;
+import org.example.logisticapplication.utils.GenerateNumberForTruck;
 import org.example.logisticapplication.utils.TruckValidHelper;
+import org.example.logisticapplication.web.CityNotFoundException;
+import org.example.logisticapplication.web.TruckAlreadyExists;
 import org.example.logisticapplication.web.TruckDeletionException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -27,36 +30,31 @@ public class TruckService {
     private final DriverRepository driverRepository;
     private final CityRepository cityRepository;
 
-    // Create new truck
     @Transactional
     public Truck createNewTruck(
-            Truck truck
+            CreateTruckDto truck
     ) {
-        if (truckRepository.existsByRegistrationNumber(truck.registrationNumber())) {
-            throw new IllegalArgumentException(
-                    "Truck already exists with registration number=%s"
-                            .formatted(truck.registrationNumber()));
+        var registrationNumber = GenerateNumberForTruck.generateNumberForTruck();
+
+        if (truckRepository.existsByRegistrationNumber(registrationNumber)) {
+            throw new TruckAlreadyExists("Truck with registration number %s already exists"
+                    .formatted(registrationNumber)
+            );
         }
 
-        var newTruck = truckRepository.save(
-                truckMapper.toEntity(truck)
-        );
+        var cityEntity = getCityEntity(truck);
 
-        var cityEntity = cityRepository.findById(truck.currentCityId()).orElseThrow(
-                () -> new IllegalArgumentException(
-                        "City does not exist with id=%s"
-                                .formatted(truck.currentCityId())
+        var savedTruck = truckRepository.save(
+                truckMapper.toEntity(
+                        truck,
+                        registrationNumber,
+                        cityEntity
                 )
         );
 
-        newTruck.setCurrentCity(
-                cityEntity
-        );
-
-        return truckMapper.toDomain(newTruck);
+        return truckMapper.toDomain(savedTruck);
     }
 
-    // Find truck by id
     @Transactional(readOnly = true)
     public Truck findById(
             Long id
@@ -70,7 +68,6 @@ public class TruckService {
         return truckMapper.toDomain(truckEntity);
     }
 
-    // Find all trucks
     @Transactional(readOnly = true)
     public List<Truck> findAll() {
         var allTrucks = truckRepository.findAll();
@@ -85,7 +82,6 @@ public class TruckService {
                 .toList();
     }
 
-    // Delete truck
     @Transactional
     public void deleteTruck(
             Long id
@@ -96,7 +92,7 @@ public class TruckService {
                 )
         );
 
-        if(!driverRepository.isTruckInOrder(truckEntity)) {
+        if (!driverRepository.isTruckInOrder(truckEntity)) {
             throw new TruckDeletionException("Truck with id = %s is currently assigned to an order"
                     .formatted(id));
         }
@@ -140,7 +136,7 @@ public class TruckService {
                 TruckStatus.SERVICEABLE.name()
         );
 
-        if(freeTrucks.isEmpty()) {
+        if (freeTrucks.isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -159,12 +155,19 @@ public class TruckService {
                 TruckStatus.SERVICEABLE.name()
         );
 
-        if(truckForDriver.isEmpty()) {
+        if (truckForDriver.isEmpty()) {
             return Collections.emptyList();
         }
 
         return truckForDriver.stream()
                 .map(truckMapper::toDto)
                 .toList();
+    }
+
+    private CityEntity getCityEntity(CreateTruckDto truck) {
+        return cityRepository.findCityEntityByName(truck.currentCityName()).orElseThrow(
+                () -> new CityNotFoundException("City with name %s not found"
+                        .formatted(truck.currentCityName()))
+        );
     }
 }
