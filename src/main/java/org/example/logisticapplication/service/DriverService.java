@@ -159,6 +159,7 @@ public class DriverService {
         var orderMainInfo = getOrderMainInfo(orderEntity, routePointInfoDto, driverNumbers, truckInfoDto);
 
         return new DriverMainInfoDto(
+                driverId,
                 driverEntity.getName(),
                 driverEntity.getPersonNumber().toString(),
                 orderMainInfo

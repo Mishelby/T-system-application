@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Service
@@ -39,18 +41,9 @@ public class BusinessLogicService implements DriverLogicService {
             Long truckId
     ) {
 
-        /**
-         *  Find driver and truck by id
-         */
         var driverEntity = driverValidHelper.findDriverById(driverId);
         var truckEntity = driverValidHelper.findTruckById(truckId);
 
-        /**
-         * Validation for checking:
-         * the driver is not in this truck,
-         * the driver and the truck are in the same city,
-         * there are places in the truck
-         */
         driverValidHelper.validateDriverNotAssignedToTruck(driverEntity, truckEntity);
         driverValidHelper.validateTruckBelongsToDriverCity(driverEntity, truckEntity);
         driverValidHelper.validateTruckHasAvailableSeats(truckEntity);
@@ -69,9 +62,6 @@ public class BusinessLogicService implements DriverLogicService {
             Long driverId,
             String status
     ) {
-        /**
-         * Check correct status for driver {correct: ON_SHIFT, REST}
-         */
         BusinessLogicHelper.isValidShiftStatus(status);
 
         var driverEntity = getDriverEntity(driverId);
@@ -79,9 +69,8 @@ public class BusinessLogicService implements DriverLogicService {
 
         switch (ShiftStatus.valueOf(status)) {
             case ON_SHIFT -> {
-                // TODO нужна ли эта проверка?
                 if (currentShift != null && currentShift.getEndShift() == null) {
-                    throw new TransactionSystemException("Driver already on shift: %s".formatted(driverId));
+                    throw new IllegalArgumentException("Driver already on shift: %s".formatted(driverId));
                 }
 
                 var newShift = new DriverShift(driverEntity, LocalDateTime.now(clock));
@@ -115,14 +104,17 @@ public class BusinessLogicService implements DriverLogicService {
             DriverEntity driverEntity
     ) {
         var workedDuration = Duration.between(currentShift.getStartShift(), endShift);
+
         var minutes = workedDuration.toMinutes();
-        var extraHours = minutes % 60 >= 30 ? 1 : 0;
-        var countOfWorkedHours = (int) (minutes / 60) + extraHours;
+        int workedHours = minutes < 30
+                ? 0
+                : (int) (minutes / 60 + (minutes % 60 >= 30 ? 1 : 0));
+
 
         currentShift.setEndShift(endShift);
-        currentShift.setHoursWorked(countOfWorkedHours);
+        currentShift.setHoursWorked(workedHours);
         driverEntity.setNumberOfHoursWorked(
-                driverEntity.getNumberOfHoursWorked() + countOfWorkedHours
+                driverEntity.getNumberOfHoursWorked()  + workedHours
         );
     }
 
@@ -141,10 +133,28 @@ public class BusinessLogicService implements DriverLogicService {
             Long driverId,
             String status
     ) {
-        /**
-         * Check correct status for driver {correct: DRIVING, THE_SECOND_DRIVER, LOADING_UNLOADING_OPERATIONS}
-         */
         BusinessLogicHelper.isValidDriverStatus(status);
+
+        var driverEntity = driverRepository.findById(driverId).orElseThrow();
+
+        if (driverEntity.getStatus().equals(ShiftStatus.REST.getStatusName())) {
+            throw new IllegalArgumentException("A driver on vacation cannot change their status.: %s"
+                    .formatted(driverId));
+        }
+
+        var anotherDrivers = driverEntity.getCurrentTruck().getDrivers()
+                .stream()
+                .filter(driver -> !driver.getId().equals(driverId))
+                .toList();
+
+        if (!anotherDrivers.isEmpty() && anotherDrivers
+                .stream()
+                .anyMatch(anotherDriver -> anotherDriver.getStatus().equals(status))
+        ) {
+            throw new IllegalArgumentException("Only one driver in truck can have driving status: %s"
+                    .formatted(status));
+        }
+
         driverRepository.changeDriverStatusById(driverId, status);
     }
 

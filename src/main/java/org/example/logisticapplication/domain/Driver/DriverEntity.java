@@ -27,7 +27,7 @@ public class DriverEntity {
     private Long personNumber;
 
     @Column(name = "num_of_hours_worked")
-    private Integer numberOfHoursWorked;
+    private Double numberOfHoursWorked;
 
     @Column(name = "driver_status", nullable = false)
     @Pattern(regexp = "REST|ON_SHIFT|DRIVING|THE_SECOND_DRIVER|LOADING_UNLOADING_OPERATIONS", message = "Invalid driver status")
@@ -46,7 +46,7 @@ public class DriverEntity {
             String name,
             String secondName,
             Long personNumber,
-            Integer numberOfHoursWorked,
+            Double numberOfHoursWorked,
             String status,
             CityEntity currentCity,
             TruckEntity currentTruck

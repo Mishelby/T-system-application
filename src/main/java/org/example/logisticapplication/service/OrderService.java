@@ -208,30 +208,28 @@ public class OrderService {
             List<TruckEntity> trucksById,
             List<DriverEntity> driversById
     ) {
-        int counter = 0;
+        int[] counter = {0};
 
-        if (trucksById.size() < 2) {
+        if (trucksById.size() == 1) {
             var firstTruck = trucksById.getFirst();
             addDriversToTruck(firstTruck, driversById);
             driversById.forEach(driver -> driver.setCurrentTruck(firstTruck));
         }
 
-        if(trucksById.size() >= 2){
-            if(driversById.size() == 1) throw new IllegalArgumentException("Can't have more than 2 trucks");
+        if (trucksById.size() >= 2) {
+            if (driversById.size() == 1) throw new IllegalArgumentException("Can't have more than 2 trucks");
 
-            for (DriverEntity driverEntity : driversById) {
-                var truckEntity = trucksById.get(counter);
-                truckEntity.getDrivers().add(driverEntity);
-                driverEntity.setCurrentTruck(truckEntity);
-                counter++;
+            driversById.forEach(driver -> {
+                var truckEntity = trucksById.get(counter[0]);
+                truckEntity.getDrivers().add(driver);
+                driver.setCurrentTruck(truckEntity);
 
-                if(counter >= trucksById.size()) counter = 0;
-            }
+                counter[0] = (counter[0] + 1) % trucksById.size();
+            });
 
         }
 
     }
-
 
     private void addDriversToTruck(
             TruckEntity truck,

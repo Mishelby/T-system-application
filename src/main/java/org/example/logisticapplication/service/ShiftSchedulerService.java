@@ -28,13 +28,26 @@ public class ShiftSchedulerService {
     @Scheduled(fixedRate = 10, timeUnit = TimeUnit.MINUTES)
     public void schedulePoolSizeUpdater() {
         executorService.scheduleAtFixedRate(
-                this::updateExecutorServiceBasedOnDriversInShift,
+                this::updateExecutorService,
                 0,
                 10,
                 TimeUnit.MINUTES);
     }
 
-    public void autoCloseExpiredShifts(DriverShift driverShift) {
+    @Transactional
+    public void updateExecutorService() {
+        var driversInShift = driverRepository.findDriversInShift(ShiftStatus.ON_SHIFT.name());
+        int poolSize = Math.max(driversInShift, 1);
+
+        executorService.shutdown();
+        executorService = Executors.newScheduledThreadPool(poolSize);
+
+        log.info("New pool size updated to: {}", poolSize);
+    }
+
+    public void autoCloseExpiredShifts(
+            DriverShift driverShift
+    ) {
         executorService.schedule(() -> closeShift(driverShift), 12, TimeUnit.HOURS);
     }
 
@@ -65,16 +78,6 @@ public class ShiftSchedulerService {
         }
     }
 
-    @Transactional
-    public void updateExecutorServiceBasedOnDriversInShift() {
-        var driversInShift = driverRepository.findDriversInShift(ShiftStatus.ON_SHIFT.name());
-        int poolSize = Math.max(driversInShift, 1);
-
-        executorService.shutdown();
-        executorService = Executors.newScheduledThreadPool(poolSize);
-
-        log.info("New pool size updated to: {}", poolSize);
-    }
 
     @PreDestroy
     public void shutdownExecutor() {

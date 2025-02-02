@@ -70,7 +70,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             @Param("name") String name,
             @Param("secondName") String lastName,
             @Param("personNumber") Long personNumber,
-            @Param("numberOfHoursWorked") Integer numberOfHoursWorked,
+            @Param("numberOfHoursWorked") Double numberOfHoursWorked,
             @Param("status") String status,
             @Param("cityId") Long currentCityId,
             @Param("truckId") Long currentTruckId

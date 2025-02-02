@@ -42,7 +42,7 @@ class DriverControllerTest {
                 "John",
                 "Doe",
                 657853219L,
-                0,
+                0.0,
                 DriverStatus.fromDisplayName("REST").getDisplayName(),
                 1L,
                 null

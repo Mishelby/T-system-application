@@ -107,6 +107,7 @@ public class TruckService {
             Long id,
             Truck updateTruck
     ) {
+
         if (!truckRepository.existsById(id)) {
             throw new EntityNotFoundException(
                     TruckValidHelper.getDEFAULT_MESSAGE().formatted(id)

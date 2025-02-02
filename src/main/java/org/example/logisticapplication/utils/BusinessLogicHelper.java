@@ -14,7 +14,9 @@ public class BusinessLogicHelper {
      *
      * @param status the status to be validated
      */
-    public static void isValidShiftStatus(String status) {
+    public static void isValidShiftStatus(
+            String status
+    ) {
         boolean isValid = Arrays.stream(ShiftStatus.values())
                 .anyMatch(value -> value.name().equalsIgnoreCase(status));
 
@@ -26,7 +28,9 @@ public class BusinessLogicHelper {
         }
     }
 
-    public static void isValidDriverStatus(String status) {
+    public static void isValidDriverStatus(
+            String status
+    ) {
         boolean isValid = Arrays.stream(DriverStatus.values())
                 .anyMatch(value -> value.name().equalsIgnoreCase(status));
 

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Информация о водителе</title>
     <style>
         /* Общие стили для страницы */
@@ -82,11 +82,13 @@
         }
 
         /* Стиль для информации о грузе и грузовиках */
-        .cargo-info, .truck-info {
+        .cargo-info,
+        .truck-info {
             margin-top: 20px;
         }
 
-        .cargo-info li, .truck-info li {
+        .cargo-info li,
+        .truck-info li {
             padding: 8px;
             margin-bottom: 10px;
             background-color: #fff;
@@ -94,12 +96,13 @@
             border-radius: 6px;
         }
 
-        .cargo-info li p, .truck-info li p {
+        .cargo-info li p,
+        .truck-info li p {
             margin: 5px 0;
         }
 
         /* Стили для кнопки возврата */
-        a {
+        a.button {
             display: inline-block;
             background-color: #4CAF50;
             color: #fff;
@@ -111,7 +114,44 @@
             transition: background-color 0.3s;
         }
 
-        a:hover {
+        a.button:hover {
+            background-color: #45a049;
+        }
+
+        /* Стили для форм изменения статусов */
+        form.status-form {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e9f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+        }
+
+        form.status-form label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        form.status-form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        form.status-form button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form.status-form button:hover {
             background-color: #45a049;
         }
 
@@ -134,21 +174,50 @@
                 font-size: 14px;
             }
 
-            .cargo-info li, .truck-info li {
+            .cargo-info li,
+            .truck-info li {
                 font-size: 14px;
             }
         }
-
     </style>
 </head>
 <body>
-
 <div class="container">
     <h1>Информация о водителе</h1>
 
     <div class="info">
         <p><strong>Имя:</strong> <span th:text="${driverInfo.name}"></span></p>
         <p><strong>Телефон:</strong> <span th:text="${driverInfo.phone}"></span></p>
+
+        <!-- Форма для обновления статуса смены -->
+        <form th:action="@{'/api/drivers/' + ${driverInfo.id} + '/work-shift-status'}"
+              class="status-form"
+              onsubmit="event.preventDefault(); updateShiftStatus(this);">
+            <label for="shiftStatus">Статус смены:</label>
+            <select id="shiftStatus" name="status">
+                <!-- Проходим по enum ShiftStatus; замените пакет com.example.enums на актуальный -->
+                <option th:each="status : ${T(org.example.logisticapplication.domain.DriverShift.ShiftStatus).values()}"
+                        th:value="${status.name()}"
+                        th:text="${status.statusName}">
+                </option>
+            </select>
+            <button type="submit">Обновить статус смены</button>
+        </form>
+
+        <!-- Форма для обновления статуса водителя -->
+        <form th:action="@{'/api/drivers/' + ${driverInfo.id} + '/driver-status'}"
+              class="status-form"
+              onsubmit="event.preventDefault(); updateDriverStatus(this);">
+            <label for="driverStatus">Статус водителя:</label>
+            <select id="driverStatus" name="status">
+                <!-- Проходим по enum DriverStatus -->
+                <option th:each="status : ${T(org.example.logisticapplication.domain.Driver.DriverStatus).values()}"
+                        th:value="${status.name()}"
+                        th:text="${status.displayName}">
+                </option>
+            </select>
+            <button type="submit">Обновить статус водителя</button>
+        </form>
 
         <!-- Информация о заказе -->
         <div class="order-info">
@@ -188,13 +257,61 @@
                 </li>
             </ul>
         </div>
-
-        <a href="/driver/login">Вернуться на страницу логина</a>
+        <a href="/driver/login" class="button">Вернуться на страницу логина</a>
     </div>
 </div>
 
+<script>
+    function updateShiftStatus(form) {
+        const url = form.action;
+        const formData = new FormData(form);
+        // Преобразуем данные в формат x-www-form-urlencoded
+        const params = new URLSearchParams();
+        for (const pair of formData.entries()) {
+            params.append(pair[0], pair[1]);
+        }
+
+        fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert("Статус смены успешно обновлён");
+                } else {
+                    alert("Ошибка обновления статуса смены");
+                }
+            })
+            .catch(error => console.error("Ошибка:", error));
+    }
+
+    function updateDriverStatus(form) {
+        const url = form.action;
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        for (const pair of formData.entries()) {
+            params.append(pair[0], pair[1]);
+        }
+
+        fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert("Статус водителя успешно обновлён");
+                } else {
+                    alert("Ошибка обновления статуса водителя");
+                }
+            })
+            .catch(error => console.error("Ошибка:", error));
+    }
+</script>
 </body>
 </html>
+
 
 
 

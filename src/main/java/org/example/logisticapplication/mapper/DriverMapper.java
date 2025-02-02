@@ -33,8 +33,8 @@ public  interface DriverMapper {
     }
 
     @Named("defaultNumberOfHoursWorked")
-    default Integer getDefaultNumberOfHoursWorked() {
-        return 0;
+    default Double getDefaultNumberOfHoursWorked() {
+        return 0.0;
     }
 
     @Mappings({

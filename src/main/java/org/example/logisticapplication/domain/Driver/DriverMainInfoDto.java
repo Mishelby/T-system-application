@@ -13,6 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Setter
 @AllArgsConstructor
 public class DriverMainInfoDto implements DriverInfo{
+    Long id;
     String name;
     String phone;
     OrderMainInfo orderInfoDto;
