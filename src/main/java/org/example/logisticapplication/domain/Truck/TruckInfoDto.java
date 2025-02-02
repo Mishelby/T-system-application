@@ -5,15 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record TruckInfoDto(
         Long id,
-
         String registrationNumber,
-
-        Integer driversShift,
-
+        Double driversShift,
         String status,
-
         Double capacity,
-
         String currentCityName
 ) {
 }

@@ -8,20 +8,12 @@ import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DriverAllInfoDto(
         Long id,
-
         String name,
-
         String secondName,
-
         Long personNumber,
-
-        @JsonProperty("numOfHoursWorked")
-        Integer numberOfHoursWorked,
-
+        Double numberOfHoursWorked,
         String status,
-
         CityInfoDto currentCityInfo,
-
         TruckInfoDto currentTruckInfo
 ) {
 }

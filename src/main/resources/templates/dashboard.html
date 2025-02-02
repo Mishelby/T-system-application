@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .nested-list {
+      list-style-type: none;
+      margin: 0;
+      padding-left: 15px;
+    }
+    .nested-list li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Dashboard</h1>
+
+  <!-- Раздел заказов -->
+  <section id="orders-section">
+    <h2>Orders</h2>
+    <div id="orders">
+      <!-- Данные заказов будут подгружены через JavaScript -->
+    </div>
+  </section>
+
+  <!-- Раздел водителей -->
+  <section id="drivers-section">
+    <h2>Drivers</h2>
+    <div id="drivers">
+      <!-- Данные водителей будут подгружены через JavaScript -->
+    </div>
+  </section>
+
+  <!-- Раздел грузовиков -->
+  <section id="trucks-section">
+    <h2>Trucks</h2>
+    <div id="trucks">
+      <!-- Данные грузовиков будут подгружены через JavaScript -->
+    </div>
+  </section>
+</div>
+
+<script>
+  // При загрузке страницы вызываем метод /dashboard
+  document.addEventListener("DOMContentLoaded", function() {
+    fetch("/dashboard")
+            .then(response => response.json())
+            .then(data => {
+              renderOrders(data.orderTableInfo);
+              renderDrivers(data.allDrivers);
+              renderTrucks(data.allTrucks);
+            })
+            .catch(error => console.error("Error loading dashboard data:", error));
+  });
+
+  // Отрисовка информации о заказах с изменённым порядком столбцов:
+  // теперь сначала выводим Driver Order, затем Truck Order.
+  function renderOrders(orders) {
+    const ordersDiv = document.getElementById("orders");
+    if (!orders || orders.length === 0) {
+      ordersDiv.innerHTML = "<p>No orders available</p>";
+      return;
+    }
+
+    let html = "<table>";
+    html += "<thead><tr>" +
+            "<th>Unique Number</th>" +
+            "<th>Status</th>" +
+            "<th>County Map</th>" +
+            "<th>Route Points</th>" +
+            "<th>Driver Order</th>" +
+            "<th>Truck Order</th>" +
+            "</tr></thead><tbody>";
+
+    orders.forEach(order => {
+      html += "<tr>";
+      html += `<td>${order.uniqueNumber || ""}</td>`;
+      html += `<td>${order.orderStatus || ""}</td>`;
+      html += `<td>${order.countyMapName || ""}</td>`;
+
+      // Отображаем маршрутные точки
+      let routePointsHtml = "";
+      if (order.routePoints && order.routePoints.length > 0) {
+        routePointsHtml += "<ul class='nested-list'>";
+        order.routePoints.forEach(rp => {
+          routePointsHtml += `<li><strong>City:</strong> ${rp.cityName || ""}, <strong>Op:</strong> ${rp.operationType || ""}, <strong>Dist:</strong> ${rp.distance || ""} km`;
+          if (rp.cargoInfo && rp.cargoInfo.length > 0) {
+            routePointsHtml += "<ul class='nested-list'>";
+            rp.cargoInfo.forEach(cargo => {
+              routePointsHtml += `<li><strong>${cargo.number || ""}:</strong> ${cargo.name || ""}, <strong>Weight:</strong> ${cargo.weightKg || ""}, <strong>Status:</strong> ${cargo.status || ""}</li>`;
+            });
+            routePointsHtml += "</ul>";
+          }
+          routePointsHtml += "</li>";
+        });
+        routePointsHtml += "</ul>";
+      }
+      html += `<td>${routePointsHtml}</td>`;
+
+      // Отображаем информацию о водителях, участвующих в заказе (Driver Order)
+      let driverOrderHtml = "";
+      if (order.driverOrder && order.driverOrder.length > 0) {
+        driverOrderHtml += "<ul class='nested-list'>";
+        order.driverOrder.forEach(driver => {
+          driverOrderHtml += `<li><strong>Name:</strong> ${driver.name || ""} ${driver.secondName || ""}, <strong>Person#:</strong> ${driver.personNumber || ""}, <strong>Hours:</strong> ${driver.numberOfHoursWorked || ""}, <strong>Status:</strong> ${driver.status || ""}, <strong>Loc:</strong> ${driver.currentLocation || ""}, <strong>Truck#:</strong> ${driver.currentTruckNumber || ""}</li>`;
+        });
+        driverOrderHtml += "</ul>";
+      }
+      html += `<td>${driverOrderHtml}</td>`;
+
+      // Отображаем информацию о грузовиках, участвующих в заказе (Truck Order)
+      let truckOrderHtml = "";
+      if (order.truckOrder && order.truckOrder.length > 0) {
+        truckOrderHtml += "<ul class='nested-list'>";
+        order.truckOrder.forEach(truck => {
+          truckOrderHtml += `<li><strong>Reg.:</strong> ${truck.registrationNumber || ""}, <strong>Status:</strong> ${truck.status || ""}, <strong>Shift:</strong> ${truck.driversShift || ""}, <strong>Capacity:</strong> ${truck.capacity || ""}, <strong>City:</strong> ${truck.currentCityName || ""}</li>`;
+        });
+        truckOrderHtml += "</ul>";
+      }
+      html += `<td>${truckOrderHtml}</td>`;
+
+      html += "</tr>";
+    });
+
+    html += "</tbody></table>";
+    ordersDiv.innerHTML = html;
+  }
+
+  // Отрисовка информации о водителях (DriverAllInfoDto)
+  function renderDrivers(drivers) {
+    const driversDiv = document.getElementById("drivers");
+    if (!drivers || drivers.length === 0) {
+      driversDiv.innerHTML = "<p>No drivers available</p>";
+      return;
+    }
+
+    let html = "<table>";
+    html += "<thead><tr>" +
+            "<th>ID</th>" +
+            "<th>Name</th>" +
+            "<th>Second Name</th>" +
+            "<th>Person Number</th>" +
+            "<th>Hours Worked</th>" +
+            "<th>Status</th>" +
+            "<th>City</th>" +
+            "<th>County Map</th>" +
+            "<th>Truck Info</th>" +
+            "</tr></thead><tbody>";
+    drivers.forEach(driver => {
+      html += "<tr>";
+      html += `<td>${driver.id || ""}</td>`;
+      html += `<td>${driver.name || ""}</td>`;
+      html += `<td>${driver.secondName || ""}</td>`;
+      html += `<td>${driver.personNumber || ""}</td>`;
+      html += `<td>${driver.numberOfHoursWorked || ""}</td>`;
+      html += `<td>${driver.status || ""}</td>`;
+
+      // Текущий город
+      if (driver.currentCityInfo) {
+        html += `<td>${driver.currentCityInfo.name || ""}</td>`;
+        html += `<td>${driver.currentCityInfo.countyMapName || ""}</td>`;
+      } else {
+        html += `<td>N/A</td><td>N/A</td>`;
+      }
+
+      // Текущий грузовик
+      if (driver.currentTruckInfo) {
+        html += `<td>
+                  <ul class="nested-list">
+                    <li><strong>Reg.:</strong> ${driver.currentTruckInfo.registrationNumber || ""}</li>
+                    <li><strong>Shift:</strong> ${driver.currentTruckInfo.driversShift || ""}</li>
+                    <li><strong>Status:</strong> ${driver.currentTruckInfo.status || ""}</li>
+                    <li><strong>Capacity:</strong> ${driver.currentTruckInfo.capacity || ""}</li>
+                    <li><strong>City:</strong> ${driver.currentTruckInfo.currentCityName || ""}</li>
+                  </ul>
+                 </td>`;
+      } else {
+        html += `<td>N/A</td>`;
+      }
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    driversDiv.innerHTML = html;
+  }
+
+  // Отрисовка информации о грузовиках (TruckInfoDto)
+  function renderTrucks(trucks) {
+    const trucksDiv = document.getElementById("trucks");
+    if (!trucks || trucks.length === 0) {
+      trucksDiv.innerHTML = "<p>No trucks available</p>";
+      return;
+    }
+
+    let html = "<table>";
+    html += "<thead><tr>" +
+            "<th>ID</th>" +
+            "<th>Registration Number</th>" +
+            "<th>Driver Shift</th>" +
+            "<th>Status</th>" +
+            "<th>Capacity</th>" +
+            "<th>Current City</th>" +
+            "</tr></thead><tbody>";
+    trucks.forEach(truck => {
+      html += "<tr>";
+      html += `<td>${truck.id || ""}</td>`;
+      html += `<td>${truck.registrationNumber || ""}</td>`;
+      html += `<td>${truck.driversShift || ""}</td>`;
+      html += `<td>${truck.status || ""}</td>`;
+      html += `<td>${truck.capacity || ""}</td>`;
+      html += `<td>${truck.currentCityName || ""}</td>`;
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    trucksDiv.innerHTML = html;
+  }
+</script>
+</body>
+</html>
+
+

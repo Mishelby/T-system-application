@@ -110,7 +110,6 @@ public class BusinessLogicService implements DriverLogicService {
                 ? 0
                 : (int) (minutes / 60 + (minutes % 60 >= 30 ? 1 : 0));
 
-
         currentShift.setEndShift(endShift);
         currentShift.setHoursWorked(workedHours);
         driverEntity.setNumberOfHoursWorked(

@@ -1,5 +1,8 @@
 package org.example.logisticapplication.domain.Driver;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record DriverOrderInfo(
         Long id,
         String name,
