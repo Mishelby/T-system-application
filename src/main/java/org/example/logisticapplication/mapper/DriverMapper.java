@@ -3,14 +3,16 @@ package org.example.logisticapplication.mapper;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.City.CityInfoDto;
 import org.example.logisticapplication.domain.Driver.*;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
+import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.mapstruct.*;
 
 import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public  interface DriverMapper {
+public interface DriverMapper {
 
     @Mappings({
             @Mapping(target = "status", defaultValue = "SUSPENDED"),
@@ -65,9 +67,50 @@ public  interface DriverMapper {
     @Mappings({
             @Mapping(target = "name", source = "driverEntity.name"),
             @Mapping(target = "number", source = "driverEntity.personNumber"),
-            @Mapping(target = "truckNumber", source = "driverEntity.currentTruck.registrationNumber")
+            @Mapping(target = "truckNumber", source = "driverEntity.currentTruck.registrationNumber"),
+            @Mapping(target = "status", expression = "java(currentDriverStatus(driverEntity,orderEntity))")
     })
-    MainDriverInfoDto toMainInfo(DriverEntity driverEntity);
+    MainDriverInfoDto toMainInfo(
+            DriverEntity driverEntity,
+            List<OrderEntity> orderEntity
+    );
+
+    @Mappings({
+            @Mapping(target = "name", source = "driverEntity.name"),
+            @Mapping(target = "number", source = "driverEntity.personNumber"),
+            @Mapping(target = "truckNumber", source = "driverEntity.currentTruck.registrationNumber"),
+            @Mapping(target = "status", expression = "java(currentDriverStatus(driverEntity,orderEntity))")
+    })
+    MainDriverInfoDto toMainInfo(
+            DriverEntity driverEntity,
+            OrderEntity orderEntity
+    );
+
+    @Named(value = "currentStatusForDriver")
+    default String currentDriverStatus(
+            DriverEntity driverEntity,
+            OrderEntity orderEntity
+    ) {
+        boolean result = orderEntity.getDriverOrders()
+                .stream()
+                .map(DriverOrderEntity::getDriver)
+                .anyMatch(driver -> driver.getId().equals(driverEntity.getId()));
+
+        return result ? "Driver on order" : "The driver is available";
+    }
+
+    @Named(value = "currentStatusForDriver")
+    default String currentDriverStatus(
+            DriverEntity driverEntity,
+            List<OrderEntity> orderEntity
+    ) {
+        boolean result = orderEntity.stream()
+                .flatMap(order -> order.getDriverOrders().stream())
+                .map(DriverOrderEntity::getDriver)
+                .anyMatch(driver -> driver.getId().equals(driverEntity.getId()));
+
+        return result ? "Driver on order" : "The driver is available";
+    }
 
     @Mappings({
             @Mapping(target = "currentLocation", source = "entity.currentCity.name"),

@@ -1,7 +1,7 @@
 package org.example.logisticapplication.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityNotFoundException;
 import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
@@ -21,9 +21,11 @@ import org.example.logisticapplication.utils.MainTableInfoDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -42,9 +44,13 @@ public class MainTableService {
 
     @Transactional(readOnly = true)
     public MainTableInfoDto getAllInfo() {
-        var orderInfoList = getOrderInfos(orderRepository.findAllCurrentOrders());
-        var driverInfo = getDriverInfo(driverRepository.findAll());
-        var truckInfo = getTruckInfo(truckRepository.findAll());
+        var orders = orderRepository.findAllCurrentOrders();
+        var drivers = driverRepository.findAllDrivers();
+        var trucks = truckRepository.findAllTrucks();
+
+        var orderInfoList = getOrderInfos(orders);
+        var driverInfo = getDriverInfo(drivers, orders);
+        var truckInfo = getTruckInfo(trucks);
 
         return new MainTableInfoDto(
                 orderInfoList,
@@ -69,22 +75,25 @@ public class MainTableService {
     }
 
     private List<MainDriverInfoDto> getDriverInfo(
-            List<DriverEntity> drivers
+            List<DriverEntity> drivers,
+            List<OrderEntity> orders
     ) {
         return drivers.stream()
-                .map(driverMapper::toMainInfo)
-                .toList();
+                .sorted(Comparator.comparing(DriverEntity::getId))
+                .map(driver -> driverMapper.toMainInfo(driver, orders))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     private List<MainTruckInfoDto> getTruckInfo(
             List<TruckEntity> trucks
     ) {
         return trucks.stream()
+                .sorted(Comparator.comparing(TruckEntity::getId))
                 .map(truck -> {
                     var driverInfo = new HashMap<String, Long>();
-                    truck.getDrivers().forEach(driver -> {
-                        driverInfo.putIfAbsent(driver.getName(), driver.getPersonNumber());
-                    });
+                    truck.getDrivers().forEach(driver ->
+                        driverInfo.putIfAbsent(driver.getName(), driver.getPersonNumber())
+                    );
 
                     return truckMapper.toMainInfo(truck, driverInfo);
                 }).toList();
@@ -166,7 +175,7 @@ public class MainTableService {
         return order.getDriverOrders()
                 .stream()
                 .map(DriverOrderEntity::getDriver)
-                .map(driverMapper::toMainInfo)
+                .map(driverEntity -> driverMapper.toMainInfo(driverEntity, order))
                 .toList();
     }
 

@@ -1,7 +1,6 @@
 package org.example.logisticapplication.domain.Order;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
 import org.example.logisticapplication.domain.Driver.MainDriverInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.MainTruckInfoDto;

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record MainDriverInfoDto(
         String name,
         Integer number,
+        String status,
         String truckNumber
 ) {
 }

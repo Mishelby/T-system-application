@@ -27,6 +27,7 @@ public interface TruckMapper {
     @Mappings({
             @Mapping(target = "registrationNumber", source = "truck.registrationNumber"),
             @Mapping(target = "driversInfo", source = "driversInfo"),
+            @Mapping(target = "status", source = "truck.status")
     })
     MainTruckInfoDto toMainInfo(
             TruckEntity truck,
