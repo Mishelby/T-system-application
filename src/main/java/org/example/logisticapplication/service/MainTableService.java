@@ -135,7 +135,8 @@ public class MainTableService {
             OrderEntity order,
             OperationType type
     ) {
-        return order.getRoutePoints().stream()
+        return order.getRoutePoints()
+                .stream()
                 .filter(rop -> rop.getOperationType().equals(type.name()))
                 .map(RoutePointEntity::getCity)
                 .findFirst()
@@ -156,7 +157,8 @@ public class MainTableService {
     private List<MainTruckInfoDto> getTruckInfo(
             OrderEntity order
     ) {
-        return order.getTruckOrders().stream()
+        return order.getTruckOrders()
+                .stream()
                 .map(TruckOrderEntity::getTruck)
                 .map(truckEntity -> {
                     var driverInfo = new HashMap<String, Long>();
