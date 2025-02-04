@@ -1,5 +1,6 @@
 package org.example.logisticapplication.repository;
 
+import org.aspectj.weaver.ast.Or;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,18 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             LEFT JOIN FETCH o.truckOrders             
             """)
     List<OrderEntity> findLast(Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT o 
+            FROM OrderEntity o  
+            LEFT JOIN FETCH DriverOrderEntity dor ON dor.order.id = o.id
+            LEFT JOIN FETCH TruckOrderEntity tor ON tor.order.id = o.id
+            LEFT JOIN FETCH DriverEntity driver ON driver.id = dor.driver.id
+            LEFT JOIN FETCH TruckEntity truck ON truck.id = tor.truck.id          
+            WHERE dor.driver.id IS NOT NULL
+            AND tor.order.id IS NOT NULL                                 
+            """)
+    List<OrderEntity> findAllCurrentOrders();
 
     @EntityGraph(attributePaths = {"countryMap"})
     @Query("""

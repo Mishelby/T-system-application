@@ -1,16 +1,20 @@
 package org.example.logisticapplication.mapper;
 
+import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverOrderInfo;
+import org.example.logisticapplication.domain.Driver.MainDriverInfoDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 
 import org.example.logisticapplication.domain.RoutePoint.BaseOrder;
+import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
+import org.example.logisticapplication.domain.Truck.MainTruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
@@ -65,6 +69,21 @@ public interface OrderMapper {
             BaseOrder baseOrder,
             Set<RoutePointEntity> routePointEntities,
             CountryMapEntity countryMapEntity
+    );
+
+    @Mappings({
+            @Mapping(target = "uniqueNumber", source = "orderEntity.uniqueNumber"),
+            @Mapping(target = "orderStatus", source = "orderEntity.status"),
+            @Mapping(target = "countyMapName", source = "orderEntity.countryMap.countryName"),
+            @Mapping(target = "mainRoutePointInfo", source = "routePointInfo"),
+            @Mapping(target = "mainDriverInfo", source = "driverInfo"),
+            @Mapping(target = "mainTruckInfo", source = "truckInfo")
+    })
+    MainOrderInfoDto toMainInfoDto(
+            OrderEntity orderEntity,
+            List<MainRoutePointInfoDto> routePointInfo,
+            List<MainDriverInfoDto> driverInfo,
+            List<MainTruckInfoDto> truckInfo
     );
 
     @Mappings({

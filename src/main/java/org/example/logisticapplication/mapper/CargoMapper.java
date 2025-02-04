@@ -23,6 +23,11 @@ public interface CargoMapper {
     })
     CargoInfoDto toDtoInfo(CargoEntity cargo);
 
+    @Mappings({
+            @Mapping(target = "number", source = "cargo.number"),
+            @Mapping(target = "weight", source = "cargo.weightKg")
+    })
+    MainCargoInfoDto toMainInfo(CargoEntity cargo);
 
     @Mappings({
             @Mapping(target = "name", source = "cargoDto.name"),

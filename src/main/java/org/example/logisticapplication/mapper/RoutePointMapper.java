@@ -2,6 +2,7 @@ package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
+import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.mapstruct.Mapper;
@@ -36,6 +37,19 @@ public interface RoutePointMapper {
             RoutePointInfoDto routePointInfoDto,
             List<CargoEntity> cargoEntities,
             CityEntity cityEntity
+    );
+
+    @Mappings({
+            @Mapping(target = "cityFrom", source = "valueFrom"),
+            @Mapping(target = "cityTo", source = "valueTo"),
+            @Mapping(target = "distance", source = "distance"),
+            @Mapping(target = "cargoInfoDto", source = "cargo"),
+    })
+    MainRoutePointInfoDto toMainInfo(
+            String valueFrom,
+            String valueTo,
+            Long distance,
+            MainCargoInfoDto cargo
     );
 
     @Mappings({

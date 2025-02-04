@@ -63,6 +63,13 @@ public  interface DriverMapper {
     );
 
     @Mappings({
+            @Mapping(target = "name", source = "driverEntity.name"),
+            @Mapping(target = "number", source = "driverEntity.personNumber"),
+            @Mapping(target = "truckNumber", source = "driverEntity.currentTruck.registrationNumber")
+    })
+    MainDriverInfoDto toMainInfo(DriverEntity driverEntity);
+
+    @Mappings({
             @Mapping(target = "currentLocation", source = "entity.currentCity.name"),
             @Mapping(target = "currentTruckNumber", source = "entity.currentTruck.registrationNumber")
     })

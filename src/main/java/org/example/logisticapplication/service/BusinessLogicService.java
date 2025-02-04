@@ -12,14 +12,13 @@ import org.example.logisticapplication.utils.BusinessLogicHelper;
 import org.example.logisticapplication.mapper.DriverMapper;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @Service
@@ -105,19 +104,21 @@ public class BusinessLogicService implements DriverLogicService {
     ) {
         var workedDuration = Duration.between(currentShift.getStartShift(), endShift);
 
-        var minutes = workedDuration.toMinutes();
-        int workedHours = minutes < 30
-                ? 0
-                : (int) (minutes / 60 + (minutes % 60 >= 30 ? 1 : 0));
+        var hours = workedDuration.toHours();
+        var minutes = hours >= 1 ? workedDuration.toMinutes() % 60 : workedDuration.toMinutes();
+        var totalTime = hours + (minutes / 60.0);
+        var roundedTime = BigDecimal.valueOf(totalTime).setScale(1, RoundingMode.HALF_UP);
 
         currentShift.setEndShift(endShift);
-        currentShift.setHoursWorked(workedHours);
+        currentShift.setHoursWorked(roundedTime.doubleValue());
         driverEntity.setNumberOfHoursWorked(
-                driverEntity.getNumberOfHoursWorked()  + workedHours
+                driverEntity.getNumberOfHoursWorked()  + roundedTime.doubleValue()
         );
     }
 
-    private DriverShift getDriverShift(Long driverId) {
+    private DriverShift getDriverShift(
+            Long driverId
+    ) {
         return driverShiftRepository.findByDriverId(driverId).orElse(null);
     }
 

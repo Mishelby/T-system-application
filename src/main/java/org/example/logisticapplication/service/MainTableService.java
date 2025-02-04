@@ -1,134 +1,173 @@
 package org.example.logisticapplication.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
+import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
-import org.example.logisticapplication.domain.Driver.DriverOrderInfo;
+import org.example.logisticapplication.domain.Driver.MainDriverInfoDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
+import org.example.logisticapplication.domain.Order.MainOrderInfoDto;
 import org.example.logisticapplication.domain.Order.OrderEntity;
-import org.example.logisticapplication.domain.Order.OrderInfo;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
+import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
+import org.example.logisticapplication.domain.RoutePoint.OperationType;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
+import org.example.logisticapplication.domain.Truck.MainTruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
-import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.mapper.*;
-import org.example.logisticapplication.repository.CityRepository;
-import org.example.logisticapplication.repository.DriverRepository;
-import org.example.logisticapplication.repository.OrderRepository;
-import org.example.logisticapplication.repository.TruckRepository;
+import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.MainTableInfoDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 
 @Service
 @RequiredArgsConstructor
 public class MainTableService {
     private final OrderRepository orderRepository;
-    private final DriverRepository driverRepository;
-    private final TruckRepository truckRepository;
     private final CargoMapper cargoMapper;
     private final RoutePointMapper routePointMapper;
     private final OrderMapper orderMapper;
     private final DriverMapper driverMapper;
     private final TruckMapper truckMapper;
-    private final CityRepository cityRepository;
-    private final CityMapper cityMapper;
+    private final OrderDistanceRepository orderDistanceRepository;
+    private final DriverRepository driverRepository;
+    private final TruckRepository truckRepository;
 
 
     @Transactional(readOnly = true)
     public MainTableInfoDto getAllInfo() {
-        var orderEntities = orderRepository.findAll();
-        var driversList = driverRepository.findAll();
-        var truckList = truckRepository.findAll();
-
-        var allDriversInfo = getDriverAllInfoDto(driversList);
-        var truckAllInfo = getTruckAllInfo(truckList);
-        var orderInfoList = getOrderInfos(orderEntities);
+        var orderInfoList = getOrderInfos(orderRepository.findAllCurrentOrders());
+        var driverInfo = getDriverInfo(driverRepository.findAll());
+        var truckInfo = getTruckInfo(truckRepository.findAll());
 
         return new MainTableInfoDto(
                 orderInfoList,
-                allDriversInfo,
-                truckAllInfo
+                driverInfo,
+                truckInfo,
+                (long) (driverInfo.isEmpty() ? 0 : driverInfo.size()),
+                (long) (truckInfo.isEmpty() ? 0 : truckInfo.size())
         );
     }
 
-    private List<TruckInfoDto> getTruckAllInfo(
-            List<TruckEntity> truckList
-    ) {
-       return truckList.stream()
-                .map(truckMapper::toInfoDto)
-                .toList();
-    }
-
-    private List<OrderInfo> getOrderInfos(
+    private List<MainOrderInfoDto> getOrderInfos(
             List<OrderEntity> orderEntities
     ) {
         return orderEntities.stream()
                 .map(order -> {
                     var routePoints = getRoutePointInfoDto(order);
-                    var drivers = getDriverOrderInfos(order);
-                    var trucks = getTruckInfoDto(order);
+                    var drivers = getDriverInfoDto(order);
+                    var trucks = getTruckInfo(order);
 
-                    return orderMapper.toOrderInfo(order, routePoints, drivers, trucks);
+                    return orderMapper.toMainInfoDto(order, routePoints, drivers, trucks);
                 }).toList();
     }
 
-    private List<DriverAllInfoDto> getDriverAllInfoDto(
-            List<DriverEntity> driversList
+    private List<MainDriverInfoDto> getDriverInfo(
+            List<DriverEntity> drivers
     ) {
-        return driversList
-                .stream()
-                .map(driver -> {
-                    var cityEntity = cityRepository.findCityEntityByName(driver.getCurrentCity()
-                                    .getName())
-                            .orElseThrow();
+        return drivers.stream()
+                .map(driverMapper::toMainInfo)
+                .toList();
+    }
 
-                    var currentTruck = driver.getCurrentTruck();
-                    var truckInfoDto = truckMapper.toInfoDto(currentTruck);
-                    var cityInfo = cityMapper.toInfoDto(cityEntity);
+    private List<MainTruckInfoDto> getTruckInfo(
+            List<TruckEntity> trucks
+    ) {
+        return trucks.stream()
+                .map(truck -> {
+                    var driverInfo = new HashMap<String, Long>();
+                    truck.getDrivers().forEach(driver -> {
+                        driverInfo.putIfAbsent(driver.getName(), driver.getPersonNumber());
+                    });
 
-                    return driverMapper.toDtoInfo(driver, cityInfo, truckInfoDto);
+                    return truckMapper.toMainInfo(truck, driverInfo);
                 }).toList();
     }
 
-    private List<RoutePointInfoDto> getRoutePointInfoDto(
+    private List<MainRoutePointInfoDto> getRoutePointInfoDto(
             OrderEntity order
     ) {
         return order.getRoutePoints()
                 .stream()
+                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
                 .map(rp -> {
-                    var cargos = rp.getCargo()
-                            .stream()
-                            .map(cargoMapper::toDtoInfo)
-                            .collect(Collectors.toSet());
+                    var cityFrom = getCityEntity(order, OperationType.LOADING);
+                    var cityTo = getCityEntity(order, OperationType.UNLOADING);
+                    var distance = getDistance(order);
+                    var cargos = getCargoInfoDto(rp);
 
-                    return routePointMapper.toInfoDto(rp, cargos);
+                    return routePointMapper.toMainInfo(
+                            cityFrom,
+                            cityTo,
+                            distance,
+                            !cargos.isEmpty()
+                                    ? cargos.getFirst()
+                                    : null
+                    );
                 }).toList();
     }
 
-    private List<TruckInfoDto> getTruckInfoDto(
-            OrderEntity order
+    private List<MainCargoInfoDto> getCargoInfoDto(
+            RoutePointEntity rp
     ) {
-        return order.getTruckOrders()
+        return rp.getCargo()
                 .stream()
-                .map(TruckOrderEntity::getTruck)
-                .map(truckMapper::toInfoDto)
+                .map(cargoMapper::toMainInfo)
                 .toList();
     }
 
-    private List<DriverOrderInfo> getDriverOrderInfos(
+    private static String getCityEntity(
+            OrderEntity order,
+            OperationType type
+    ) {
+        return order.getRoutePoints().stream()
+                .filter(rop -> rop.getOperationType().equals(type.name()))
+                .map(RoutePointEntity::getCity)
+                .findFirst()
+                .map(CityEntity::getName)
+                .get();
+    }
+
+    private Long getDistance(
+            OrderEntity order
+    ) {
+        return orderDistanceRepository.findDistanceEntityByOrder(order.getId()).orElseThrow(
+                () -> new EntityNotFoundException("No distance for order with id = %s"
+                        .formatted(order.getId()))
+        ).getDistance();
+
+    }
+
+    private List<MainTruckInfoDto> getTruckInfo(
+            OrderEntity order
+    ) {
+        return order.getTruckOrders().stream()
+                .map(TruckOrderEntity::getTruck)
+                .map(truckEntity -> {
+                    var driverInfo = new HashMap<String, Long>();
+                    truckEntity.getDrivers().forEach(driver ->
+                            driverInfo.putIfAbsent(driver.getName(), driver.getPersonNumber())
+                    );
+
+                    return truckMapper.toMainInfo(truckEntity, driverInfo);
+                })
+                .toList();
+    }
+
+    private List<MainDriverInfoDto> getDriverInfoDto(
             OrderEntity order
     ) {
         return order.getDriverOrders()
                 .stream()
                 .map(DriverOrderEntity::getDriver)
-                .map(driverMapper::toOrderInfo)
+                .map(driverMapper::toMainInfo)
                 .toList();
     }
-
 
 }

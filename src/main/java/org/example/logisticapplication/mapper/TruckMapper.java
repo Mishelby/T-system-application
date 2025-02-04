@@ -8,6 +8,7 @@ import org.mapstruct.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TruckMapper {
@@ -22,6 +23,15 @@ public interface TruckMapper {
             @Mapping(target = "currentCityId", source = "truck.currentCity.id")
     })
     Truck toDomain(TruckEntity truck);
+
+    @Mappings({
+            @Mapping(target = "registrationNumber", source = "truck.registrationNumber"),
+            @Mapping(target = "driversInfo", source = "driversInfo"),
+    })
+    MainTruckInfoDto toMainInfo(
+            TruckEntity truck,
+            Map<String, Long> driversInfo
+    );
 
     TruckDto toDto(Truck truck);
 

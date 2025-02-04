@@ -27,7 +27,7 @@ public class DriverShift {
     private LocalDateTime endShift;
 
     @Column(name = "hours_worked")
-    private Integer hoursWorked;
+    private Double hoursWorked;
 
     public DriverShift(DriverEntity driver, LocalDateTime startShift) {
         this.driver = driver;
