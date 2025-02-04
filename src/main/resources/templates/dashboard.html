@@ -70,6 +70,21 @@
       margin: 0;
       padding-left: 1rem;
     }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .summary-item {
+      background-color: var(--secondary-color);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -118,17 +133,42 @@
 
   function renderDrivers(drivers) {
     const driversDiv = document.getElementById("drivers");
-    let html = `<table><thead><tr><th>Name</th><th>Number</th><th>Status</th><th>Truck Number</th></tr></thead><tbody>`;
+    let html = `<table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Number</th>
+                      <th>Current City</th>
+                      <th>Status</th>
+                      <th>Truck Number</th>
+                    </tr>
+                  </thead>
+                  <tbody>`;
     drivers.forEach(driver => {
-      html += `<tr><td>${driver.name || ""}</td><td>${driver.number || ""}</td><td>${driver.status || ""}</td><td>${driver.truckNumber || ""}</td></tr>`;
+      html += `<tr>
+                 <td>${driver.name || ""}</td>
+                 <td>${driver.number || ""}</td>
+                 <td>${driver.currentCity || ""}</td>
+                 <td>${driver.status || ""}</td>
+                 <td>${driver.truckNumber || ""}</td>
+               </tr>`;
     });
-    html += "</tbody></table>";
+    html += `</tbody></table>`;
     driversDiv.innerHTML = html;
   }
 
   function renderTrucks(trucks) {
     const trucksDiv = document.getElementById("trucks");
-    let html = `<table><thead><tr><th>Registration Number</th><th>Status</th><th>Drivers Info</th></tr></thead><tbody>`;
+    let html = `<table>
+                  <thead>
+                    <tr>
+                      <th>Registration Number</th>
+                      <th>Current City</th>
+                      <th>Status</th>
+                      <th>Drivers Info</th>
+                    </tr>
+                  </thead>
+                  <tbody>`;
     trucks.forEach(truck => {
       let driversInfoHtml = "";
       if (truck.driversInfo) {
@@ -138,34 +178,61 @@
         }
         driversInfoHtml += "</ul>";
       }
-      html += `<tr><td>${truck.registrationNumber || ""}</td><td>${truck.status || ""}</td><td>${driversInfoHtml}</td></tr>`;
+      html += `<tr>
+                 <td>${truck.registrationNumber || ""}</td>
+                 <td>${truck.currentCity || ""}</td>
+                 <td>${truck.status || ""}</td>
+                 <td>${driversInfoHtml}</td>
+               </tr>`;
     });
-    html += "</tbody></table>";
+    html += `</tbody></table>`;
     trucksDiv.innerHTML = html;
   }
 
   function renderOrders(orders) {
     const ordersDiv = document.getElementById("orders");
-    let html = `<table><thead><tr><th>Unique Number</th><th>Status</th><th>Drivers</th><th>Trucks</th></tr></thead><tbody>`;
+    let html = `<table>
+                  <thead>
+                    <tr>
+                      <th>Unique Number</th>
+                      <th>Status</th>
+                      <th>Drivers</th>
+                      <th>Trucks</th>
+                    </tr>
+                  </thead>
+                  <tbody>`;
     orders.forEach(order => {
       let orderDriverHtml = "<ul class='nested-list'>";
       order.mainDriverInfo.forEach(driver => {
-        orderDriverHtml += `<li>${driver.name} (№ ${driver.number}) - ${driver.status || ""} - Truck: ${driver.truckNumber}</li>`;
+        orderDriverHtml += `<li>
+                              ${driver.name} (№ ${driver.number}) -
+                              ${driver.currentCity || ""} -
+                              ${driver.status || ""} -
+                              Truck: ${driver.truckNumber || ""}
+                            </li>`;
       });
       orderDriverHtml += "</ul>";
 
       let orderTruckHtml = "<ul class='nested-list'>";
       order.mainTruckInfo.forEach(truck => {
-        orderTruckHtml += `<li>${truck.registrationNumber} - ${truck.status || ""}</li>`;
+        orderTruckHtml += `<li>
+                             ${truck.registrationNumber} -
+                             ${truck.currentCity || ""} -
+                             ${truck.status || ""}
+                           </li>`;
       });
       orderTruckHtml += "</ul>";
 
-      html += `<tr><td>${order.uniqueNumber || ""}</td><td>${order.orderStatus || ""}</td><td>${orderDriverHtml}</td><td>${orderTruckHtml}</td></tr>`;
+      html += `<tr>
+                 <td>${order.uniqueNumber || ""}</td>
+                 <td>${order.orderStatus || ""}</td>
+                 <td>${orderDriverHtml}</td>
+                 <td>${orderTruckHtml}</td>
+               </tr>`;
     });
-    html += "</tbody></table>";
+    html += `</tbody></table>`;
     ordersDiv.innerHTML = html;
   }
-
 </script>
 </body>
 </html>

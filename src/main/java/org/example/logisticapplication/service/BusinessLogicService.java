@@ -102,18 +102,28 @@ public class BusinessLogicService implements DriverLogicService {
             LocalDateTime endShift,
             DriverEntity driverEntity
     ) {
-        var workedDuration = Duration.between(currentShift.getStartShift(), endShift);
+        Double durationOnShift = getDurationOnShift(currentShift, endShift);
 
+        currentShift.setEndShift(endShift);
+        currentShift.setHoursWorked(durationOnShift);
+        driverEntity.setNumberOfHoursWorked(
+                driverEntity.getNumberOfHoursWorked()  + durationOnShift
+        );
+    }
+
+    static Double getDurationOnShift(
+            DriverShift currentShift,
+            LocalDateTime endShift
+    ) {
+        var workedDuration = Duration.between(currentShift.getStartShift(), endShift);
         var hours = workedDuration.toHours();
-        var minutes = hours >= 1 ? workedDuration.toMinutes() % 60 : workedDuration.toMinutes();
+        var minutes = hours >= 1.0
+                ? hours + workedDuration.toMinutes() % 60
+                : workedDuration.toMinutes();
         var totalTime = hours + (minutes / 60.0);
         var roundedTime = BigDecimal.valueOf(totalTime).setScale(1, RoundingMode.HALF_UP);
 
-        currentShift.setEndShift(endShift);
-        currentShift.setHoursWorked(roundedTime.doubleValue());
-        driverEntity.setNumberOfHoursWorked(
-                driverEntity.getNumberOfHoursWorked()  + roundedTime.doubleValue()
-        );
+        return roundedTime.doubleValue();
     }
 
     private DriverShift getDriverShift(

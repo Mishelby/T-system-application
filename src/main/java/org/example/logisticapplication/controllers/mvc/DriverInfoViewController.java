@@ -31,7 +31,6 @@ public class DriverInfoViewController {
             model.addAttribute("driverInfo", driverInfo);
             return "driver-info-without-order";
         }
-
     }
 }
 

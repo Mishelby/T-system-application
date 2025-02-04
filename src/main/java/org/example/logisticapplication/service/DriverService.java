@@ -2,19 +2,20 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
+import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
+import org.example.logisticapplication.domain.RoutePoint.OperationType;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.mapper.*;
-import org.example.logisticapplication.repository.CityRepository;
-import org.example.logisticapplication.repository.DriverRepository;
-import org.example.logisticapplication.repository.OrderRepository;
-import org.example.logisticapplication.repository.TruckRepository;
+import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,9 @@ public class DriverService {
     private final TruckMapper truckMapper;
 
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
+    private final CargoRepository cargoRepository;
+    private final DistanceRepository distanceRepository;
+    private final OrderDistanceRepository orderDistanceRepository;
 
     @Transactional
     public Driver createDriver(
@@ -154,7 +158,7 @@ public class DriverService {
 
         var driverNumbers = getDriverNumbers(driverId, orderEntity);
 
-        var routePointInfoDto = getRoutePointInfoDto(orderEntity, driverEntity);
+        var routePointInfoDto = getMainOrderInfo(orderEntity);
         var truckInfoDto = getTruckInfoDto(orderEntity);
         var orderMainInfo = getOrderMainInfo(orderEntity, routePointInfoDto, driverNumbers, truckInfoDto);
 
@@ -192,7 +196,7 @@ public class DriverService {
 
     private static OrderMainInfo getOrderMainInfo(
             OrderEntity orderEntity,
-            List<RoutePointInfoDto> routePointInfoDto,
+            List<MainRoutePointInfoDto> routePoint,
             List<String> anotherDriverNumbers,
             List<TruckInfoDto> truckInfoDto
     ) {
@@ -201,9 +205,57 @@ public class DriverService {
                 orderEntity.getStatus(),
                 orderEntity.getCountryMap().getCountryName(),
                 anotherDriverNumbers,
-                routePointInfoDto,
+                routePoint,
                 truckInfoDto
         );
+    }
+
+    private List<MainRoutePointInfoDto> getMainOrderInfo(
+            OrderEntity orderEntity
+    ) {
+        return orderEntity.getRoutePoints()
+                .stream()
+                .filter(rp -> rp.getOperationType().equals(OperationType.LOADING.name()))
+                .map(rp -> {
+                    var cityFrom = getCity(orderEntity, OperationType.LOADING.name());
+                    var cityTo = getCity(orderEntity, OperationType.UNLOADING.name());
+                    var distance = getDistanceEntity(orderEntity);
+
+                    var cargo = rp.getCargo().stream()
+                            .map(cargoMapper::toMainInfo)
+                            .toList();
+
+                    return routePointMapper.toMainInfo(
+                            cityFrom,
+                            cityTo,
+                            distance,
+                            !cargo.isEmpty()
+                                    ? cargo.getFirst()
+                                    : null
+                    );
+                }).toList();
+    }
+
+    private Long getDistanceEntity(
+            OrderEntity orderEntity
+    ) {
+        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId()).orElseThrow(
+                () -> new EntityNotFoundException("No distance entity found for order with number = %s"
+                        .formatted(orderEntity.getUniqueNumber()))
+        ).getDistance();
+    }
+
+    private static String getCity(
+            OrderEntity orderEntity,
+            String operationType
+    ) {
+        return orderEntity.getRoutePoints()
+                .stream()
+                .filter(rp -> rp.getOperationType().equals(operationType))
+                .map(RoutePointEntity::getCity)
+                .map(CityEntity::getName)
+                .findFirst()
+                .get();
     }
 
     private static List<String> getDriverNumbers(

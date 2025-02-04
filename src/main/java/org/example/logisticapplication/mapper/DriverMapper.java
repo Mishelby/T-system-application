@@ -67,6 +67,7 @@ public interface DriverMapper {
     @Mappings({
             @Mapping(target = "name", source = "driverEntity.name"),
             @Mapping(target = "number", source = "driverEntity.personNumber"),
+            @Mapping(target = "currentCity", source = "driverEntity.currentCity.name"),
             @Mapping(target = "truckNumber", source = "driverEntity.currentTruck.registrationNumber"),
             @Mapping(target = "status", expression = "java(currentDriverStatus(driverEntity,orderEntity))")
     })
@@ -78,6 +79,7 @@ public interface DriverMapper {
     @Mappings({
             @Mapping(target = "name", source = "driverEntity.name"),
             @Mapping(target = "number", source = "driverEntity.personNumber"),
+            @Mapping(target = "currentCity", source = "driverEntity.currentCity.name"),
             @Mapping(target = "truckNumber", source = "driverEntity.currentTruck.registrationNumber"),
             @Mapping(target = "status", expression = "java(currentDriverStatus(driverEntity,orderEntity))")
     })

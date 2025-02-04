@@ -11,6 +11,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -62,12 +64,9 @@ public class ShiftSchedulerService {
             driverShift.setEndShift(endShift);
 
             var driver = driverShift.getDriver();
+            var durationOnShift = BusinessLogicService.getDurationOnShift(driverShift, endShift);
 
-            var workedMinutes = Duration.between(driverShift.getStartShift(), endShift).toMinutes();
-            var extraHours = workedMinutes % 60 >= 30 ? 1 : 0;
-
-            var totalWorkedHours = driver.getNumberOfHoursWorked() + (int) (workedMinutes / 60) + extraHours;
-            driver.setNumberOfHoursWorked(totalWorkedHours);
+            driver.setNumberOfHoursWorked(durationOnShift);
 
             driverShiftRepository.save(driverShift);
             driverRepository.save(driver);

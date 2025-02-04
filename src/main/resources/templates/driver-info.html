@@ -195,7 +195,6 @@
               onsubmit="event.preventDefault(); updateShiftStatus(this);">
             <label for="shiftStatus">Статус смены:</label>
             <select id="shiftStatus" name="status">
-                <!-- Проходим по enum ShiftStatus; замените пакет com.example.enums на актуальный -->
                 <option th:each="status : ${T(org.example.logisticapplication.domain.DriverShift.ShiftStatus).values()}"
                         th:value="${status.name()}"
                         th:text="${status.statusName}">
@@ -210,7 +209,6 @@
               onsubmit="event.preventDefault(); updateDriverStatus(this);">
             <label for="driverStatus">Статус водителя:</label>
             <select id="driverStatus" name="status">
-                <!-- Проходим по enum DriverStatus -->
                 <option th:each="status : ${T(org.example.logisticapplication.domain.Driver.DriverStatus).values()}"
                         th:value="${status.name()}"
                         th:text="${status.displayName}">
@@ -219,28 +217,30 @@
             <button type="submit">Обновить статус водителя</button>
         </form>
 
-        <!-- Информация о заказе -->
-        <div class="order-info">
+        <!-- Информация о заказе (отображается, если заказ существует) -->
+        <div class="order-info" th:if="${driverInfo.orderInfoDto != null}">
             <h2>Информация о заказе</h2>
-            <p><strong>Номера напарников:</strong> <span th:text="${driverInfo.orderInfoDto.driversNumbers}"></span></p>
+            <p>
+                <strong>Номера напарников:</strong>
+                <span th:each="num,iterStat : ${driverInfo.orderInfoDto.driversNumbers}"
+                      th:text="${iterStat.index > 0 ? ', ' : ''} + ${num}"></span>
+            </p>
             <p><strong>Уникальный номер заказа:</strong> <span th:text="${driverInfo.orderInfoDto.uniqueNumber}"></span></p>
             <p><strong>Статус заказа:</strong> <span th:text="${driverInfo.orderInfoDto.orderStatus}"></span></p>
             <p><strong>Название карты округа:</strong> <span th:text="${driverInfo.orderInfoDto.countyMapName}"></span></p>
 
             <h3>Маршрутные точки:</h3>
             <ul class="route-points">
-                <li th:each="routePoint : ${driverInfo.orderInfoDto.routePoints}">
-                    <p><strong>Город:</strong> <span th:text="${routePoint.cityName}"></span></p>
-                    <p><strong>Тип операции:</strong> <span th:text="${routePoint.operationType}"></span></p>
+                <li th:each="routePoint : ${driverInfo.orderInfoDto.routePoint}">
+                    <p><strong>Откуда:</strong> <span th:text="${routePoint.cityFrom}"></span></p>
+                    <p><strong>Куда:</strong> <span th:text="${routePoint.cityTo}"></span></p>
                     <p><strong>Расстояние:</strong> <span th:text="${routePoint.distance}"></span> км</p>
 
                     <h4>Грузовая информация:</h4>
                     <ul class="cargo-info">
-                        <li th:each="cargo : ${routePoint.cargoInfo}">
-                            <p><strong>Номер:</strong> <span th:text="${cargo.number}"></span></p>
-                            <p><strong>Название:</strong> <span th:text="${cargo.name}"></span></p>
-                            <p><strong>Вес:</strong> <span th:text="${cargo.weightKg}"></span> кг</p>
-                            <p><strong>Статус:</strong> <span th:text="${cargo.status}"></span></p>
+                        <li th:if="${routePoint.cargoInfoDto != null}">
+                            <p><strong>Номер:</strong> <span th:text="${routePoint.cargoInfoDto.number}"></span></p>
+                            <p><strong>Вес:</strong> <span th:text="${routePoint.cargoInfoDto.weight}"></span> кг</p>
                         </li>
                     </ul>
                 </li>
@@ -311,6 +311,7 @@
 </script>
 </body>
 </html>
+
 
 
 

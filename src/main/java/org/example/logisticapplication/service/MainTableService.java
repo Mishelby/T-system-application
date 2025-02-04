@@ -40,6 +40,7 @@ public class MainTableService {
     private final OrderDistanceRepository orderDistanceRepository;
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
+    private final MainTableMapper mainTableMapper;
 
 
     @Transactional(readOnly = true)
@@ -52,7 +53,7 @@ public class MainTableService {
         var driverInfo = getDriverInfo(drivers, orders);
         var truckInfo = getTruckInfo(trucks);
 
-        return new MainTableInfoDto(
+        return mainTableMapper.toMainTableInfo(
                 orderInfoList,
                 driverInfo,
                 truckInfo,
@@ -65,6 +66,7 @@ public class MainTableService {
             List<OrderEntity> orderEntities
     ) {
         return orderEntities.stream()
+                .sorted(Comparator.comparing(OrderEntity::getId))
                 .map(order -> {
                     var routePoints = getRoutePointInfoDto(order);
                     var drivers = getDriverInfoDto(order);

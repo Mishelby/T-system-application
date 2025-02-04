@@ -25,12 +25,12 @@ public interface DistanceRepository extends JpaRepository<DistanceEntity, Long> 
     );
 
     @Query("""
-            SELECT DISTINCT d 
+            SELECT d
             FROM DistanceEntity d
-            LEFT JOIN  OrderDistanceEntity ode
+            CROSS JOIN OrderDistanceEntity ode
             WHERE ode.order.id = :orderId
             """)
-    Optional<DistanceEntity> findDistancetByOrderId(
+    Optional<DistanceEntity> findDistanceByOrderId(
             @Param("orderId") Long orderId
     );
 
