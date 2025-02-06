@@ -5,10 +5,9 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
+import org.example.logisticapplication.domain.OrderCargo.OrderCargo;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 
 import java.util.List;
@@ -43,21 +42,30 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<TruckOrderEntity> truckOrders;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<OrderCargo> orderCargo;
+
     public OrderEntity(
             String uniqueNumber,
             CountryMapEntity countryMap,
             Set<RoutePointEntity> routePoints,
             Set<DriverOrderEntity> driverOrders,
-            Set<TruckOrderEntity> truckOrders
+            Set<TruckOrderEntity> truckOrders,
+            List<OrderCargo> cargo
     ) {
         this.uniqueNumber = uniqueNumber;
         this.countryMap = countryMap;
         this.routePoints = routePoints;
         this.driverOrders = driverOrders;
         this.truckOrders = truckOrders;
+        this.orderCargo = cargo;
     }
 
-    public OrderEntity(String uniqueNumber, String status, CountryMapEntity countryMap) {
+    public OrderEntity(
+            String uniqueNumber,
+            String status,
+            CountryMapEntity countryMap
+    ) {
         this.uniqueNumber = uniqueNumber;
         this.status = status;
         this.countryMap = countryMap;

@@ -39,30 +39,31 @@ public class DriverService {
     private final TruckMapper truckMapper;
 
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
-    private final CargoRepository cargoRepository;
-    private final DistanceRepository distanceRepository;
     private final OrderDistanceRepository orderDistanceRepository;
 
     @Transactional
     public Driver createDriver(
             DriverRegistrationDto driver
     ) {
-        if (driverRepository.existsByPersonNumber(driver.personNumber())) {
-            throw new IllegalArgumentException(
-                    "Driver already exists with person number=%s"
-                            .formatted(driver.personNumber())
-            );
-        }
+        isDriverExistsByPersonNumber(driver);
 
         var cityEntity = cityRepository.findById(driver.currentCityId()).
                 orElseThrow();
 
         var driverEntity = driverMapper.toEntity(driver, cityEntity);
 
-
         return driverMapper.toDomain(
                 driverRepository.save(driverEntity)
         );
+    }
+
+    private void isDriverExistsByPersonNumber(DriverRegistrationDto driver) {
+        if (driverRepository.existsByPersonNumber(driver.personNumber())) {
+            throw new IllegalArgumentException(
+                    "Driver already exists with person number=%s"
+                            .formatted(driver.personNumber())
+            );
+        }
     }
 
     @Transactional(readOnly = true)

@@ -13,7 +13,7 @@ public class GenerateNumberForTruck {
 
     public static String generateNumberForTruck() {
         int step = Math.divideExact(DEFAULT_LENGTH, 2);
-        StringBuilder result = new StringBuilder();
+        var result = new StringBuilder();
 
         for (int i = 0; i < DEFAULT_LENGTH; i++) {
             result.append(CHARACTERS.charAt(random.nextInt(0, CHARACTERS.length())))

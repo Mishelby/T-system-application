@@ -8,12 +8,6 @@ import java.util.Arrays;
 
 @Component
 public class BusinessLogicHelper {
-    /**
-     * Validates that the given status is valid and throws
-     * an IllegalArgumentException if it is not.
-     *
-     * @param status the status to be validated
-     */
     public static void isValidShiftStatus(
             String status
     ) {

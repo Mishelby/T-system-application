@@ -1,9 +1,7 @@
 package org.example.logisticapplication.mapper;
 
-import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
-import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverOrderInfo;
 import org.example.logisticapplication.domain.Driver.MainDriverInfoDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
@@ -15,7 +13,6 @@ import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.Truck.MainTruckInfoDto;
-import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.mapstruct.Mapper;
@@ -23,6 +20,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Mappings;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -151,6 +149,16 @@ public interface OrderMapper {
             OrderEntity entity,
             List<RoutePointInfoDto> routePointInfoDto
     );
+
+    default void defaultValueForOrderCargo(
+            OrderEntity order
+    ) {
+        if (order.getOrderCargo() == null) {
+            order.setOrderCargo(new ArrayList<>());
+        } else {
+            order.getOrderCargo().clear();
+        }
+    }
 
     @Mappings({
             @Mapping(target = "drivers", source = "driversDto"),

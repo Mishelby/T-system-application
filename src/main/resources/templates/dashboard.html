@@ -29,7 +29,9 @@
     }
 
     .container {
-      max-width: 1200px;
+      /* Увеличиваем ширину контейнера */
+      width: 95%;
+      max-width: 1600px;
       margin: 2rem auto;
       background-color: var(--card-bg);
       border-radius: 12px;
@@ -47,6 +49,7 @@
       margin-bottom: 2rem;
     }
 
+    /* Делаем таблицу шире */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -196,12 +199,32 @@
                     <tr>
                       <th>Unique Number</th>
                       <th>Status</th>
+                      <th>Route Points</th>
                       <th>Drivers</th>
                       <th>Trucks</th>
                     </tr>
                   </thead>
                   <tbody>`;
     orders.forEach(order => {
+      // Формируем информацию о маршрутных точках
+      let routePointsHtml = "";
+      // ВАЖНО: ниже мы используем order.mainRoutePointInfo —
+      // проверьте, что это совпадает с вашим JSON
+      if (order.mainRoutePointInfo && order.mainRoutePointInfo.length > 0) {
+        routePointsHtml += "<ul class='nested-list'>";
+        order.mainRoutePointInfo.forEach(route => {
+          routePointsHtml += `<li>
+                                <strong>From:</strong> ${route.cityFrom}
+                                <strong>To:</strong> ${route.cityTo}
+                                <strong>Distance:</strong> ${route.distance} km`;
+          if (route.cargoInfoDto) {
+            routePointsHtml += `<br><em>Cargo: № ${route.cargoInfoDto.number}, Weight: ${route.cargoInfoDto.weight} kg</em>`;
+          }
+          routePointsHtml += `</li>`;
+        });
+        routePointsHtml += "</ul>";
+      }
+
       let orderDriverHtml = "<ul class='nested-list'>";
       order.mainDriverInfo.forEach(driver => {
         orderDriverHtml += `<li>
@@ -226,6 +249,7 @@
       html += `<tr>
                  <td>${order.uniqueNumber || ""}</td>
                  <td>${order.orderStatus || ""}</td>
+                 <td>${routePointsHtml}</td>
                  <td>${orderDriverHtml}</td>
                  <td>${orderTruckHtml}</td>
                </tr>`;
@@ -236,6 +260,7 @@
 </script>
 </body>
 </html>
+
 
 
 

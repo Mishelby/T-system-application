@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 public interface CargoRepository extends JpaRepository<CargoEntity, Long> {
@@ -34,4 +36,38 @@ public interface CargoRepository extends JpaRepository<CargoEntity, Long> {
             @Param("orderId") Long orderId
     );
 
+    @Query("""
+            SELECT c
+            FROM CargoEntity c
+            WHERE c.number = :number  
+            """)
+    CargoEntity findCargoByNumber(String number);
+
+    @Query(value = """
+            SELECT c
+            FROM CargoEntity c
+            LEFT JOIN OrderCargo oc ON c.id = oc.cargo.id
+            WHERE oc.order.uniqueNumber = :orderNumber
+            """)
+    List<CargoEntity> findCargosForOrder(
+            @Param("orderNumber") String orderNumber
+    );
+
+    @Query("""
+            SELECT oc.cargo
+            FROM OrderCargo oc
+            LEFT JOIN CargoEntity ce ON oc.cargo.id = ce.id
+            WHERE oc.order.uniqueNumber = :number            
+            """)
+    List<CargoEntity> findOrderCargoByOrderNumber(
+            @Param("number") String orderNumber
+    );
+
+    @Modifying
+    @Query("""
+            UPDATE CargoEntity c 
+            SET c.status = :status
+            WHERE c.number = :number
+            """)
+    int updateCargoStatusByNumber(String number, String status);
 }

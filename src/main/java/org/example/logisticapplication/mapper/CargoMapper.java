@@ -5,7 +5,6 @@ import org.mapstruct.*;
 
 import java.math.BigDecimal;
 
-
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CargoMapper {
 
@@ -64,6 +63,9 @@ public interface CargoMapper {
     Cargo toDomain(CargoEntity entity);
 
     CargoDto toDto(Cargo cargo);
+
+    @Mapping(target = "number", source = "cargo.number")
+    CargoInfoForStatus toInfoStatus(CargoEntity cargo);
 
     Cargo toDomain(CargoDto cargoDto);
 

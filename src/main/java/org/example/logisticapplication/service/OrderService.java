@@ -13,6 +13,7 @@ import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
+import org.example.logisticapplication.domain.OrderCargo.OrderCargo;
 import org.example.logisticapplication.domain.OrderDistanceEntity.OrderDistanceEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.Truck.Truck;
@@ -53,6 +54,7 @@ public class OrderService {
     private final CargoMapper cargoMapper;
     private final DistanceRepository distanceRepository;
     private final OrderDistanceRepository orderDistanceRepository;
+    private final OrderCargoRepository orderCargoRepository;
 
     @Value("${default.size-of-submitting-orders}")
     private int defaultSize;
@@ -86,7 +88,6 @@ public class OrderService {
     public DriversAndTrucksForOrderDto findTrucksAndDriversForOrder(
             String orderNumber
     ) {
-
         var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
         var loadingOperationCityId = getOperationCityId(orderEntity);
         long totalCargoWeight = totalWeight(orderEntity);
@@ -133,7 +134,9 @@ public class OrderService {
 
         var pageRequest = PageRequest.of(
                 defaultSubmittingSize.page(),
-                defaultSubmittingSize.size() != null ? defaultSubmittingSize.size() : defaultSize,
+                defaultSubmittingSize.size() != null
+                        ? defaultSubmittingSize.size()
+                        : defaultSize,
                 Sort.by(Sort.Direction.ASC, "id")
         );
 
@@ -188,7 +191,6 @@ public class OrderService {
         var driversById = driverRepository.findDriversById(driversAndTrucks.driverIds());
         var trucksById = truckRepository.findTrucksById(driversAndTrucks.truckIds());
 
-
         var driverOrderEntities = driversById.stream()
                 .map(driver -> new DriverOrderEntity(orderEntity, driver))
                 .collect(Collectors.toSet());
@@ -196,6 +198,13 @@ public class OrderService {
         var truckOrderEntities = trucksById.stream()
                 .map(truck -> new TruckOrderEntity(orderEntity, truck))
                 .collect(Collectors.toSet());
+
+        orderEntity.getRoutePoints()
+                .stream()
+                .flatMap(rp -> rp.getCargo().stream())
+                .forEach(cargo -> orderEntity.getOrderCargo().add(new OrderCargo(orderEntity, cargo)));
+
+        orderCargoRepository.saveAll(orderEntity.getOrderCargo());
 
         addDriverToTruck(trucksById, driversById);
         clearOrderDriversAndTruckInfo(orderEntity);
@@ -459,6 +468,7 @@ public class OrderService {
                 OrderStatus.NOT_COMPLETED.getName(),
                 countryMapEntity
         );
+        orderMapper.defaultValueForOrderCargo(orderEntity);
 
         return orderRepository.save(orderEntity);
     }

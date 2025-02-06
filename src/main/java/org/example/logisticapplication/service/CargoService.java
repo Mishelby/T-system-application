@@ -2,10 +2,11 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Cargo.Cargo;
-import org.example.logisticapplication.domain.Cargo.CargoStatusDto;
+import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.domain.Cargo.*;
 import org.example.logisticapplication.repository.CargoRepository;
 import org.example.logisticapplication.mapper.CargoMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CargoService {
@@ -54,7 +56,38 @@ public class CargoService {
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional
+    public HttpStatus updateCargoStatus(
+            CargoStatusDto cargoInfo
+    ) {
+        boolean valid = CargoStatus.isValid(cargoInfo.status());
+
+        if (!valid) {
+            throw new IllegalArgumentException("Invalid status = %s for Cargo =%s"
+                    .formatted(cargoInfo.status(), cargoInfo.number()));
+        }
+
+        int count = cargoRepository.updateCargoStatusByNumber(
+                cargoInfo.number(),
+                cargoInfo.status()
+        );
+
+        return count > 0 ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CargoInfoForStatus> findCargosForOrder(
+            String orderNumber
+    ) {
+        var cargosForOrder = cargoRepository.findCargosForOrder("ORDER-ncnz7uf5fc");
+        log.info("CargosForOrder={}", cargosForOrder);
+
+        return cargosForOrder.stream()
+                .map(cargoMapper::toInfoStatus)
+                .toList();
+    }
+
+    @Transactional
     public void deleteCargo(
             Long id
     ) {

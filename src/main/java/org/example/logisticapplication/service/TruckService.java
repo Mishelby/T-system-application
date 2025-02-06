@@ -165,7 +165,9 @@ public class TruckService {
                 .toList();
     }
 
-    private CityEntity getCityEntity(CreateTruckDto truck) {
+    private CityEntity getCityEntity(
+            CreateTruckDto truck
+    ) {
         return cityRepository.findCityEntityByName(truck.currentCityName()).orElseThrow(
                 () -> new CityNotFoundException("City with name %s not found"
                         .formatted(truck.currentCityName()))

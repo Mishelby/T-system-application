@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Cargo.Cargo;
 import org.example.logisticapplication.domain.Cargo.CargoDto;
+import org.example.logisticapplication.domain.Cargo.CargoInfoForStatus;
 import org.example.logisticapplication.domain.Cargo.CargoStatusDto;
 import org.example.logisticapplication.service.CargoService;
 import org.example.logisticapplication.mapper.CargoMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +29,18 @@ public class CargoController {
         log.info("Get request for add cargo: {}", cargo);
         var newCargo = cargoService.createNewCargo(cargo);
 
-        return ResponseEntity.ok(cargoMapper.toDto(newCargo));
+        return ResponseEntity.ok().body(cargoMapper.toDto(newCargo));
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<CargoInfoForStatus>> getCargosForOrder(
+            @RequestBody String orderNumber
+    ) {
+        log.info("Get request for get cargos {}", orderNumber);
+        var cargosForOrder = cargoService.findCargosForOrder(orderNumber);
+        log.info("Cargo info! {}", cargosForOrder);
+
+        return ResponseEntity.ok().body(cargosForOrder);
     }
 
     @GetMapping("/{id}/status")
@@ -47,7 +60,17 @@ public class CargoController {
         log.info("Get request for get cargo: {}", id);
         var newCargo = cargoService.findCargoById(id);
 
-        return ResponseEntity.ok(cargoMapper.toDto(newCargo));
+        return ResponseEntity.ok().body(cargoMapper.toDto(newCargo));
+    }
+
+    @PutMapping("/status")
+    public ResponseEntity<Void> updateCargoStatus(
+            @RequestBody CargoStatusDto cargoStatus
+    ){
+        log.info("Get request for update cargo status: {}", cargoStatus);
+        var httpStatus = cargoService.updateCargoStatus(cargoStatus);
+
+        return ResponseEntity.status(httpStatus).build();
     }
 
     @DeleteMapping("/{id}")

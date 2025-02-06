@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Регистрация</h2>
+  <form method="POST" action="/users/view/registration">
+    <label for="username">Имя пользователя</label>
+    <input type="text" id="username" name="username" required>
+
+    <label for="password">Пароль</label>
+    <input type="password" id="password" name="password" required>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+</div>
+
+<script>
+  document.getElementById("registerForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const formData = {
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value,
+      email: document.getElementById("email").value
+    };
+
+    fetch("/users/api/registration", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+            .then(response => response.json())
+            .then(user => {
+              alert("Регистрация успешна!");
+              window.location.href = `/users/${user.id}`;
+            })
+            .catch(error => console.error("Ошибка регистрации", error));
+  });
+</script>
+</body>
+</html>

@@ -6,58 +6,64 @@
     <title>Информация о водителе</title>
     <style>
         /* Общие стили для страницы */
-        body {
-            font-family: 'Arial', sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #f7f7f7;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9; /* Светлый фон для всего документа */
             color: #333;
+            line-height: 1.5;
         }
 
         /* Основной контейнер */
         .container {
-            width: 80%;
-            max-width: 1000px;
+            width: 90%;
+            max-width: 900px;
             margin: 40px auto;
             padding: 30px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
         }
 
+        /* Заголовок */
         h1 {
             text-align: center;
-            color: #4CAF50;
-            font-size: 32px;
+            color: #333;
+            font-size: 28px;
             margin-bottom: 20px;
         }
 
         /* Информационные блоки */
         .info {
             font-size: 16px;
-            line-height: 1.6;
+            margin-bottom: 20px;
         }
 
         .info p {
-            margin: 12px 0;
+            margin: 8px 0;
         }
 
         .info strong {
-            color: #555;
+            color: #666;
         }
 
-        /* Стиль для блока заказа */
+        /* Блок заказа */
         .order-info {
-            background-color: #f9f9f9;
+            background-color: #fafafa;
             padding: 20px;
             margin-top: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
         }
 
         .order-info h2 {
             color: #333;
-            font-size: 24px;
+            font-size: 22px;
             margin-bottom: 15px;
         }
 
@@ -69,7 +75,8 @@
         .order-info ul li {
             margin-bottom: 15px;
             padding: 10px;
-            background-color: #f2f2f2;
+            background-color: #fff;
+            border: 1px solid #eee;
             border-radius: 6px;
         }
 
@@ -78,10 +85,10 @@
         }
 
         .order-info ul li strong {
-            color: #4CAF50;
+            color: #555;
         }
 
-        /* Стиль для информации о грузе и грузовиках */
+        /* Груз и грузовики */
         .cargo-info,
         .truck-info {
             margin-top: 20px;
@@ -92,91 +99,88 @@
             padding: 8px;
             margin-bottom: 10px;
             background-color: #fff;
-            border: 1px solid #ddd;
+            border: 1px solid #eee;
             border-radius: 6px;
         }
 
         .cargo-info li p,
         .truck-info li p {
-            margin: 5px 0;
+            margin: 4px 0;
         }
 
-        /* Стили для кнопки возврата */
-        a.button {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: #fff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 30px;
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-
-        a.button:hover {
-            background-color: #45a049;
-        }
-
-        /* Стили для форм изменения статусов */
-        form.status-form {
-            margin-top: 30px;
+        /* Форма обновления статуса (для грузов, водителей и смены) */
+        form.status-form, form#cargoStatusForm {
+            margin-top: 20px;
             padding: 15px;
-            background-color: #e9f5e9;
-            border: 1px solid #c8e6c9;
+            background-color: #fff;
+            border: 1px solid #eee;
             border-radius: 6px;
         }
 
-        form.status-form label {
+        form.status-form label,
+        form#cargoStatusForm label {
             font-weight: bold;
             display: block;
             margin-bottom: 8px;
         }
 
-        form.status-form select {
+        form.status-form select,
+        form#cargoStatusForm select {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            font: inherit;
         }
 
-        form.status-form button {
-            background-color: #4CAF50;
+        form.status-form button,
+        form#cargoStatusForm button {
+            background-color: #007BFF;
             color: #fff;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font: inherit;
+            transition: background-color 0.2s ease-in-out;
         }
 
-        form.status-form button:hover {
-            background-color: #45a049;
+        form.status-form button:hover,
+        form#cargoStatusForm button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Кнопка возврата */
+        a.button {
+            display: inline-block;
+            background-color: #007BFF; /* Синий цвет кнопки */
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        a.button:hover {
+            background-color: #0056b3;
         }
 
         /* Адаптивность */
-        @media (max-width: 768px) {
+        @media (max-width: 600px) {
             .container {
-                width: 90%;
+                width: 95%;
                 padding: 20px;
             }
 
             h1 {
-                font-size: 28px;
+                font-size: 24px;
             }
 
             .order-info h2 {
-                font-size: 20px;
-            }
-
-            .info p {
-                font-size: 14px;
-            }
-
-            .cargo-info li,
-            .truck-info li {
-                font-size: 14px;
+                font-size: 18px;
             }
         }
     </style>
@@ -218,7 +222,8 @@
         </form>
 
         <!-- Информация о заказе (отображается, если заказ существует) -->
-        <div class="order-info" th:if="${driverInfo.orderInfoDto != null}">
+        <div class="order-info" th:if="${driverInfo.orderInfoDto != null}" id="orderInfo"
+             th:attr="data-order-number=${driverInfo.orderInfoDto.uniqueNumber}">
             <h2>Информация о заказе</h2>
             <p>
                 <strong>Номера напарников:</strong>
@@ -256,21 +261,47 @@
                     <p><strong>Текущее местоположение:</strong> <span th:text="${truck.currentCityName}"></span></p>
                 </li>
             </ul>
+
+            <!-- Новая форма для обновления статуса груза -->
+            <div class="cargo-status-update">
+                <h3>Обновить статус груза</h3>
+                <form id="cargoStatusForm" onsubmit="event.preventDefault(); updateCargoStatus(this);">
+                    <label for="cargoSelect">Выберите груз:</label>
+                    <select id="cargoSelect" name="number">
+                        <option value=""></option>
+                    </select>
+                    <label for="cargoStatusSelect">Новый статус груза:</label>
+                    <select id="cargoStatusSelect" name="status">
+                        <option value="PREPARED">PREPARED</option>
+                        <option value="SHIPPED">SHIPPED</option>
+                        <option value="DELIVERED">DELIVERED</option>
+                        <option value="NOT_SHIPPED">NOT_SHIPPED</option>
+                    </select>
+                    <button type="submit">Обновить статус груза</button>
+                </form>
+            </div>
         </div>
         <a href="/driver/login" class="button">Вернуться на страницу логина</a>
     </div>
 </div>
 
+</body>
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const orderInfo = document.getElementById("orderInfo");
+        if (orderInfo) {
+            const orderNumber = orderInfo.getAttribute("data-order-number");
+            loadCargos(orderNumber);
+        }
+    });
+    // Функция для обновления статуса смены
     function updateShiftStatus(form) {
         const url = form.action;
         const formData = new FormData(form);
-        // Преобразуем данные в формат x-www-form-urlencoded
         const params = new URLSearchParams();
         for (const pair of formData.entries()) {
             params.append(pair[0], pair[1]);
         }
-
         fetch(url, {
             method: "PUT",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -286,6 +317,7 @@
             .catch(error => console.error("Ошибка:", error));
     }
 
+    // Функция для обновления статуса водителя
     function updateDriverStatus(form) {
         const url = form.action;
         const formData = new FormData(form);
@@ -293,7 +325,6 @@
         for (const pair of formData.entries()) {
             params.append(pair[0], pair[1]);
         }
-
         fetch(url, {
             method: "PUT",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -308,9 +339,60 @@
             })
             .catch(error => console.error("Ошибка:", error));
     }
+
+    // Функция для загрузки списка грузов для заказа
+    function loadCargos(orderNumber) {
+        console.log("Значение orderNumber перед fetch:", orderNumber);
+        fetch("/api/cargos/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderNumber: orderNumber })
+        })
+            .then(response => response.json()) // Преобразуем ответ в JSON
+            .then(cargos => {
+                console.log("Полученные грузы:", cargos);
+                if (Array.isArray(cargos)) { // Проверяем, что cargos — это массив
+                    const cargoSelect = document.getElementById("cargoSelect");
+                    cargos.forEach(cargo => {
+                        const option = document.createElement("option");
+                        option.value = cargo.number; // Или соответствующее поле из объекта cargo
+                        option.textContent = cargo.number; // Отображаем номер груза
+                        cargoSelect.appendChild(option);
+                    });
+                } else {
+                    console.error("Ошибка: cargos не является массивом", cargos);
+                }
+            })
+            .catch(error => console.error("Ошибка загрузки грузов:", error)); // Обработка ошибок
+    }
+
+    // Функция для обновления статуса груза
+    function updateCargoStatus(form) {
+        const url = "/api/cargos/status";
+        const formData = new FormData(form);
+        const data = {};
+
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+
+        fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)  // Преобразуем данные в строку JSON
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert("Статус груза успешно обновлён");
+                } else {
+                    alert("Ошибка обновления статуса груза");
+                }
+            })
+            .catch(error => console.error("Ошибка:", error));
+    }
 </script>
-</body>
 </html>
+
 
 
 

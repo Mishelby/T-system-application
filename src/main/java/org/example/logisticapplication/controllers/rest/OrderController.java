@@ -26,8 +26,7 @@ public class OrderController {
         log.info("Get request for creating order: {}", baseOrder);
         var newOrder = orderService.createBaseOrder(baseOrder);
 
-        return ResponseEntity.ok()
-                .body(newOrder);
+        return ResponseEntity.ok().body(newOrder);
     }
 
     @PostMapping("/confirm-order")
@@ -37,8 +36,7 @@ public class OrderController {
         log.info("Get request for confirming order: {}", routePoint);
         var createBaseOrder = orderService.sendBaseOrder(routePoint);
 
-        return ResponseEntity.ok()
-                .body(createBaseOrder);
+        return ResponseEntity.ok().body(createBaseOrder);
     }
 
 
@@ -49,8 +47,7 @@ public class OrderController {
         log.info("Get request for getting trucks for order");
         var truckForOrder = orderService.findTrucksAndDriversForOrder(orderNumber);
 
-        return ResponseEntity.ok()
-                .body(truckForOrder);
+        return ResponseEntity.ok().body(truckForOrder);
     }
     
     @PostMapping("/{orderNumber}/apply")
@@ -83,7 +80,6 @@ public class OrderController {
         log.info("Get request for submitting orders");
         var orderInfo = orderService.gerOrdersForSubmit(defaultSubmittingSize);
 
-        return ResponseEntity.ok()
-                .body(orderInfo);
+        return ResponseEntity.ok().body(orderInfo);
     }
 }
