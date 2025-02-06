@@ -7,6 +7,8 @@ import org.example.logisticapplication.repository.DriverRepository;
 import org.example.logisticapplication.repository.RegistrationRepository;
 import org.example.logisticapplication.web.IncorrectUserDataForLogin;
 import org.example.logisticapplication.web.UserNotFoundExecution;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,23 +17,17 @@ public class RegistrationService {
     private final RegistrationRepository registrationRepository;
     private static final String GREETING = "Welcome!";
     private final DriverRepository driverRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public String checkUserData(
+    public HttpStatus checkUserData(
             UserParamDto userParamDto
     ) {
-        var isExists = registrationRepository.checkDriverInSystem(
-                userParamDto.userName(),
-                userParamDto.userNumber()
-        );
+        return driverRepository.findDriverEntityByPersonNumber(userParamDto.userNumber())
+                .filter(driver -> passwordEncoder.matches(driver.getName(), userParamDto.userName()))
+                .map(driver -> HttpStatus.OK)
+                .orElse(HttpStatus.UNAUTHORIZED);
 
-        if(!isExists){
-            throw new IncorrectUserDataForLogin("Incorrect login or number: %s, %s"
-                    .formatted(userParamDto.userName(), userParamDto.userNumber())
-            );
-        }
-
-        return GREETING.concat(" %s".formatted(userParamDto.userName()));
     }
 
     @Transactional

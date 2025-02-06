@@ -12,43 +12,70 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
+
     .container {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 300px;
-    }
-    h2 {
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 340px;
       text-align: center;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: #333;
     }
+
+    label {
+      font-weight: normal;
+      display: block;
+      margin: 10px 0 5px;
+      font-size: 14px;
+      text-align: left;
+    }
+
     input {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
+      padding: 12px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
+
+    input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+    }
+
     button {
       width: 100%;
-      padding: 10px;
-      margin-top: 15px;
+      padding: 12px;
+      margin-top: 20px;
       background: #28a745;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
     }
+
     button:hover {
       background: #218838;
     }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
   </style>
+
 </head>
 <body>
 <div class="container">

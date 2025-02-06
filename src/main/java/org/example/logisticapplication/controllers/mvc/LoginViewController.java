@@ -10,12 +10,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/driver")
 @RequiredArgsConstructor
 public class LoginViewController {
-    private static final String LOGIN_PAGE = "login-page";
+    private static final String DRIVER_LOGIN_PAGE = "login-page";
 
     @GetMapping("/login")
     public String showLoginPage() {
-        return LOGIN_PAGE;
+        return DRIVER_LOGIN_PAGE;
     }
+
 
     @GetMapping("/error-page")
     public String showErrorPage() {

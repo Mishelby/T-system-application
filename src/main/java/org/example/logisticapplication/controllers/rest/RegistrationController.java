@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.service.RegistrationService;
 import org.example.logisticapplication.utils.UserParamDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +21,9 @@ public class RegistrationController {
             @RequestBody @Valid UserParamDto userParamDto
     ) {
         log.info("User data for checking: {}", userParamDto);
+        var httpStatus = registrationService.checkUserData(userParamDto);
 
-        return ResponseEntity.ok()
-                .body(registrationService.checkUserData(
-                        userParamDto
-                ));
+        return ResponseEntity.status(httpStatus).build();
     }
 
     @PostMapping("/current-id")
@@ -34,8 +33,7 @@ public class RegistrationController {
         log.info("Get current id for user number: {}", userNumber);
         var driverId = registrationService.getDriverIdByUserNumber(userNumber);
 
-        return ResponseEntity.ok()
-                .body(driverId);
+        return ResponseEntity.ok().body(driverId);
     }
 
 }
