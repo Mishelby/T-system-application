@@ -8,16 +8,12 @@ import jakarta.validation.constraints.Null;
 public record DriverRegistrationDto(
         @Null
         Long id,
-
         String name,
-
         String secondName,
-
+        String password,
         Long  personNumber,
-
         @JsonProperty("cityId")
         Long currentCityId,
-
         @JsonProperty("truckName")
         String currentTruckName
 ) {

@@ -49,7 +49,7 @@ public class DriverController {
     ) {
         log.info("Get request for get info for driver by id");
 
-        return ResponseEntity.ok(driverService.getDriverInfo(driverId));
+        return ResponseEntity.ok().body(driverService.getDriverInfo(driverId));
     }
 
     @PostMapping
@@ -59,7 +59,7 @@ public class DriverController {
         log.info("Get request for save driver driver: {}", driver);
         var savedDriver = driverService.createDriver(driver);
 
-        return ResponseEntity.ok(driverMapper.toDto(savedDriver));
+        return ResponseEntity.ok().body(driverMapper.toDto(savedDriver));
     }
 
     @PutMapping(value = "/{id}")
@@ -83,7 +83,7 @@ public class DriverController {
         log.info("Get request for get driver by id: {}", id);
         var foundedDriver = driverService.findById(id);
 
-        return ResponseEntity.ok(driverMapper.toDto(foundedDriver));
+        return ResponseEntity.ok().body(driverMapper.toDto(foundedDriver));
     }
 
 

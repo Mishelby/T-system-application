@@ -8,6 +8,8 @@ import org.example.logisticapplication.domain.User.MainUserInfoDro;
 import org.example.logisticapplication.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -42,8 +44,8 @@ public class UserController {
             @RequestBody LoginUserDto userDto
     ){
         log.info("Get request for login with email {}", userDto.email());
-        var httpStatus = userService.checkUserAccount(userDto);
+        var userDetails = userService.checkUserAccount(userDto);
 
-        return  ResponseEntity.status(httpStatus).build();
+        return  ResponseEntity.status(HttpStatus.OK).build();
     }
 }

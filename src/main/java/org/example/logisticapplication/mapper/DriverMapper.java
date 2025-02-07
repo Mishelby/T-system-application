@@ -23,11 +23,16 @@ public interface DriverMapper {
     @Mappings({
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "name", source = "driver.name"),
+            @Mapping(target = "password", source = "encoderPassword"),
             @Mapping(target = "status", expression = "java(getDefaultDriverStatus())"),
             @Mapping(target = "numberOfHoursWorked", expression = "java(getDefaultNumberOfHoursWorked())"),
             @Mapping(target = "currentCity", source = "cityEntity")
     })
-    DriverEntity toEntity(DriverRegistrationDto driver, CityEntity cityEntity);
+    DriverEntity toEntity(
+            DriverRegistrationDto driver,
+            String encoderPassword,
+            CityEntity cityEntity
+    );
 
     @Named("defaultDriverStatus")
     default String getDefaultDriverStatus() {

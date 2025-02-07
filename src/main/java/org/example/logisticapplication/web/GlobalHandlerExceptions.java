@@ -3,6 +3,7 @@ package org.example.logisticapplication.web;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,6 +37,19 @@ public class GlobalHandlerExceptions {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(value = BadCredentialsException.class)
+    public ResponseEntity<ErrorMessageResponse> badCredentialsException(
+            BadCredentialsException ex
+    ) {
+        var response = new ErrorMessageResponse(
+                "Bad credentials!",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<ErrorMessageResponse> entityNotFoundException(
             EntityNotFoundException ex
@@ -52,14 +66,14 @@ public class GlobalHandlerExceptions {
     @ExceptionHandler(value = UserNotFoundExecution.class)
     public ResponseEntity<String> userNotFoundExecution(
             UserNotFoundExecution ex
-    ){
+    ) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(value = IncorrectUserDataForLogin.class)
     public ResponseEntity<ErrorMessageResponse> incorrectUserDataForLogin(
             IncorrectUserDataForLogin ex
-    ){
+    ) {
         var response = new ErrorMessageResponse(
                 "Incorrect user data for login!",
                 ex.getMessage(),

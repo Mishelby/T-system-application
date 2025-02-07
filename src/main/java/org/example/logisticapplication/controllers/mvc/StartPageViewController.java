@@ -5,9 +5,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/logistic/get-start")
+@RequestMapping("/logistic")
 public class StartPageViewController {
-    @GetMapping
+
+    @GetMapping("/get-start")
     public String startPage() {
         return "start-page";
     }

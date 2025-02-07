@@ -23,6 +23,9 @@ public class DriverEntity {
     @Column(name = "last_name", nullable = false)
     private String secondName;
 
+    @Column(name = "password", nullable = false)
+    private String password;
+
     @Column(name = "person_number", unique = true, nullable = false)
     private Long personNumber;
 
@@ -45,6 +48,7 @@ public class DriverEntity {
             Long id,
             String name,
             String secondName,
+            String password,
             Long personNumber,
             Double numberOfHoursWorked,
             String status,
@@ -54,11 +58,28 @@ public class DriverEntity {
         this.id = id;
         this.name = name;
         this.secondName = secondName;
+        this.password = password;
         this.personNumber = personNumber;
         this.numberOfHoursWorked = numberOfHoursWorked;
         this.status = status;
         this.currentCity = currentCity;
         this.currentTruck = currentTruck;
+    }
+
+    public DriverEntity(
+            Long id,
+            String name,
+            String secondName,
+            String password,
+            Long personNumber,
+            CityEntity currentCity
+    ) {
+        this.id = id;
+        this.name = name;
+        this.secondName = secondName;
+        this.password = password;
+        this.personNumber = personNumber;
+        this.currentCity = currentCity;
     }
 
     public DriverEntity() {}

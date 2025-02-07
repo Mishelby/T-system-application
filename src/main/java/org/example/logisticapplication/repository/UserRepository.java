@@ -4,6 +4,7 @@ import org.example.logisticapplication.domain.User.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,4 +35,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     );
 
     Optional<UserEntity> findUserEntityByEmail(String email);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.username = :name")
+    Optional<UserEntity> findByName(
+           @Param("name") String username
+    );
 }

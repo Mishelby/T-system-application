@@ -2,38 +2,45 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.logisticapplication.domain.Role.Role;
 import org.example.logisticapplication.domain.User.CreateUserDto;
 import org.example.logisticapplication.domain.User.LoginUserDto;
 import org.example.logisticapplication.domain.User.MainUserInfoDro;
 import org.example.logisticapplication.mapper.UserMapper;
 import org.example.logisticapplication.repository.UserRepository;
+import org.example.logisticapplication.utils.RoleName;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService{
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Transactional
     public CreateUserDto createNewUser(
             CreateUserDto newUser
     ) {
         isUserExistsByEmail(newUser.email());
-        var userEntity = userMapper.toEntity(newUser);
+
+        var userEntity = userMapper.toEntity(
+                newUser,
+                passwordEncoder.encode(newUser.password())
+        );
+        userEntity.getRoles().add(new Role(RoleName.USER));
 
         return userMapper.toDto(
                 userRepository.save(userEntity)
         );
     }
+
 
     @Transactional(readOnly = true)
     public MainUserInfoDro getUserInfo(

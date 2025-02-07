@@ -7,6 +7,8 @@ spring:
     suffix: .html
     cache: false
 
+
+
   datasource:
     url: jdbc:postgresql://localhost:5433/postgres
     username: postgres
@@ -39,3 +41,7 @@ truck:
 default:
   number-of-hours-worked: 0
   size-of-submitting-orders: 10
+
+jwt:
+   secret: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eQ
+   lifetime: PT30M

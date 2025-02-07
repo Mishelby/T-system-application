@@ -17,6 +17,9 @@ import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.DriverValidHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +43,7 @@ public class DriverService {
 
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
     private final OrderDistanceRepository orderDistanceRepository;
+    private  PasswordEncoder passwordEncoder;
 
     @Transactional
     public Driver createDriver(
@@ -47,10 +51,14 @@ public class DriverService {
     ) {
         isDriverExistsByPersonNumber(driver);
 
-        var cityEntity = cityRepository.findById(driver.currentCityId()).
-                orElseThrow();
+        var cityEntity = cityRepository.findById(driver.currentCityId())
+                .orElseThrow();
 
-        var driverEntity = driverMapper.toEntity(driver, cityEntity);
+        var driverEntity = driverMapper.toEntity(
+                driver,
+                passwordEncoder.encode(driver.password()),
+                cityEntity
+        );
 
         return driverMapper.toDomain(
                 driverRepository.save(driverEntity)
@@ -335,5 +343,10 @@ public class DriverService {
         return driversWithoutTruck.stream()
                 .map(driverMapper::toDtoWithoutTruck)
                 .toList();
+    }
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 }
