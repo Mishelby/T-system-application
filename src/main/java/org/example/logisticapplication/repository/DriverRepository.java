@@ -2,6 +2,7 @@ package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.domain.User.UserEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -140,4 +141,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     List<DriverEntity> findDriversById(
             List<Long> id
     );
+
+    @Query("SELECT d FROM DriverEntity d WHERE d.name = :username")
+    DriverEntity findByName(String username);
 }

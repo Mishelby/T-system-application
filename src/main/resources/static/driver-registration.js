@@ -67,6 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 responseDiv.innerHTML = `<p class="success">Driver registered successfully: ${JSON.stringify(result)}</p>`;
                 form.reset();
+
+                // Редирект на страницу успеха
+                window.location.href = '/driver/success';
             } else {
                 const error = await response.text();
                 responseDiv.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
@@ -85,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Устанавливаем обработчик события для отправки формы
     form.addEventListener('submit', registerDriver);
 });
-
 
 
 

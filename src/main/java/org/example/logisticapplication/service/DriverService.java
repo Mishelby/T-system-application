@@ -44,7 +44,7 @@ public class DriverService {
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
     private final OrderDistanceRepository orderDistanceRepository;
     private final RoleService roleService;
-    private  PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Driver createDriver(
@@ -206,6 +206,13 @@ public class DriverService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public Long findDriverIdByPersonNumber(Long personNumber) {
+        return driverRepository.findDriverEntityByPersonNumber(personNumber)
+                .orElseThrow(() -> new EntityNotFoundException("No driver entity found for person number = %s"))
+                .getId();
+    }
+
     private static OrderMainInfo getOrderMainInfo(
             OrderEntity orderEntity,
             List<MainRoutePointInfoDto> routePoint,
@@ -348,8 +355,4 @@ public class DriverService {
                 .toList();
     }
 
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
 }
