@@ -7,6 +7,7 @@ import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
+import org.example.logisticapplication.domain.Role.Role;
 import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
@@ -17,16 +18,15 @@ import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.DriverValidHelper;
+import org.example.logisticapplication.utils.RoleName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +43,7 @@ public class DriverService {
 
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
     private final OrderDistanceRepository orderDistanceRepository;
+    private final RoleService roleService;
     private  PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -50,6 +51,7 @@ public class DriverService {
             DriverRegistrationDto driver
     ) {
         isDriverExistsByPersonNumber(driver);
+        var roles = roleService.findAll();
 
         var cityEntity = cityRepository.findById(driver.currentCityId())
                 .orElseThrow();
@@ -57,7 +59,8 @@ public class DriverService {
         var driverEntity = driverMapper.toEntity(
                 driver,
                 passwordEncoder.encode(driver.password()),
-                cityEntity
+                cityEntity,
+                Set.of(roles.get(RoleName.DRIVER))
         );
 
         return driverMapper.toDomain(
@@ -140,7 +143,7 @@ public class DriverService {
                 updateDriver.secondName(),
                 updateDriver.personNumber(),
                 updateDriver.numberOfHoursWorked(),
-                updateDriver.status(),
+                null,
                 updateDriver.currentCityId(),
                 updateDriver.currentTruckId()
         );

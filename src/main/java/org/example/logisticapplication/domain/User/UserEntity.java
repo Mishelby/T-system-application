@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.example.logisticapplication.domain.Role.Role;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -27,7 +26,7 @@ public class UserEntity {
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

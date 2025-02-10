@@ -5,17 +5,21 @@ import org.example.logisticapplication.domain.City.CityInfoDto;
 import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
+
+import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
+import org.example.logisticapplication.domain.Role.Role;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.mapstruct.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DriverMapper {
 
     @Mappings({
-            @Mapping(target = "status", defaultValue = "SUSPENDED"),
             @Mapping(target = "numberOfHoursWorked", defaultValue = "0")
     })
     DriverEntity toEntity(Driver driver);
@@ -24,19 +28,34 @@ public interface DriverMapper {
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "name", source = "driver.name"),
             @Mapping(target = "password", source = "encoderPassword"),
-            @Mapping(target = "status", expression = "java(getDefaultDriverStatus())"),
             @Mapping(target = "numberOfHoursWorked", expression = "java(getDefaultNumberOfHoursWorked())"),
-            @Mapping(target = "currentCity", source = "cityEntity")
+            @Mapping(target = "currentCity", source = "cityEntity"),
+            @Mapping(target = "roles", source = "setOfRoles"),
     })
     DriverEntity toEntity(
             DriverRegistrationDto driver,
             String encoderPassword,
-            CityEntity cityEntity
+            CityEntity cityEntity,
+            Set<Role> setOfRoles
     );
 
+    @AfterMapping
+    default void ensureStatus(@MappingTarget DriverEntity driver) {
+        if(driver.getStatus() == null) {
+            driver.setStatus(new DriverStatusEntity(ShiftStatus.REST.getStatusName()));
+        }
+    }
+
+    @AfterMapping
+    default void ensureRoles(@MappingTarget DriverEntity driver) {
+        if(driver.getRoles() == null) {
+            driver.setRoles(new HashSet<>());
+        }
+    }
+
     @Named("defaultDriverStatus")
-    default String getDefaultDriverStatus() {
-        return ShiftStatus.REST.getStatusName();
+    default DriverStatusEntity getDefaultDriverStatus() {
+        return new DriverStatusEntity(ShiftStatus.REST.getStatusName());
     }
 
     @Named("defaultNumberOfHoursWorked")
@@ -59,7 +78,7 @@ public interface DriverMapper {
             @Mapping(target = "secondName", source = "entity.secondName"),
             @Mapping(target = "personNumber", source = "entity.personNumber"),
             @Mapping(target = "numberOfHoursWorked", source = "entity.numberOfHoursWorked"),
-            @Mapping(target = "status", source = "entity.status"),
+            @Mapping(target = "status", expression = "java(statusToString(entity.getStatus()))"),
             @Mapping(target = "currentCityInfo", source = "currentCityInfo"),
             @Mapping(target = "currentTruckInfo", source = "currentTruckInfo")
     })
@@ -68,6 +87,10 @@ public interface DriverMapper {
             CityInfoDto currentCityInfo,
             TruckInfoDto currentTruckInfo
     );
+
+    default String statusToString(DriverStatusEntity status) {
+        return status != null ? status.getStatus() : null;
+    }
 
     @Mappings({
             @Mapping(target = "name", source = "driverEntity.name"),

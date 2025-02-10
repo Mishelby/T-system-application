@@ -12,21 +12,25 @@ import java.util.Set;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
+
     @Mappings({
             @Mapping(target = "username", source = "user.username"),
             @Mapping(target = "password", source = "encodedPassword"),
             @Mapping(target = "email", source = "user.email"),
-            @Mapping(target = "roles", expression = "java(mapRoles())")
+            @Mapping(target = "roles", source = "roles")
     })
     UserEntity toEntity(
             CreateUserDto user,
-            String encodedPassword
+            String encodedPassword,
+            Set<Role> roles
     );
 
-    default Set<Role> mapRoles() {
-        return new HashSet<>();
+    @AfterMapping
+    default void ensureRoles(@MappingTarget UserEntity user) {
+        if (user.getRoles() == null) {
+            user.setRoles(new HashSet<>());
+        }
     }
-
 
     @Mappings({
             @Mapping(target = "username", source = "user.username"),

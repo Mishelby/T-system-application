@@ -14,33 +14,34 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
-public class UserService{
+public class UserService  {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-
-//    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final RoleService roleService;
 
     @Transactional
     public CreateUserDto createNewUser(
             CreateUserDto newUser
     ) {
         isUserExistsByEmail(newUser.email());
+        var roles = roleService.findAll();
 
         var userEntity = userMapper.toEntity(
                 newUser,
-                passwordEncoder.encode(newUser.password())
+                passwordEncoder.encode(newUser.password()),
+                Set.of(roles.get(RoleName.USER))
         );
-        userEntity.getRoles().add(new Role(RoleName.USER));
 
         return userMapper.toDto(
                 userRepository.save(userEntity)
         );
     }
-
 
     @Transactional(readOnly = true)
     public MainUserInfoDro getUserInfo(
@@ -80,6 +81,5 @@ public class UserService{
                         .formatted(email))
         ).getId();
     }
-
 
 }

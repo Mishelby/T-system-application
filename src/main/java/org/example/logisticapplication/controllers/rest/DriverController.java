@@ -1,5 +1,6 @@
 package org.example.logisticapplication.controllers.rest;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.*;
@@ -54,7 +55,7 @@ public class DriverController {
 
     @PostMapping
     public ResponseEntity<DriverDto> createDriver(
-            @RequestBody DriverRegistrationDto driver
+            @RequestBody @Valid DriverRegistrationDto driver
     ) {
         log.info("Get request for save driver driver: {}", driver);
         var savedDriver = driverService.createDriver(driver);

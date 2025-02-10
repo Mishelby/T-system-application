@@ -16,8 +16,6 @@ public record Driver(
         @JsonProperty("numOfHoursWorked")
         Double numberOfHoursWorked,
 
-        String status,
-
         @JsonProperty("cityId")
         Long currentCityId,
 

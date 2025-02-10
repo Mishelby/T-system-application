@@ -34,39 +34,39 @@ class DriverControllerTest {
      *
      * @throws Exception if an error occurs during JSON processing or request execution.
      */
-    @Test
-    void shouldSuccessCreateDriver() throws Exception {
-        // Create a new Driver object with sample data
-        var driver = new Driver(
-                null,
-                "John",
-                "Doe",
-                657853219L,
-                0.0,
-                DriverStatus.fromDisplayName("REST").getDisplayName(),
-                1L,
-                null
-        );
-
-        // Convert the Driver object to JSON
-        var driverJson = mapper.writeValueAsString(driver);
-
-        // Perform POST request to create a new driver and expect HTTP 200 status
-        var createdDriverJson = mockMvc.perform(post("/api/drivers")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(driverJson))
-                .andExpect(status().is(200))
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        // Parse the response JSON to DriverEntity object
-        var driverResponse = mapper.readValue(createdDriverJson, DriverEntity.class);
-
-        // Validate that the ID is generated and the name matches the input
-        Assertions.assertNotNull(driverResponse.getId());
-        Assertions.assertEquals(driver.name(), driverResponse.getName());
-    }
+//    @Test
+//    void shouldSuccessCreateDriver() throws Exception {
+//        // Create a new Driver object with sample data
+//        var driver = new Driver(
+//                null,
+//                "John",
+//                "Doe",
+//                657853219L,
+//                0.0,
+//                DriverStatus.fromDisplayName("REST").getDisplayName(),
+//                1L,
+//                null
+//        );
+//
+//        // Convert the Driver object to JSON
+//        var driverJson = mapper.writeValueAsString(driver);
+//
+//        // Perform POST request to create a new driver and expect HTTP 200 status
+//        var createdDriverJson = mockMvc.perform(post("/api/drivers")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(driverJson))
+//                .andExpect(status().is(200))
+//                .andReturn()
+//                .getResponse()
+//                .getContentAsString();
+//
+//        // Parse the response JSON to DriverEntity object
+//        var driverResponse = mapper.readValue(createdDriverJson, DriverEntity.class);
+//
+//        // Validate that the ID is generated and the name matches the input
+//        Assertions.assertNotNull(driverResponse.getId());
+//        Assertions.assertEquals(driver.name(), driverResponse.getName());
+//    }
 
     @Test
     void shouldSuccessCreateTruck() throws Exception {

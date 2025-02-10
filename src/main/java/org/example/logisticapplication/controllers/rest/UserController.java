@@ -23,7 +23,7 @@ public class UserController {
     public ResponseEntity<MainUserInfoDro> getUserInfoById(
             @PathVariable("id") Long id
     ) {
-        log.info("Get user info by id: {}", id);
+        log.info("Get request for user info by id: {}", id);
         var userInfo = userService.getUserInfo(id);
 
         return ResponseEntity.ok().body(userInfo);

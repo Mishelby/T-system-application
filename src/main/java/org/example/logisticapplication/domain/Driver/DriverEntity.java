@@ -1,11 +1,16 @@
 package org.example.logisticapplication.domain.Driver;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
+import org.example.logisticapplication.domain.Role.Role;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "driver")
@@ -32,9 +37,9 @@ public class DriverEntity {
     @Column(name = "num_of_hours_worked")
     private Double numberOfHoursWorked;
 
-    @Column(name = "driver_status", nullable = false)
-    @Pattern(regexp = "REST|ON_SHIFT|DRIVING|THE_SECOND_DRIVER|LOADING_UNLOADING_OPERATIONS", message = "Invalid driver status")
-    private String status;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "status_id")
+    private DriverStatusEntity status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_city_id")
@@ -44,6 +49,14 @@ public class DriverEntity {
     @JoinColumn(name = "current_truck_id")
     private TruckEntity currentTruck;
 
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+            name = "driver_roles",
+            joinColumns = @JoinColumn(name = "driver_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles;
+
     public DriverEntity(
             Long id,
             String name,
@@ -51,7 +64,7 @@ public class DriverEntity {
             String password,
             Long personNumber,
             Double numberOfHoursWorked,
-            String status,
+            DriverStatusEntity status,
             CityEntity currentCity,
             TruckEntity currentTruck
     ) {
@@ -83,4 +96,5 @@ public class DriverEntity {
     }
 
     public DriverEntity() {}
+
 }

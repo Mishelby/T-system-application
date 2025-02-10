@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const name = document.getElementById('name').value;
         const secondName = document.getElementById('secondName').value;
+        const password = document.getElementById('password').value;
         const personNumber = document.getElementById('personNumber').value;
         const cityId = citySelect.value;
 
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: null,
             name,
             secondName,
+            password,
             personNumber,
             cityId
         };
