@@ -103,7 +103,7 @@ public class CargoService {
     }
 
     @Transactional(readOnly = true)
-    public List<CargoStatusDto> findCargoStatusById(
+    public List<CargoStatusDto> getCargoStatus(
             Long id
     ) {
         if (!cargoRepository.existsById(id)) {

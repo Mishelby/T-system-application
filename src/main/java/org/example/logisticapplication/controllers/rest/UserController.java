@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -29,23 +29,13 @@ public class UserController {
         return ResponseEntity.ok().body(userInfo);
     }
 
-    @PostMapping("/registration")
+    @PostMapping
     public ResponseEntity<CreateUserDto> createUser(
             @RequestBody CreateUserDto newUser
     ) {
         log.info("Get request for create new user: {}", newUser);
         var savedUser = userService.createNewUser(newUser);
 
-        return ResponseEntity.ok().body(savedUser);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(
-            @RequestBody LoginUserDto userDto
-    ){
-        log.info("Get request for login with email {}", userDto.email());
-        var userDetails = userService.checkUserAccount(userDto);
-
-        return  ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 }

@@ -8,14 +8,13 @@ import org.example.logisticapplication.domain.Cargo.CargoInfoForStatus;
 import org.example.logisticapplication.domain.Cargo.CargoStatusDto;
 import org.example.logisticapplication.service.CargoService;
 import org.example.logisticapplication.mapper.CargoMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/cargos")
+@RequestMapping("/api/v1/cargos")
 @RequiredArgsConstructor
 @Slf4j
 public class CargoController {
@@ -32,7 +31,7 @@ public class CargoController {
         return ResponseEntity.ok().body(cargoMapper.toDto(newCargo));
     }
 
-    @PostMapping("/search")
+    @GetMapping("/by-order")
     public ResponseEntity<List<CargoInfoForStatus>> getCargosForOrder(
             @RequestBody String orderNumber
     ) {
@@ -48,7 +47,7 @@ public class CargoController {
             @PathVariable Long id
     ) {
         log.info("Get request for get cargo status: {}", id);
-        var cargoStatus = cargoService.findCargoStatusById(id);
+        var cargoStatus = cargoService.getCargoStatus(id);
 
         return ResponseEntity.ok(cargoStatus);
     }
@@ -63,8 +62,9 @@ public class CargoController {
         return ResponseEntity.ok().body(cargoMapper.toDto(newCargo));
     }
 
-    @PutMapping("/status")
+    @PutMapping("/{id}/status")
     public ResponseEntity<Void> updateCargoStatus(
+            @PathVariable Long id,
             @RequestBody CargoStatusDto cargoStatus
     ){
         log.info("Get request for update cargo status: {}", cargoStatus);

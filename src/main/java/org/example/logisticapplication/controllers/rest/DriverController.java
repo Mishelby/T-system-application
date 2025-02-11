@@ -13,7 +13,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/drivers")
+@RequestMapping("/api/v1/drivers")
 @RequiredArgsConstructor
 @Slf4j
 public class DriverController {
@@ -44,9 +44,9 @@ public class DriverController {
                 .body(allDiversWithoutTruck);
     }
 
-    @GetMapping(value = "/driver/{driverId}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<DriverInfo> findInformationById(
-            @PathVariable("driverId") Long driverId
+            @PathVariable("id") Long driverId
     ) {
         log.info("Get request for get info for driver by id");
 
@@ -77,7 +77,7 @@ public class DriverController {
         return ResponseEntity.ok(driverMapper.toDto(updatedDriver));
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id}/info")
     public ResponseEntity<DriverDto> getDriverById(
             @PathVariable Long id
     ) {

@@ -1,10 +1,13 @@
 package org.example.logisticapplication.domain.DriverShift;
 
+import lombok.Getter;
+
+@Getter
 public enum ShiftStatus {
     ON_SHIFT("ON_SHIFT"),
     REST("REST");
 
-    private String statusName;
+    private final String statusName;
 
     ShiftStatus(String statusName){
         this.statusName = statusName;

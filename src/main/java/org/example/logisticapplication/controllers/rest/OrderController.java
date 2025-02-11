@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping("/create-order")
+    @PostMapping
     public ResponseEntity<BaseOrderInfo> createOrder(
             @RequestBody CreateBaseOrder baseOrder
     ) {
@@ -29,7 +29,7 @@ public class OrderController {
         return ResponseEntity.ok().body(newOrder);
     }
 
-    @PostMapping("/confirm-order")
+    @PostMapping("/confirm")
     public ResponseEntity<CreateBaseOrder> confirmOrder(
             @RequestBody BaseRoutePoints routePoint
     ){
@@ -40,7 +40,7 @@ public class OrderController {
     }
 
 
-    @GetMapping("/{orderNumber}")
+    @GetMapping("/{orderNumber}/drivers-trucks")
     public ResponseEntity<DriversAndTrucksForOrderDto> getTruckAndDriversForOrder(
             @PathVariable("orderNumber") String orderNumber
     ) {
@@ -50,7 +50,7 @@ public class OrderController {
         return ResponseEntity.ok().body(truckForOrder);
     }
     
-    @PostMapping("/{orderNumber}/apply")
+    @PostMapping("/{orderNumber}/finalize")
     public ResponseEntity<Void> applyForOrder(
             @PathVariable("orderNumber") String orderNumber,
             @RequestBody AssignDriversAndTrucksRequest driversAndTrucks
@@ -58,7 +58,7 @@ public class OrderController {
         log.info("Post request for applying drivers and truck for order: {}", orderNumber);
         orderService.applyForOrder(orderNumber, driversAndTrucks);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        return ResponseEntity.accepted().build();
     }
 
 
@@ -69,11 +69,10 @@ public class OrderController {
         log.info("Get request for getting status for order");
         var orderStatusById = orderService.getOrderStatusById(orderId);
 
-        return ResponseEntity.ok()
-                .body(orderStatusById);
+        return ResponseEntity.ok().body(orderStatusById);
     }
 
-    @GetMapping("/submitting")
+    @GetMapping("/pending-submit")
     public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(
             @RequestParam(value = "defaultValue", required = false) DefaultSubmittingSize defaultSubmittingSize
     ){

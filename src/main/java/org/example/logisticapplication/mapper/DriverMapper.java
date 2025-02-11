@@ -41,8 +41,8 @@ public interface DriverMapper {
 
     @AfterMapping
     default void ensureStatus(@MappingTarget DriverEntity driver) {
-        if(driver.getStatus() == null) {
-            driver.setStatus(new DriverStatusEntity(ShiftStatus.REST.getStatusName()));
+        if(driver.getDriverStatus() == null) {
+            driver.setDriverStatus(new DriverStatusEntity(ShiftStatus.REST.getStatusName()));
         }
     }
 

@@ -129,7 +129,7 @@ public class TruckService {
     }
 
     @Transactional(readOnly = true)
-    public List<Truck> findFreeTrucks(
+    public List<Truck> findAvailableTrucks(
             Long cityId
     ) {
         var freeTrucks = truckRepository.findFreeTrucks(

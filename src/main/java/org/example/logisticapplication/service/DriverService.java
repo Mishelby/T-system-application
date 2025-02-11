@@ -20,6 +20,7 @@ import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.example.logisticapplication.utils.RoleName;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -211,6 +212,16 @@ public class DriverService {
         return driverRepository.findDriverEntityByPersonNumber(personNumber)
                 .orElseThrow(() -> new EntityNotFoundException("No driver entity found for person number = %s"))
                 .getId();
+    }
+
+    @Transactional(readOnly = true)
+    public HttpStatus driverLogin(
+            DriverLoginInfo driverLoginInfo
+    ) {
+        return driverRepository.findDriverEntityByPersonNumber(driverLoginInfo.personNumber())
+                .filter(driver -> passwordEncoder.matches(driverLoginInfo.password(), driver.getPassword()))
+                .map(driver -> HttpStatus.OK)
+                .orElse(HttpStatus.UNAUTHORIZED);
     }
 
     private static OrderMainInfo getOrderMainInfo(

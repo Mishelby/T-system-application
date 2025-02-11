@@ -14,13 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/api/route-points")
+@RequestMapping(value = "/api/v1/route-points")
 @RequiredArgsConstructor
 @Slf4j
 public class RoutePointController {
-
-    private final CargoRepository cargoRepository;
-
     private final RoutePointService routePointService;
     private final RoutePointMapper routePointMapper;
 

@@ -66,8 +66,8 @@ public class OrderInfoService {
 
     @Transactional(readOnly = true)
     public DriverAndTruckDto findAllDriversAndTrucks() {
-
-        var driverDomainList = driverRepository.findAllDrivers().stream()
+        var driverDomainList = driverRepository.findAllDrivers()
+                .stream()
                 .map(driver ->
                         driverMapper.toDtoInfo(
                                 driver,

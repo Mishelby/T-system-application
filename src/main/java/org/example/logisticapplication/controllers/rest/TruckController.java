@@ -1,10 +1,10 @@
 package org.example.logisticapplication.controllers.rest;
 
 import jakarta.validation.Valid;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Truck.CreateTruckDto;
-import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckDto;
 import org.example.logisticapplication.domain.Truck.TruckForDriverDto;
 import org.example.logisticapplication.service.TruckService;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/trucks")
+@RequestMapping("/api/v1/trucks")
 @RequiredArgsConstructor
 @Slf4j
 public class TruckController {
@@ -45,10 +45,10 @@ public class TruckController {
         return ResponseEntity.ok(dtoTrucks);
     }
 
-    @GetMapping(value = "/for-driver")
+    @GetMapping(value = "/by-driver")
     public ResponseEntity<List<TruckForDriverDto>> findTrucksForDriver(
             @RequestParam("driverId") Long driverId
-    ){
+    ) {
         log.info("Get request for find trucks for driver");
         var truckForDriver = truckService.findTruckForDriver(driverId);
 
@@ -56,12 +56,12 @@ public class TruckController {
                 .body(truckForDriver);
     }
 
-    @GetMapping("/free-trucks")
-    public ResponseEntity<List<TruckDto>> findFreeTrucks(
-            @RequestParam("cityId") Long cityId
+    @GetMapping("/available")
+    public ResponseEntity<List<TruckDto>> findAvailableTrucks(
+            @RequestParam("cityId") @NonNull Long cityId
     ) {
         log.info("Get request for free trucks");
-        var freeTrucks = truckService.findFreeTrucks(cityId);
+        var freeTrucks = truckService.findAvailableTrucks(cityId);
 
         return ResponseEntity.ok(
                 freeTrucks.stream()

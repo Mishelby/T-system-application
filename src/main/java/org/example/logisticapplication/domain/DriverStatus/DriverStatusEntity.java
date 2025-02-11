@@ -2,6 +2,7 @@ package org.example.logisticapplication.domain.DriverStatus;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Table(name = "driver_status")
 @Getter
 @Setter
+@EqualsAndHashCode(of = "status")
 public class DriverStatusEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

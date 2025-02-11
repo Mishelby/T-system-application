@@ -165,7 +165,6 @@ public class OrderService {
             Long orderId
     ) {
         orderValidHelper.validateOrderAndFetch(orderId);
-
         return orderRepository.showOrderStatusByOrderId(orderId);
     }
 
@@ -380,6 +379,7 @@ public class OrderService {
 
     }
 
+    // TODO Переделать метод, что бы он принимал сразу список маршрутных точек
     private void addRoutePoints(
             BaseRoutePoints routePoint,
             List<RoutePointInfoDto> routePointInfoDto

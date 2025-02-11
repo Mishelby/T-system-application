@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 public class OrderInfoController {
     private final OrderInfoService orderInfoService;
@@ -24,7 +24,7 @@ public class OrderInfoController {
 
     @GetMapping("/info")
     public ResponseEntity<List<OrderInfoDto>> getOrderInfos(
-            @RequestParam(value = "countOfLast") Integer countOfLastOrders
+            @RequestParam(value = "count", defaultValue = "10") Integer countOfLastOrders
     ) {
         log.info("Get request for get last orders");
         var lastOrders = orderInfoService.findLastOrders(countOfLastOrders);
@@ -39,7 +39,6 @@ public class OrderInfoController {
     @GetMapping("/drivers-trucks")
     public ResponseEntity<DriverAndTruckDto> getOrderInfoById() {
         log.info("Get request for get drivers and trucks");
-
         return ResponseEntity.ok(orderInfoService.findAllDriversAndTrucks());
     }
 }

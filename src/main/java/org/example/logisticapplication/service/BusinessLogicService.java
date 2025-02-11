@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.Driver;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Driver.DriverStatus;
 import org.example.logisticapplication.domain.DriverShift.DriverShift;
 import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 import org.example.logisticapplication.repository.DriverRepository;
@@ -23,7 +24,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class BusinessLogicService implements DriverLogicService {
+public class BusinessLogicService {
     private final DriverRepository driverRepository;
     private final DriverMapper driverMapper;
     private final DriverValidHelper driverValidHelper;
@@ -32,8 +33,6 @@ public class BusinessLogicService implements DriverLogicService {
 
     private final Clock clock = Clock.systemDefaultZone();
 
-
-    @Override
     @Transactional
     public Driver addTruckForDriver(
             Long driverId,
@@ -55,18 +54,17 @@ public class BusinessLogicService implements DriverLogicService {
         return driverMapper.toDomain(driverEntity);
     }
 
-    @Override
     @Transactional
     public void changeShiftStatus(
             Long driverId,
-            String status
+            ShiftStatus status
     ) {
-        BusinessLogicHelper.isValidShiftStatus(status);
+        BusinessLogicHelper.isValidShiftStatus(status.getStatusName());
 
         var driverEntity = getDriverEntity(driverId);
         var currentShift = getDriverShift(driverId);
 
-        switch (ShiftStatus.valueOf(status)) {
+        switch (ShiftStatus.valueOf(status.getStatusName())) {
             case ON_SHIFT -> {
                 if (currentShift != null && currentShift.getEndShift() == null) {
                     throw new IllegalArgumentException("Driver already on shift: %s".formatted(driverId));
@@ -94,7 +92,7 @@ public class BusinessLogicService implements DriverLogicService {
             default -> throw new IllegalArgumentException("Invalid shift status: %s".formatted(status));
         }
 
-        driverRepository.changeShiftForDriverById(driverId, status);
+        driverRepository.changeShiftForDriverById(driverId, status.getStatusName());
     }
 
     private static void updateShiftAndDriver(
@@ -141,13 +139,13 @@ public class BusinessLogicService implements DriverLogicService {
     @Transactional
     public void changeDriverStatus(
             Long driverId,
-            String status
+            DriverStatus status
     ) {
-        BusinessLogicHelper.isValidDriverStatus(status);
+        BusinessLogicHelper.isValidDriverStatus(status.getDisplayName());
 
         var driverEntity = driverRepository.findById(driverId).orElseThrow();
 
-        if (driverEntity.getStatus().equals(ShiftStatus.REST.getStatusName())) {
+        if (driverEntity.getDriverStatus().getStatus().equals(ShiftStatus.REST.getStatusName())) {
             throw new IllegalArgumentException("A driver on vacation cannot change their status.: %s"
                     .formatted(driverId));
         }
@@ -159,13 +157,13 @@ public class BusinessLogicService implements DriverLogicService {
 
         if (!anotherDrivers.isEmpty() && anotherDrivers
                 .stream()
-                .anyMatch(anotherDriver -> anotherDriver.getStatus().equals(status))
+                .anyMatch(anotherDriver -> anotherDriver.getDriverStatus().equals(driverEntity.getDriverStatus()))
         ) {
             throw new IllegalArgumentException("Only one driver in truck can have driving status: %s"
                     .formatted(status));
         }
 
-        driverRepository.changeDriverStatusById(driverId, status);
+        driverRepository.changeDriverStatusById(driverId, status.getDisplayName());
     }
 
 }

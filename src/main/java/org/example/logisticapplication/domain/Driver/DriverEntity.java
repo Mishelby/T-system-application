@@ -1,8 +1,6 @@
 package org.example.logisticapplication.domain.Driver;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
@@ -39,7 +37,7 @@ public class DriverEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "status_id")
-    private DriverStatusEntity status;
+    private DriverStatusEntity driverStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_city_id")
@@ -64,7 +62,7 @@ public class DriverEntity {
             String password,
             Long personNumber,
             Double numberOfHoursWorked,
-            DriverStatusEntity status,
+            DriverStatusEntity driverStatus,
             CityEntity currentCity,
             TruckEntity currentTruck
     ) {
@@ -74,7 +72,7 @@ public class DriverEntity {
         this.password = password;
         this.personNumber = personNumber;
         this.numberOfHoursWorked = numberOfHoursWorked;
-        this.status = status;
+        this.driverStatus = driverStatus;
         this.currentCity = currentCity;
         this.currentTruck = currentTruck;
     }

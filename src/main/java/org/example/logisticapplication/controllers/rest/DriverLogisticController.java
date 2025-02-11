@@ -3,6 +3,8 @@ package org.example.logisticapplication.controllers.rest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriverDto;
+import org.example.logisticapplication.domain.Driver.DriverStatus;
+import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 import org.example.logisticapplication.service.BusinessLogicService;
 import org.example.logisticapplication.mapper.DriverMapper;
 import org.springframework.http.HttpStatus;
@@ -10,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/drivers")
+@RequestMapping("/api/v1/drivers")
 @RequiredArgsConstructor
 @Slf4j
 public class DriverLogisticController {
@@ -22,30 +24,30 @@ public class DriverLogisticController {
             @PathVariable("driverId") Long driverId,
             @PathVariable("truckId") Long truckId
     ) {
-        log.info("Get request for adding truck {} to driver {}", truckId, driverId);
+        log.info("Put request for adding truck {} to driver {}", truckId, driverId);
         var driver = businessLogicService.addTruckForDriver(driverId, truckId);
 
         return ResponseEntity.ok(driverMapper.toDto(driver));
     }
 
 
-    @PutMapping("/{id}/work-shift-status")
-    public ResponseEntity<HttpStatus> workShift(
+    @PutMapping("/{id}/shift-status")
+    public ResponseEntity<Void> updateWorkShiftStatus(
             @PathVariable("id") Long driverId,
-            @RequestParam(value = "status") String status
+            @RequestParam(value = "status") ShiftStatus status
     ) {
-        log.info("Get request for work-shift to driver {}", driverId);
+        log.info("Put request for work-shift to driver {}", driverId);
         businessLogicService.changeShiftStatus(driverId, status);
 
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}/driver-status")
-    public ResponseEntity<HttpStatus> driverStatus(
+    @PutMapping("/{id}/status")
+    public ResponseEntity<HttpStatus> updateDriverStatus(
             @PathVariable("id") Long driverId,
-            @RequestParam(value = "status") String status
+            @RequestParam(value = "status") DriverStatus status
     ) {
-        log.info("Get request for driver status to driver {}", driverId);
+        log.info("Put request for driver status to driver {}", driverId);
         businessLogicService.changeDriverStatus(driverId, status);
 
         return ResponseEntity.ok(HttpStatus.OK);

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/countries")
+@RequestMapping("/api/v1/countries")
 @RequiredArgsConstructor
 @Slf4j
 public class CountryMapController {

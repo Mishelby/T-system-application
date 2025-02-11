@@ -39,7 +39,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             SELECT d
             FROM DriverEntity d
             LEFT JOIN d.currentCity c
-            WHERE(:status IS NULL OR d.status =:status)
+            WHERE(:status IS NULL OR d.driverStatus =:status)
             AND(:cityName IS NULL OR c.name =:cityName)
             """)
     List<DriverEntity> findAllDrivers(
@@ -127,7 +127,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     @Query("""
             SELECT COUNT(d) 
             FROM DriverEntity d 
-            WHERE d.status = :status
+            WHERE d.driverStatus = :status
             """)
     Integer findDriversInShift(
             @Param("status") String status
