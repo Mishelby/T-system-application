@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminViewController {
     private final OrderService orderService;
 
-    @GetMapping
+    @GetMapping("/page")
     public String adminPage() {
         return "admin-panel";
     }
 
-    @GetMapping("/submitting")
+    @GetMapping("/orders/submit")
     public String submittingPage(Model model) {
         log.info("Get request for submitting orders");
         return "orders";

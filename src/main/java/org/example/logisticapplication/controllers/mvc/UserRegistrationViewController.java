@@ -11,9 +11,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @Controller
-@RequestMapping("/users/view")
+@RequestMapping("/users")
 @RequiredArgsConstructor
-public class UserViewController {
+public class UserRegistrationViewController {
     private final UserService userService;
 
     @GetMapping("/registration")

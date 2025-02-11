@@ -78,7 +78,7 @@ public interface DriverMapper {
             @Mapping(target = "secondName", source = "entity.secondName"),
             @Mapping(target = "personNumber", source = "entity.personNumber"),
             @Mapping(target = "numberOfHoursWorked", source = "entity.numberOfHoursWorked"),
-            @Mapping(target = "status", expression = "java(statusToString(entity.getStatus()))"),
+            @Mapping(target = "status", expression = "java(statusToString(entity.getDriverStatus()))"),
             @Mapping(target = "currentCityInfo", source = "currentCityInfo"),
             @Mapping(target = "currentTruckInfo", source = "currentTruckInfo")
     })
@@ -89,7 +89,7 @@ public interface DriverMapper {
     );
 
     default String statusToString(DriverStatusEntity status) {
-        return status != null ? status.getStatus() : null;
+        return status != null ? status.getStatus() : ShiftStatus.REST.getStatusName();
     }
 
     @Mappings({

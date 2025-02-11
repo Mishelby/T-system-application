@@ -16,13 +16,7 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                        "/registration/**",
-                                        "/logistic/get-start",
-                                        "/login/**",
-                                        "/driver/registration",
-                                        "/users/view/registration",
-                                        "/api/cities/**",
-                                        "/api/cargos/**"
+                                        "/logistic/**"
                                 )
                                 .permitAll()
                                 .requestMatchers("/driver/").hasRole("DRIVER")

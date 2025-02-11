@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/logistic")
 public class StartPageViewController {
-
-    @GetMapping("/get-start")
+    @GetMapping("/welcome")
     public String startPage() {
         return "start-page";
     }

@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/api/dashboard")
-public class DashBoardViewController {
+@RequestMapping("/dashboard")
+public class DashboardViewController {
 
-    @GetMapping
+    @GetMapping("/panel")
     public String dashboard() {
         return "dashboard";
     }

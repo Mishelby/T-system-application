@@ -7,21 +7,37 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
-@RequestMapping("/driver")
+@RequestMapping("/drivers")
 @RequiredArgsConstructor
-public class DriverInfoViewController {
+public class DriverRegistrationViewController {
     private final DriverService driverService;
+
+    @GetMapping("/registration")
+    public String showDriverForm() {
+        return "add-driver";
+    }
+
+    @GetMapping("/registration/success")
+    public String successPage() {
+        return "account-create-success";
+    }
+
+    @PostMapping("/registration")
+    public String createDriver() {
+        return "redirect:/driver/success";
+    }
 
     @GetMapping("/{id}")
     public String showDriverInfoPage(
             @PathVariable("id") Long id,
             Model model
     ) {
-        log.info("Fetching driver info for id={}", id);
+        log.info("Get request for driver info with id={}", id);
         var driverInfo = driverService.getDriverInfo(id);
 
         if(driverInfo.getCurrentOrder()){
@@ -33,5 +49,3 @@ public class DriverInfoViewController {
         }
     }
 }
-
-

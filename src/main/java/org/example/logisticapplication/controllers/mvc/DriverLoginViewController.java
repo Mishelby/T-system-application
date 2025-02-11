@@ -7,16 +7,15 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @Controller
-@RequestMapping("/driver")
+@RequestMapping("/drivers")
 @RequiredArgsConstructor
-public class LoginViewController {
+public class DriverLoginViewController {
     private static final String DRIVER_LOGIN_PAGE = "login-page";
 
     @GetMapping("/login")
     public String showLoginPage() {
         return DRIVER_LOGIN_PAGE;
     }
-
 
     @GetMapping("/error-page")
     public String showErrorPage() {
