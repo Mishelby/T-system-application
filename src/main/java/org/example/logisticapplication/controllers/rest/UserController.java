@@ -35,6 +35,7 @@ public class UserController {
     ) {
         log.info("Get request for create new user: {}", newUser);
         var savedUser = userService.createNewUser(newUser);
+        log.info("Saved user!: {}", savedUser);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }

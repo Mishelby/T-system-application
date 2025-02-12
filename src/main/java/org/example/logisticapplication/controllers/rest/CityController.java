@@ -20,7 +20,7 @@ public class CityController {
     private final CityService cityService;
     private final CityMapper cityMapper;
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<CityDto> createCity(
             @RequestBody City city
     ) {
@@ -30,7 +30,7 @@ public class CityController {
         return ResponseEntity.ok(cityMapper.toDto(newCity));
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<CityDto>> getAllCities() {
         log.info("Get request for all cities");
 

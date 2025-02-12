@@ -143,7 +143,7 @@
     // Загрузка списка городов
     async function loadCities() {
         try {
-            const response = await fetch('/api/cities');
+            const response = await fetch('/api/v1/cities');
             if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
 
             const cities = await response.json();
@@ -158,7 +158,7 @@
 
     async function loadCountries() {
         try {
-            const response = await fetch('/api/countries');
+            const response = await fetch('/api/v1/countries');
             if (!response.ok) throw new Error('Ошибка: ' + response.status);
 
             const countries = await response.json();
@@ -181,7 +181,7 @@
         }
 
         try {
-            const response = await fetch('/api/cities/create', {
+            const response = await fetch('/api/v1/cities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: cityName, countryMapName: countryName })
@@ -208,7 +208,7 @@
         var countryName = document.getElementById("countryName").value;
 
         // Отправляем запрос на сервер
-        fetch("/api/countries", {
+        fetch("/api/v1/countries", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -239,7 +239,7 @@
         };
 
         try {
-            const response = await fetch('/api/trucks', {
+            const response = await fetch('/api/v1/trucks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(truckData)
@@ -258,7 +258,7 @@
     // Загрузка заказов
     async function fetchOrders() {
         try {
-            const response = await fetch('/api/orders/submitting');
+            const response = await fetch('/api/v1/orders/pending-submit');
             if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
 
             const orders = await response.json();
@@ -320,7 +320,7 @@
 
     async function fetchDriversAndTrucks(orderNumber) {
         try {
-            const response = await fetch(`/api/orders/${orderNumber}`);
+            const response = await fetch(`/api/v1/orders/${orderNumber}`);
             if (!response.ok) {
                 throw new Error(`Ошибка запроса: ${response.status}`);
             }
@@ -366,7 +366,7 @@
         }
 
         try {
-            const response = await fetch(`/api/orders/${orderNumber}/apply`, {
+            const response = await fetch(`/api/v1/orders/${orderNumber}/finalize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ driverIds: selectedDrivers.map(Number), truckIds: selectedTrucks.map(Number) })

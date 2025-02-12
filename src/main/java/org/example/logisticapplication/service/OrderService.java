@@ -22,6 +22,8 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
+import org.example.logisticapplication.domain.User.UserEntity;
+import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
@@ -59,6 +61,8 @@ public class OrderService {
     private final DistanceRepository distanceRepository;
     private final OrderDistanceRepository orderDistanceRepository;
     private final OrderCargoRepository orderCargoRepository;
+    private final UserRepository userRepository;
+    private final UserOrderRepository userOrderRepository;
 
     @Value("${default.size-of-submitting-orders}")
     private int defaultSize;
@@ -188,11 +192,12 @@ public class OrderService {
     @Transactional
     public void applyForOrder(
             String orderNumber,
-            AssignDriversAndTrucksRequest driversAndTrucks
+            ApplyOrderDto applyOrderDto
     ) {
         var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
-        var driversById = driverRepository.findDriversById(driversAndTrucks.driverIds());
-        var trucksById = truckRepository.findTrucksById(driversAndTrucks.truckIds());
+        var driversById = driverRepository.findDriversById(applyOrderDto.driversAndTrucks().driverIds());
+        var trucksById = truckRepository.findTrucksById(applyOrderDto.driversAndTrucks().truckIds());
+        var userEntity = userRepository.findById(applyOrderDto.userId()).orElseThrow();
 
         var driverOrderEntities = driversById.stream()
                 .map(driver -> new DriverOrderEntity(orderEntity, driver))
@@ -201,6 +206,8 @@ public class OrderService {
         var truckOrderEntities = trucksById.stream()
                 .map(truck -> new TruckOrderEntity(orderEntity, truck))
                 .collect(Collectors.toSet());
+
+        var userOrderEntity = new UserOrderEntity(userEntity, orderEntity);
 
         orderEntity.getRoutePoints()
                 .stream()
@@ -214,6 +221,7 @@ public class OrderService {
 
         orderEntity.getDriverOrders().addAll(driverOrderEntities);
         orderEntity.getTruckOrders().addAll(truckOrderEntities);
+        userOrderRepository.save(userOrderEntity);
     }
 
     private void addDriverToTruck(

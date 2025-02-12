@@ -8,8 +8,9 @@ import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 
 import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
-import org.example.logisticapplication.domain.Role.Role;
+import org.example.logisticapplication.domain.Role.RoleEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
+import org.example.logisticapplication.domain.User.UserEntity;
 import org.mapstruct.*;
 
 import java.util.HashSet;
@@ -26,18 +27,49 @@ public interface DriverMapper {
 
     @Mappings({
             @Mapping(target = "id", ignore = true),
+            @Mapping(target = "name", expression = "java(driverInfo.getName())"),
+            @Mapping(target = "username", expression = "java(driverInfo.getUserName())"),
+            @Mapping(target = "password", source = "password"),
+            @Mapping(target = "secondName", expression = "java(driverInfo.getSecondName())"),
+            @Mapping(target = "personNumber", expression = "java(driverInfo.getPersonNumber())"),
+            @Mapping(target = "currentCity", source = "currentCity"),
+            @Mapping(target = "roleEntities", source = "rolesSet"),
+    })
+    DriverEntity toEntity(
+            String password,
+            DriverRegistrationInfo driverInfo,
+            CityEntity currentCity,
+            Set<RoleEntity> rolesSet
+    );
+
+    @Mappings({
+            @Mapping(target = "name", source = "driver.name"),
+            @Mapping(target = "secondName", source = "driver.secondName"),
+            @Mapping(target = "personNumber", source = "driver.personNumber"),
+            @Mapping(target = "currentCityName", source = "driver.currentCity.name")
+    })
+    DriverBaseInfoDto toBaseDto(DriverEntity driver);
+
+
+    @Mappings({
+            @Mapping(target = "id", ignore = true),
             @Mapping(target = "name", source = "driver.name"),
             @Mapping(target = "password", source = "encoderPassword"),
             @Mapping(target = "numberOfHoursWorked", expression = "java(getDefaultNumberOfHoursWorked())"),
             @Mapping(target = "currentCity", source = "cityEntity"),
-            @Mapping(target = "roles", source = "setOfRoles"),
     })
     DriverEntity toEntity(
             DriverRegistrationDto driver,
             String encoderPassword,
-            CityEntity cityEntity,
-            Set<Role> setOfRoles
+            CityEntity cityEntity
     );
+
+    @AfterMapping
+    default void ensureHoursOfWorked(@MappingTarget DriverEntity driverEntity) {
+        if(driverEntity.getNumberOfHoursWorked() == null) {
+            driverEntity.setNumberOfHoursWorked(0.0);
+        }
+    }
 
     @AfterMapping
     default void ensureStatus(@MappingTarget DriverEntity driver) {
@@ -48,8 +80,8 @@ public interface DriverMapper {
 
     @AfterMapping
     default void ensureRoles(@MappingTarget DriverEntity driver) {
-        if(driver.getRoles() == null) {
-            driver.setRoles(new HashSet<>());
+        if(driver.getRoleEntities() == null) {
+            driver.setRoleEntities(new HashSet<>());
         }
     }
 

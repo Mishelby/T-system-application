@@ -141,7 +141,7 @@ public class BusinessLogicService {
             Long driverId,
             DriverStatus status
     ) {
-        BusinessLogicHelper.isValidDriverStatus(status.getDisplayName());
+        BusinessLogicHelper.isValidDriverStatus(status.getStatusName());
 
         var driverEntity = driverRepository.findById(driverId).orElseThrow();
 
@@ -163,7 +163,7 @@ public class BusinessLogicService {
                     .formatted(status));
         }
 
-        driverRepository.changeDriverStatusById(driverId, status.getDisplayName());
+        driverRepository.changeDriverStatusById(driverId, status.getStatusName());
     }
 
 }

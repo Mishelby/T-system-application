@@ -17,25 +17,31 @@
 
     .container {
       background-color: #ffffff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
-      padding: 30px;
-      width: 400px;
-      text-align: center;
+      padding: 50px;
+      width: 60%;
+      max-width: 800px;
+      text-align: left;
       box-sizing: border-box;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     h2 {
       color: #333;
-      font-size: 24px;
-      margin-bottom: 20px;
+      font-size: 28px;
+      margin-bottom: 30px;
+      font-weight: 600;
     }
 
     p {
       color: #555;
-      font-size: 16px;
-      line-height: 1.5;
-      margin-bottom: 10px;
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 20px;
     }
 
     strong {
@@ -48,23 +54,27 @@
       font-weight: 600;
     }
 
-    .container p:last-child {
-      margin-bottom: 30px;
+    .button-group {
+      display: flex;
+      gap: 15px; /* Отступ между кнопками */
+      margin-top: auto;
     }
 
-    /* Button Style */
-    .edit-button {
+    .button {
       background-color: #007bff;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 16px;
       transition: background-color 0.3s ease;
+      text-decoration: none;
+      text-align: center;
+      display: inline-block;
     }
 
-    .edit-button:hover {
+    .button:hover {
       background-color: #0056b3;
     }
 
@@ -77,7 +87,15 @@
   <p><strong>Имя:</strong> <span th:text="${user.username}"></span></p>
   <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
   <p><strong>Дата регистрации:</strong> <span th:text="${user.createdAt}"></span></p>
-  <a href="/users/view/edit" class="edit-button">Редактировать профиль</a>
+
+  <div class="button-group">
+    <a href="/users/view/edit" class="button">Редактировать профиль</a>
+    <form action="/orders/create" method="post">
+      <input type="hidden" name="id" th:value="${user.id}">
+      <button type="submit" class="button">Оформить заказ</button>
+    </form>
+    <a href="/logistic/welcome" class="button">Вернуться на главную страницу</a>
+  </div>
 </div>
 </body>
 </html>

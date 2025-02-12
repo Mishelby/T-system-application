@@ -54,13 +54,13 @@ public class DriverController {
     }
 
     @PostMapping
-    public ResponseEntity<DriverDto> createDriver(
-            @RequestBody @Valid DriverRegistrationDto driver
+    public ResponseEntity<DriverBaseInfoDto> createDriver(
+            @RequestBody @Valid DriverRegistrationInfo driver
     ) {
         log.info("Get request for save driver driver: {}", driver);
         var savedDriver = driverService.createDriver(driver);
 
-        return ResponseEntity.ok().body(driverMapper.toDto(savedDriver));
+        return ResponseEntity.ok().body(savedDriver);
     }
 
     @PutMapping(value = "/{id}")

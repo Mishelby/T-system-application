@@ -7,7 +7,6 @@ import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
-import org.example.logisticapplication.domain.Role.Role;
 import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
@@ -19,15 +18,12 @@ import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.DriverValidHelper;
 import org.example.logisticapplication.utils.RoleName;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,32 +44,34 @@ public class DriverService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Driver createDriver(
-            DriverRegistrationDto driver
+    public DriverBaseInfoDto createDriver(
+            DriverRegistrationInfo driverInfo
     ) {
-        isDriverExistsByPersonNumber(driver);
+        isDriverExistsByPersonNumber(driverInfo);
         var roles = roleService.findAll();
 
-        var cityEntity = cityRepository.findById(driver.currentCityId())
+        var cityEntity = cityRepository.findCityEntityByName(driverInfo.getCityName())
                 .orElseThrow();
 
         var driverEntity = driverMapper.toEntity(
-                driver,
-                passwordEncoder.encode(driver.password()),
+                getEncodePassword(driverInfo),
+                driverInfo,
                 cityEntity,
                 Set.of(roles.get(RoleName.DRIVER))
         );
 
-        return driverMapper.toDomain(
+        return driverMapper.toBaseDto(
                 driverRepository.save(driverEntity)
         );
     }
 
-    private void isDriverExistsByPersonNumber(DriverRegistrationDto driver) {
-        if (driverRepository.existsByPersonNumber(driver.personNumber())) {
+    private void isDriverExistsByPersonNumber(
+            DriverRegistrationInfo driver
+    ) {
+        if (driverRepository.existsByPersonNumber(driver.getPersonNumber())) {
             throw new IllegalArgumentException(
                     "Driver already exists with person number=%s"
-                            .formatted(driver.personNumber())
+                            .formatted(driver.getPersonNumber())
             );
         }
     }
@@ -366,4 +364,7 @@ public class DriverService {
                 .toList();
     }
 
+    private String getEncodePassword(DriverRegistrationInfo driverInfo) {
+        return passwordEncoder.encode(driverInfo.getPassword());
+    }
 }

@@ -2,14 +2,11 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.Role.Role;
 import org.example.logisticapplication.domain.User.CreateUserDto;
-import org.example.logisticapplication.domain.User.LoginUserDto;
 import org.example.logisticapplication.domain.User.MainUserInfoDro;
 import org.example.logisticapplication.mapper.UserMapper;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.utils.RoleName;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,13 +52,16 @@ public class UserService  {
         return userMapper.toMainInfo(userEntity);
     }
 
-    public HttpStatus checkUserAccount(
-            LoginUserDto userDto
+    @Transactional(readOnly = true)
+    public MainUserInfoDro getUserInfo(
+            String email
     ) {
-        return userRepository.findUserEntityByEmail(userDto.email())
-                .filter(user -> passwordEncoder.matches(userDto.password(), user.getPassword()))
-                .map(user -> HttpStatus.OK)
-                .orElse(HttpStatus.UNAUTHORIZED);
+        var userEntity = userRepository.findUserIdEntityByEmail(email).orElseThrow(
+                () -> new EntityNotFoundException("User with email = %s not found"
+                        .formatted(email))
+        );
+
+        return userMapper.toMainInfo(userEntity);
     }
 
     private void isUserExistsByEmail(

@@ -5,29 +5,26 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
-import org.example.logisticapplication.domain.Role.Role;
+import org.example.logisticapplication.domain.Order.Order;
+import org.example.logisticapplication.domain.Order.OrderEntity;
+import org.example.logisticapplication.domain.Role.RoleEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
+import org.example.logisticapplication.domain.User.UserEntity;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "driver")
+@PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public class DriverEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class DriverEntity extends UserEntity{
     @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "last_name", nullable = false)
     private String secondName;
-
-    @Column(name = "password", nullable = false)
-    private String password;
 
     @Column(name = "person_number", unique = true, nullable = false)
     private Long personNumber;
@@ -47,48 +44,33 @@ public class DriverEntity {
     @JoinColumn(name = "current_truck_id")
     private TruckEntity currentTruck;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(
-            name = "driver_roles",
-            joinColumns = @JoinColumn(name = "driver_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles;
-
     public DriverEntity(
-            Long id,
             String name,
             String secondName,
-            String password,
             Long personNumber,
-            Double numberOfHoursWorked,
-            DriverStatusEntity driverStatus,
             CityEntity currentCity,
             TruckEntity currentTruck
     ) {
-        this.id = id;
         this.name = name;
         this.secondName = secondName;
-        this.password = password;
         this.personNumber = personNumber;
-        this.numberOfHoursWorked = numberOfHoursWorked;
-        this.driverStatus = driverStatus;
         this.currentCity = currentCity;
         this.currentTruck = currentTruck;
     }
 
     public DriverEntity(
-            Long id,
+            String userName,
+            String password,
+            String email,
+            Set<RoleEntity> roles,
             String name,
             String secondName,
-            String password,
             Long personNumber,
             CityEntity currentCity
     ) {
-        this.id = id;
+        super(userName, password, email, roles);
         this.name = name;
         this.secondName = secondName;
-        this.password = password;
         this.personNumber = personNumber;
         this.currentCity = currentCity;
     }

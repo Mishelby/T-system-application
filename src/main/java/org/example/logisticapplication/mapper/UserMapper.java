@@ -1,6 +1,7 @@
 package org.example.logisticapplication.mapper;
 
-import org.example.logisticapplication.domain.Role.Role;
+import org.example.logisticapplication.domain.Driver.DriverRegistrationInfo;
+import org.example.logisticapplication.domain.Role.RoleEntity;
 import org.example.logisticapplication.domain.User.CreateUserDto;
 import org.example.logisticapplication.domain.User.MainUserInfoDro;
 import org.example.logisticapplication.domain.User.UserEntity;
@@ -17,18 +18,31 @@ public interface UserMapper {
             @Mapping(target = "username", source = "user.username"),
             @Mapping(target = "password", source = "encodedPassword"),
             @Mapping(target = "email", source = "user.email"),
-            @Mapping(target = "roles", source = "roles")
+            @Mapping(target = "roleEntities", source = "roleEntities")
     })
     UserEntity toEntity(
             CreateUserDto user,
             String encodedPassword,
-            Set<Role> roles
+            Set<RoleEntity> roleEntities
+    );
+
+
+    @Mappings({
+            @Mapping(target = "username", expression = "java(driver.getUserName())"),
+            @Mapping(target = "email", expression = "java(driver.getEmail())"),
+            @Mapping(target = "password", source = "encodedPassword"),
+            @Mapping(target = "roleEntities", source = "roleEntities")
+    })
+    UserEntity toEntity(
+            DriverRegistrationInfo driver,
+            String encodedPassword,
+            Set<RoleEntity> roleEntities
     );
 
     @AfterMapping
     default void ensureRoles(@MappingTarget UserEntity user) {
-        if (user.getRoles() == null) {
-            user.setRoles(new HashSet<>());
+        if (user.getRoleEntities() == null) {
+            user.setRoleEntities(new HashSet<>());
         }
     }
 

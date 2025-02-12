@@ -88,6 +88,15 @@
 <div class="container">
     <h1>Register a New Driver</h1>
     <form id="driver-registration-form" autocomplete="off">
+        <label for="userName">Username:</label>
+        <input type="text" id="userName" name="userName" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
         <label for="name">First Name:</label>
         <input type="text" id="name" name="name" required>
 
@@ -97,11 +106,8 @@
         <label for="personNumber">Person Number:</label>
         <input type="number" id="personNumber" name="personNumber" required>
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-
-        <label for="cityName">City:</label>
-        <select id="cityName" name="cityName" required>
+        <label for="currentCityName">City:</label>
+        <select id="currentCityName" name="currentCityName" required>
             <option value="" disabled selected>Select a city</option>
         </select>
 

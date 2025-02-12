@@ -19,7 +19,7 @@ public class DriverRegistrationViewController {
 
     @GetMapping("/registration")
     public String showDriverForm() {
-        return "add-driver";
+        return "driver-registration";
     }
 
     @GetMapping("/registration/success")
@@ -32,7 +32,7 @@ public class DriverRegistrationViewController {
         return "redirect:/driver/success";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/profile/{id}")
     public String showDriverInfoPage(
             @PathVariable("id") Long id,
             Model model

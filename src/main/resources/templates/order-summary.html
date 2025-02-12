@@ -123,7 +123,7 @@
         };
 
         // Отправляем первый запрос на /confirm-order
-        fetch('/api/orders/confirm-order', {
+        fetch('/api/v1/orders/confirm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -137,7 +137,7 @@
                 // После успешного подтверждения заказа, отправляем второй запрос на /create-order
                 const baseOrder = data; // Предполагаем, что метод /confirm-order возвращает объект CreateBaseOrder
 
-                fetch('/api/orders/create-order', {
+                fetch('/api/v1/orders', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -148,7 +148,7 @@
                     .then(createOrderData => {
                         console.log('Order created:', createOrderData);
                         // Можно, например, перенаправить пользователя на страницу успешного завершения
-                        window.location.href = '/order/success';
+                        window.location.href = '/orders/success';
                     })
                     .catch(error => console.error('Error creating order:', error));
             })

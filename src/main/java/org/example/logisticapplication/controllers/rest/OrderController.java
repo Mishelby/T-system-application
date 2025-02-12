@@ -53,10 +53,10 @@ public class OrderController {
     @PostMapping("/{orderNumber}/finalize")
     public ResponseEntity<Void> applyForOrder(
             @PathVariable("orderNumber") String orderNumber,
-            @RequestBody AssignDriversAndTrucksRequest driversAndTrucks
+            ApplyOrderDto applyOrderDto
     ){
         log.info("Post request for applying drivers and truck for order: {}", orderNumber);
-        orderService.applyForOrder(orderNumber, driversAndTrucks);
+        orderService.applyForOrder(orderNumber, applyOrderDto);
 
         return ResponseEntity.accepted().build();
     }

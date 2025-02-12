@@ -21,12 +21,12 @@ public class DriverStatusService {
     @Transactional
     public void init() {
         var allStatus = Stream.concat(
-                Arrays.stream(DriverStatus.values()).map(DriverStatus::getDisplayName),
+                Arrays.stream(DriverStatus.values()).map(DriverStatus::getStatusName),
                 Arrays.stream(ShiftStatus.values()).map(ShiftStatus::getStatusName)
         ).toList();
 
         for (String status : allStatus) {
-            boolean exists = driverStatusRepository.existsDriverStatusByDisplayName(status);
+            boolean exists = driverStatusRepository.existsDriverStatusByName(status);
 
             if(!exists) {
                 driverStatusRepository.save(new DriverStatusEntity(status));

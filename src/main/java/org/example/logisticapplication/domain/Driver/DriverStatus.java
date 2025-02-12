@@ -11,13 +11,13 @@ public enum DriverStatus {
         this.displayName = displayName;
     }
 
-    public String getDisplayName(){
+    public String getStatusName(){
         return displayName;
     }
 
     public static DriverStatus fromDisplayName(String name) {
         for (DriverStatus status : DriverStatus.values()) {
-            if (status.getDisplayName().equals(name)) {
+            if (status.getStatusName().equals(name)) {
                 return status;
             }
         }

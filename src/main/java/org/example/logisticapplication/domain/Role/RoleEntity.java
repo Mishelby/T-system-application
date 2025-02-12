@@ -10,7 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 @Table(name = "roles")
 @Getter
 @Setter
-public class Role implements GrantedAuthority{
+public class RoleEntity implements GrantedAuthority{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,11 +19,11 @@ public class Role implements GrantedAuthority{
     @Column(name = "name", nullable = false, unique = true)
     private RoleName name;
 
-    public Role(RoleName name) {
+    public RoleEntity(RoleName name) {
         this.name = name;
     }
 
-    public Role() {}
+    public RoleEntity() {}
 
     @Override
     public String getAuthority() {

@@ -41,5 +41,5 @@ default:
   size-of-submitting-orders: 10
 
 jwt:
-   secret: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eQ
-   lifetime: PT30M
+   secret: U29tZSBzZWN1cmUga2V5IHdpdGggY29tcGxleCBzZWFyY2ggbGVuZ3Ro
+   lifetime: 3600000
