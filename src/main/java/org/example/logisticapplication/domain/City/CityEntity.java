@@ -24,7 +24,7 @@ public class CityEntity {
     @JoinColumn(name = "country_map_id", nullable = false)
     private CountryMapEntity countryMap;
 
-    @OneToMany(mappedBy = "city", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "city", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<CityStationEntity> cityStation;
 
     public CityEntity(
