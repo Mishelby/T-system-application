@@ -4,16 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Cargo.BaseCargoDto;
 import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
-import org.example.logisticapplication.domain.Order.OrderDto;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
-import org.example.logisticapplication.domain.User.UserEntity;
 import org.example.logisticapplication.domain.User.UserInfoDto;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.service.OrderService;
 import org.example.logisticapplication.service.UserService;
 import org.example.logisticapplication.utils.TimeFormatter;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -81,7 +78,7 @@ public class OrderViewController {
 
         var orderForSubmittingDto = new OrderForSubmittingDto(
                 new UserInfoDto(user.getUsername(), format),
-                List.of(baseRoutePoints)
+                List.of(null)
         );
 
         model.addAttribute("calculatedTime", TimeFormatter.formatHours(time));

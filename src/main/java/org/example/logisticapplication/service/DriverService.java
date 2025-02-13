@@ -230,7 +230,7 @@ public class DriverService {
     ) {
         return new OrderMainInfo(
                 orderEntity.getUniqueNumber(),
-                orderEntity.getStatus(),
+                orderEntity.getStatus().getStatusName(),
                 orderEntity.getCountryMap().getCountryName(),
                 anotherDriverNumbers,
                 routePoint,

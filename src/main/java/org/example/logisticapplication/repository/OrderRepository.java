@@ -18,8 +18,9 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(value = """
-            SELECT new org.example.logisticapplication.domain.Order.OrderStatusDto(o.uniqueNumber,o.status)
+            SELECT new org.example.logisticapplication.domain.Order.OrderStatusDto(o.uniqueNumber, os.statusName)
             FROM OrderEntity o
+            LEFT JOIN o.status os
             WHERE o.id = :order_id
             """)
     OrderStatusDto showOrderStatusByOrderId(@Param("order_id") Long orderId);

@@ -3,6 +3,7 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.controllers.mvc.OrderForSubmittingDto;
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.Cargo.CargoStatus;
@@ -22,12 +23,10 @@ import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
-import org.example.logisticapplication.domain.User.UserEntity;
 import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 
@@ -63,6 +61,7 @@ public class OrderService {
     private final OrderCargoRepository orderCargoRepository;
     private final UserRepository userRepository;
     private final UserOrderRepository userOrderRepository;
+    private final UserMapper userMapper;
 
     @Value("${default.size-of-submitting-orders}")
     private int defaultSize;
@@ -477,7 +476,6 @@ public class OrderService {
 
         var orderEntity = new OrderEntity(
                 uniqueNumber,
-                OrderStatus.NOT_COMPLETED.getName(),
                 countryMapEntity
         );
         orderMapper.defaultValueForOrderCargo(orderEntity);
@@ -532,4 +530,23 @@ public class OrderService {
         return Math.ceilDiv(distance, averageSpeed);
     }
 
+    @Transactional(readOnly = true)
+    public OrderForSubmittingDto responseOrderForSubmitting(
+            SendOrderForSubmittingDto orderDto
+    ) {
+        var userEntity = userRepository.findById(orderDto.userId()).orElseThrow();
+
+        List<RoutePointInfoDto> routePointInfoDto = orderDto.routePoints().stream()
+                .map(rp -> new RoutePointInfoDto(
+                        rp.getCityFrom(),
+                        null,
+                        null,
+                        null)
+                )
+                .toList();
+
+        orderMapper.toDtoInfo(userMapper.toInfoDto(userEntity), routePointInfoDto);
+
+        return null;
+    }
 }

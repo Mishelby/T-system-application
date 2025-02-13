@@ -2,11 +2,11 @@ package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.controllers.mvc.OrderForSubmittingDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
 import org.example.logisticapplication.service.OrderService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +32,7 @@ public class OrderController {
     @PostMapping("/confirm")
     public ResponseEntity<CreateBaseOrder> confirmOrder(
             @RequestBody BaseRoutePoints routePoint
-    ){
+    ) {
         log.info("Get request for confirming order: {}", routePoint);
         var createBaseOrder = orderService.sendBaseOrder(routePoint);
 
@@ -49,12 +49,12 @@ public class OrderController {
 
         return ResponseEntity.ok().body(truckForOrder);
     }
-    
+
     @PostMapping("/{orderNumber}/finalize")
     public ResponseEntity<Void> applyForOrder(
             @PathVariable("orderNumber") String orderNumber,
             ApplyOrderDto applyOrderDto
-    ){
+    ) {
         log.info("Post request for applying drivers and truck for order: {}", orderNumber);
         orderService.applyForOrder(orderNumber, applyOrderDto);
 
@@ -72,13 +72,24 @@ public class OrderController {
         return ResponseEntity.ok().body(orderStatusById);
     }
 
+    @PostMapping("/send-for-submitting")
+    public ResponseEntity<OrderForSubmittingDto> sendOrderForSubmitting(
+            @RequestParam  SendOrderForSubmittingDto orderDto
+    ) {
+        log.info("Get request for submitting order {}",orderDto);
+        orderService.responseOrderForSubmitting(orderDto);
+
+        return ResponseEntity.ok(null);
+    }
+
     @GetMapping("/pending-submit")
     public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(
             @RequestParam(value = "defaultValue", required = false) DefaultSubmittingSize defaultSubmittingSize
-    ){
+    ) {
         log.info("Get request for submitting orders");
         var orderInfo = orderService.gerOrdersForSubmit(defaultSubmittingSize);
 
         return ResponseEntity.ok().body(orderInfo);
     }
+
 }

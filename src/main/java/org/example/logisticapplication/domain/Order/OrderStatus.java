@@ -2,7 +2,7 @@ package org.example.logisticapplication.domain.Order;
 
 public enum OrderStatus {
     COMPLETED("COMPLETED"),
-    NOT_COMPLETED("NOT COMPLETED");
+    NOT_COMPLETED("NOT_COMPLETED");
 
     final String name;
 

@@ -5,8 +5,12 @@ import org.example.logisticapplication.domain.Role.RoleEntity;
 import org.example.logisticapplication.domain.User.CreateUserDto;
 import org.example.logisticapplication.domain.User.MainUserInfoDro;
 import org.example.logisticapplication.domain.User.UserEntity;
+import org.example.logisticapplication.domain.User.UserInfoDto;
 import org.mapstruct.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,6 +50,11 @@ public interface UserMapper {
         }
     }
 
+    @Named("timeFormatter")
+    default String dataToStringFormat(){
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    }
+
     @Mappings({
             @Mapping(target = "username", source = "user.username"),
             @Mapping(target = "password", source = "user.password"),
@@ -57,5 +66,9 @@ public interface UserMapper {
             @Mapping(target = "createdAt", source = "user.createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
     })
     MainUserInfoDro toMainInfo(UserEntity user);
+
+    @Mapping(target = "name", source = "user.username")
+    @Mapping(target = "createdAt", expression = "java(dataToStringFormat())")
+    UserInfoDto toInfoDto(UserEntity user);
 
 }

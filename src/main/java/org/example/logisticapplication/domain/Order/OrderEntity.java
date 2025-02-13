@@ -7,9 +7,11 @@ import lombok.Setter;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.OrderCargo.OrderCargo;
+import org.example.logisticapplication.domain.OrderStatusEntity.OrderStatusEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -25,9 +27,9 @@ public class OrderEntity {
     @Column(name = "unique_number", nullable = false, unique = true)
     private String uniqueNumber;
 
-    @Column(name = "status", nullable = false)
-    @Pattern(regexp = "COMPLETED|NOT COMPLETED", message = "Invalid order status")
-    private String status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    private OrderStatusEntity status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_map_id")
@@ -44,6 +46,9 @@ public class OrderEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderCargo> orderCargo;
+
+    @Column(name = "create_at")
+    private LocalDateTime createAt;
 
     public OrderEntity(
             String uniqueNumber,
@@ -63,7 +68,7 @@ public class OrderEntity {
 
     public OrderEntity(
             String uniqueNumber,
-            String status,
+            OrderStatusEntity status,
             CountryMapEntity countryMap
     ) {
         this.uniqueNumber = uniqueNumber;
@@ -71,5 +76,18 @@ public class OrderEntity {
         this.countryMap = countryMap;
     }
 
+    public OrderEntity(
+            String uniqueNumber,
+            CountryMapEntity countryMap
+    ) {
+        this.uniqueNumber = uniqueNumber;
+        this.countryMap = countryMap;
+    }
+
     public OrderEntity() {}
+
+    @PrePersist
+    public void prePersist() {
+        this.createAt = LocalDateTime.now();
+    }
 }

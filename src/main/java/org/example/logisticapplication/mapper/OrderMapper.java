@@ -1,5 +1,6 @@
 package org.example.logisticapplication.mapper;
 
+import org.example.logisticapplication.controllers.mvc.OrderForSubmittingDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverOrderInfo;
@@ -8,17 +9,13 @@ import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntit
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 
-import org.example.logisticapplication.domain.RoutePoint.BaseOrder;
-import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
+import org.example.logisticapplication.domain.OrderStatusEntity.OrderStatusEntity;
+import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.Truck.MainTruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.Mappings;
+import org.example.logisticapplication.domain.User.UserInfoDto;
+import org.mapstruct.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +26,6 @@ import java.util.Set;
 public interface OrderMapper {
 
     @Mappings({
-            @Mapping(target = "status", source = "orderRequest.orderStatus", defaultValue = "NOT COMPLETED"),
             @Mapping(target = "id", source = "orderRequest.id"),
             @Mapping(target = "countryMap", source = "countryMapEntity"),
             @Mapping(target = "routePoints", source = "routePointEntities")
@@ -40,8 +36,15 @@ public interface OrderMapper {
             List<RoutePointEntity> routePointEntities
     );
 
+    @AfterMapping
+    default void ensureStatus(@MappingTarget OrderEntity orderEntity) {
+        if(orderEntity.getStatus() == null) {
+            orderEntity.setStatus(new OrderStatusEntity(OrderStatus.NOT_COMPLETED.getName()));
+        }
+    }
+
     @Mappings({
-            @Mapping(target = "status", source = "status"),
+            @Mapping(target = "status.statusName", source = "status"),
             @Mapping(target = "countryMap", source = "countryMapEntity"),
             @Mapping(target = "routePoints", source = "routePointEntities"),
             @Mapping(target = "driverOrders", source = "driverOrderEntity"),
@@ -59,7 +62,7 @@ public interface OrderMapper {
     @Mappings({
             @Mapping(target = "countryMap.id", source = "countryMapEntity.id"),
             @Mapping(target = "uniqueNumber", source = "baseOrder.uniqueNumber"),
-            @Mapping(target = "status", source = "baseOrder.orderStatus"),
+            @Mapping(target = "status.statusName", source = "baseOrder.orderStatus"),
             @Mapping(target = "routePoints", source = "routePointEntities"),
             @Mapping(target = "countryMap", source = "countryMapEntity")
     })
@@ -71,7 +74,7 @@ public interface OrderMapper {
 
     @Mappings({
             @Mapping(target = "uniqueNumber", source = "orderEntity.uniqueNumber"),
-            @Mapping(target = "orderStatus", source = "orderEntity.status"),
+            @Mapping(target = "orderStatus", source = "orderEntity.status.statusName"),
             @Mapping(target = "countyMapName", source = "orderEntity.countryMap.countryName"),
             @Mapping(target = "mainRoutePointInfo", source = "routePointInfo"),
             @Mapping(target = "mainDriverInfo", source = "driverInfo"),
@@ -86,7 +89,7 @@ public interface OrderMapper {
 
     @Mappings({
             @Mapping(target = "uniqueNumber", source = "entity.uniqueNumber"),
-            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
             @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
             @Mapping(target = "routePoints", source = "routePoints"),
     })
@@ -97,7 +100,7 @@ public interface OrderMapper {
 
     @Mappings({
             @Mapping(target = "uniqueNumber", source = "entity.uniqueNumber"),
-            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
             @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
             @Mapping(target = "routePoints", source = "routePoints"),
             @Mapping(target = "truckOrder", source = "drivers"),
@@ -117,7 +120,7 @@ public interface OrderMapper {
     Order toDomain(OrderEntity entity);
 
     @Mappings({
-            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
             @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
             @Mapping(target = "routePoints", source = "routePointInfoDto"),
             @Mapping(target = "driverOrder", source = "driverOrderInfo"),
@@ -131,7 +134,7 @@ public interface OrderMapper {
     );
 
     @Mappings({
-            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
             @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
             @Mapping(target = "routePoints", source = "routePointInfoDto")
     })
@@ -141,7 +144,7 @@ public interface OrderMapper {
     );
 
     @Mappings({
-            @Mapping(target = "orderStatus", source = "entity.status"),
+            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
             @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
             @Mapping(target = "routePoints", source = "routePointInfoDto")
     })
@@ -174,5 +177,11 @@ public interface OrderMapper {
 
     OrderInfo toDtoInfo(OrderInfoDto order);
 
+    @Mapping(target = "userInfoDto", source = "userInfo")
+    @Mapping(target = "baseRoutePoints", source = "routePointInfoDto")
+    OrderForSubmittingDto toDtoInfo(
+            UserInfoDto userInfo,
+            List<RoutePointInfoDto> routePointInfoDto
+    );
 
 }

@@ -3,14 +3,16 @@ package org.example.logisticapplication.domain.City;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.logisticapplication.domain.CityStationEntity.CityStationEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
+
+import java.util.List;
 
 @Entity
 @Table(name = "city")
 @Getter
 @Setter
 public class CityEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,6 +23,9 @@ public class CityEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_map_id", nullable = false)
     private CountryMapEntity countryMap;
+
+    @OneToMany(mappedBy = "city", fetch = FetchType.LAZY)
+    private List<CityStationEntity> cityStation;
 
     public CityEntity(
             Long id,
@@ -40,5 +45,6 @@ public class CityEntity {
         this.countryMap = countryMap;
     }
 
-    public CityEntity() {}
+    public CityEntity() {
+    }
 }
