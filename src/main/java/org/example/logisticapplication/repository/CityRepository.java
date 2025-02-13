@@ -23,7 +23,17 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
             nativeQuery = true)
     List<CityEntity> findCitiesByIds(
             @Param("cityIds") List<Long> cityIds,
-            @Param("countryId")Long countryId
+            @Param("countryId") Long countryId
+    );
+
+    @Query("""
+            SELECT c 
+            FROM CityEntity c
+            LEFT JOIN FETCH CityStationEntity cse ON c.id = cse.city.id
+            WHERE c.name = :name
+            """)
+    Optional<CityEntity> findCityWithStations(
+            @Param("name") String cityName
     );
 
     @Query("SELECT COUNT(d) > 0 FROM DistanceEntity d WHERE d.fromCity = :fromCity AND d.toCity = :toCity")
@@ -34,7 +44,7 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
 
     @Query("SELECT c FROM CityEntity c WHERE c.countryMap.id = :countryId")
     List<CityEntity> findAllByCountryMapId(
-          @Param("countryId")  Long countryId
+            @Param("countryId") Long countryId
     );
 
     @EntityGraph(attributePaths = {"countryMap"})

@@ -29,8 +29,12 @@ import java.util.List;
 public class OrderViewController {
     private final CityService cityService;
     private final DriverDefaultValues defaultValues;
-    private final UserService userService;
     private final UserRepository userRepository;
+
+    @GetMapping("/create")
+    public String orders() {
+        return "order";
+    }
 
     @PostMapping("/create")
     public String createOrder(

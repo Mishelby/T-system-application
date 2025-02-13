@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class RoleService {
     private final RoleRepository roleRepository;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ConcurrentMap<RoleName, RoleEntity> findAll() {
         var allRoles = roleRepository.findAll();
 

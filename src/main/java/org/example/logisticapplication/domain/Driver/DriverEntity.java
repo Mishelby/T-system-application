@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
-import org.example.logisticapplication.domain.Order.Order;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Role.RoleEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -43,6 +42,9 @@ public class DriverEntity extends UserEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_truck_id")
     private TruckEntity currentTruck;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<DriverOrderEntity> driverOrders;
 
     public DriverEntity(
             String name,

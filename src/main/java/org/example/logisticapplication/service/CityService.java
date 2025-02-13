@@ -3,6 +3,9 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.City;
+import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.City.CityWithStationsDto;
+import org.example.logisticapplication.domain.CityStationEntity.CityStationEntity;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
 import org.example.logisticapplication.mapper.CityMapper;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -81,6 +85,23 @@ public class CityService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public CityWithStationsDto findCityWithStations(
+            String cityName
+    ) {
+        var cityEntity = cityRepository.findCityWithStations(cityName).orElseThrow();
+        var stationsNames = cityEntity.getCityStation().stream()
+                .map(CityStationEntity::getName)
+                .toList();
+
+        return new CityWithStationsDto(
+                cityEntity.getName(),
+                stationsNames.isEmpty()
+                        ? Collections.emptyList()
+                        : stationsNames
+        );
+    }
+
     public void validateCityDoesNotExist(
             String name
     ) {
@@ -110,4 +131,5 @@ public class CityService {
         return new CityNotFoundException("City with param = %s not found"
                 .formatted(param));
     }
+
 }

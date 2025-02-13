@@ -5,32 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Создание заказа</title>
   <style>
-    /* Современный и минималистичный стиль */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f7f9;
       margin: 0;
       padding: 20px;
     }
+
     .form-container {
-      max-width: 500px;
+      max-width: 800px;
       background: #ffffff;
       margin: 50px auto;
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
     .form-container h1 {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       color: #333;
     }
+
     .form-container label {
       display: block;
       margin-bottom: 0.5rem;
       color: #333;
       font-weight: 500;
     }
+
     .form-container input,
     .form-container select {
       width: 100%;
@@ -42,11 +45,13 @@
       box-sizing: border-box;
       transition: border-color 0.3s ease;
     }
+
     .form-container input:focus,
     .form-container select:focus {
       border-color: #007BFF;
       outline: none;
     }
+
     .form-container button {
       display: block;
       width: 100%;
@@ -59,8 +64,35 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
     .form-container button:hover {
       background-color: #0056b3;
+    }
+
+    .route-point-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .route-point-row > div {
+      flex: 1;
+    }
+
+    .date-and-weight {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .date-and-weight > div {
+      flex: 1;
+    }
+
+    .route-point-row select,
+    .date-and-weight input {
+      width: 100%;
     }
   </style>
 </head>
@@ -69,31 +101,102 @@
   <h1>Создание заказа</h1>
   <form action="/orders/submit" method="post">
     <input type="hidden" name="userId" th:value="${user.id}">
-    <label for="departureCity">Город отправления:</label>
-    <select id="departureCity" name="departureCity" required>
-      <option value="">Выберите город отправления</option>
-      <th:block th:each="city : ${allCities}">
-        <option th:value="${city.name}" th:text="${city.name}"></option>
-      </th:block>
-    </select><br><br>
 
-    <label for="arrivalCity">Город прибытия:</label>
-    <select id="arrivalCity" name="arrivalCity" required>
-      <option value="">Выберите город прибытия</option>
-      <th:block th:each="city : ${allCities}">
-        <option th:value="${city.name}" th:text="${city.name}"></option>
-      </th:block>
-    </select><br><br>
+    <div class="route-point-row">
+      <div>
+        <label for="departureCity">Город отправления:</label>
+        <select id="departureCity" name="departureCity" required onchange="loadStations('departureCity', 'stationsSelect')">
+          <option value="">Выберите город отправления</option>
+          <th:block th:each="city : ${allCities}">
+            <option th:value="${city.name}" th:text="${city.name}"></option>
+          </th:block>
+        </select>
+      </div>
+      <div>
+        <label for="station">Станция отправления:</label>
+        <select id="stationsSelect" name="station" required>
+          <option value="">Сначала выберите город</option>
+        </select>
+      </div>
+    </div>
 
-    <label for="cargoWeight">Вес груза (кг):</label>
-    <input type="number" id="cargoWeight" name="cargoWeight" required><br><br>
+    <div class="route-point-row">
+      <div>
+        <label for="arrivalCity">Город прибытия:</label>
+        <select id="arrivalCity" name="arrivalCity" required onchange="loadStations('arrivalCity', 'arrivalStation')">
+          <option value="">Выберите город прибытия</option>
+          <th:block th:each="city : ${allCities}">
+            <option th:value="${city.name}" th:text="${city.name}"></option>
+          </th:block>
+        </select>
+      </div>
+      <div>
+        <label for="arrivalStation">Станция прибытия:</label>
+        <select id="arrivalStation" name="arrivalStation" required>
+          <option value="">Сначала выберите город</option>
+        </select>
+      </div>
+    </div>
+    <div class="date-and-weight">
+      <div>
+        <label for="cargoWeight">Вес груза (кг):</label>
+        <input type="number" id="cargoWeight" name="cargoWeight" required>
+      </div>
+      <div>
+        <label for="departureDate">Желаемая дата отправки:</label>
+        <input type="date" id="departureDate" name="departureDate" required>
+      </div>
+    </div>
 
-    <label for="distance">Дистанция (км):</label>
-    <input type="number" id="distance" name="distance" min="1" required><br><br>
-
-    <button type="submit">Создать заказ</button>
+    <button type="submit">Оформить заказ</button>
   </form>
 </div>
+
+<script>
+  async function loadCities() {
+    try {
+      const response = await fetch('/api/v1/cities');
+      const cities = await response.json();
+      const departureSelect = document.getElementById('departureCity');
+      const arrivalSelect = document.getElementById('arrivalCity');
+
+      cities.forEach(city => {
+        const option1 = new Option(city.cityName, city.cityName);
+        const option2 = new Option(city.cityName, city.cityName);
+        departureSelect.appendChild(option1);
+        arrivalSelect.appendChild(option2);
+      });
+    } catch (error) {
+      console.error('Ошибка загрузки городов:', error);
+    }
+  }
+
+  function loadStations(citySelectId, stationsSelectId) {
+    let cityName = document.getElementById(citySelectId).value;
+    let stationsSelect = document.getElementById(stationsSelectId);
+
+    if (cityName) {
+      fetch(`/api/v1/cities/stations?cityName=` + encodeURIComponent(cityName))
+              .then(response => response.json())
+              .then(data => {
+                stationsSelect.innerHTML = `<option value="">Выберите станцию</option>`;
+                data.stationsNames.forEach(station => {
+                  let option = document.createElement("option");
+                  option.value = station;
+                  option.textContent = station;
+                  stationsSelect.appendChild(option);
+                });
+              })
+              .catch(error => console.error("Ошибка загрузки станций:", error));
+    } else {
+      stationsSelect.innerHTML = `<option value="">Сначала выберите город</option>`;
+    }
+  }
+  document.addEventListener('DOMContentLoaded', loadCities);
+</script>
 </body>
 </html>
+
+
+
 

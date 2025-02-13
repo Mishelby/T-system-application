@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityDto;
+import org.example.logisticapplication.domain.City.CityWithStationsDto;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.mapper.CityMapper;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +34,21 @@ public class CityController {
     @GetMapping
     public ResponseEntity<List<CityDto>> getAllCities() {
         log.info("Get request for all cities");
-
         var allCities = cityService.findAllCities();
 
         return ResponseEntity.ok(allCities.stream()
                 .map(cityMapper::toDto)
                 .toList());
+    }
+
+    @GetMapping("/stations")
+    public ResponseEntity<CityWithStationsDto> getCityStationsByName(
+            @RequestParam String cityName
+    ){
+        log.info("Get request for get cities by name");
+        var cityWithStations = cityService.findCityWithStations(cityName);
+
+        return ResponseEntity.ok().body(cityWithStations);
     }
 
     @GetMapping("/{id}")
@@ -64,4 +74,5 @@ public class CityController {
                         .map(cityMapper::toDto)
                         .toList());
     }
+
 }
