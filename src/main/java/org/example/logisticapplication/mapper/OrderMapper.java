@@ -1,6 +1,6 @@
 package org.example.logisticapplication.mapper;
 
-import org.example.logisticapplication.controllers.mvc.OrderForSubmittingDto;
+import org.example.logisticapplication.domain.Order.OrderForSubmittingDto;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverOrderInfo;

@@ -1,26 +1,24 @@
 package org.example.logisticapplication.controllers.mvc;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Cargo.BaseCargoDto;
 import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
+import org.example.logisticapplication.domain.Order.OrderRequestDto;
+import org.example.logisticapplication.domain.Order.SendOrderForSubmittingDto;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
 import org.example.logisticapplication.domain.User.UserInfoDto;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.service.OrderService;
-import org.example.logisticapplication.service.UserService;
 import org.example.logisticapplication.utils.TimeFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -30,6 +28,7 @@ public class OrderViewController {
     private final CityService cityService;
     private final DriverDefaultValues defaultValues;
     private final UserRepository userRepository;
+    private final OrderService orderService;
 
     @GetMapping("/create")
     public String orders() {
@@ -44,7 +43,7 @@ public class OrderViewController {
         var user = userRepository.findById(id).orElseThrow();
         var allCities = cityService.findAllCities();
         model.addAttribute("allCities", allCities);
-        model.addAttribute("user", user);
+        model.addAttribute("userId", user.getId());
 
         log.info("All cities: {} ", allCities);
 
@@ -53,47 +52,52 @@ public class OrderViewController {
 
     @PostMapping("/submit")
     public String handleOrderSubmit(
-            @RequestParam Long userId,
-            @RequestParam String departureCity,
-            @RequestParam String arrivalCity,
-            @RequestParam Long cargoWeight,
-            @RequestParam Long distance,
-            Model model
+            @RequestBody OrderRequestDto orderRequestDto,
+            HttpSession session
     ) {
-
-        log.info("Submitting order {}, {}, {}, {}", departureCity, arrivalCity, cargoWeight, distance);
-        var baseCargoDto = new BaseCargoDto(cargoWeight);
-
-        var user = userRepository.findById(userId).orElseThrow();
+        log.info("Submitting order {}", orderRequestDto);
+        var sendOrderForSubmittingDto = getSendOrderForSubmittingDto(orderRequestDto);
+        var orderDto = orderService.sendOrderForUser(sendOrderForSubmittingDto);
 
         var time = OrderService.calculationTimeToOrder(
-                distance,
+                orderDto.routePointInfo().distance(),
                 defaultValues.getAverageSpeed()
         );
 
-        var baseRoutePoints = new BaseRoutePoints(
-                departureCity,
-                arrivalCity,
-                baseCargoDto,
-                distance
-        );
+        session.setAttribute("calculatedTime", TimeFormatter.formatHours(time));
+        session.setAttribute("orderDto", orderDto);
 
-        var format = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        return "redirect:/orders/order-summary";
+    }
 
-        var orderForSubmittingDto = new OrderForSubmittingDto(
-                new UserInfoDto(user.getUsername(), format),
-                List.of(null)
-        );
-
-        model.addAttribute("calculatedTime", TimeFormatter.formatHours(time));
-        model.addAttribute("orderDto", orderForSubmittingDto);
+    @GetMapping("/order-summary")
+    public String orderSummary(Model model, HttpSession session) {
+        model.addAttribute("calculatedTime", session.getAttribute("calculatedTime"));
+        model.addAttribute("orderDto", session.getAttribute("orderDto"));
 
         return "order-summary";
     }
 
     @GetMapping("/success")
-    public String showOrderSuccessPage(){
+    public String showOrderSuccessPage() {
         return "order-success";
+    }
+
+    private static SendOrderForSubmittingDto getSendOrderForSubmittingDto(
+            OrderRequestDto orderRequestDto
+    ) {
+        var cargoDto = new BaseCargoDto(orderRequestDto.cargoWeight());
+        var baseRoutePoints = new BaseRoutePoints(
+                orderRequestDto.departureCity(),
+                orderRequestDto.arrivalCity(),
+                cargoDto,
+                orderRequestDto.departureStations()
+        );
+        return new SendOrderForSubmittingDto(
+                orderRequestDto.userId(),
+                baseRoutePoints,
+                orderRequestDto.departureDate()
+        );
     }
 
 }

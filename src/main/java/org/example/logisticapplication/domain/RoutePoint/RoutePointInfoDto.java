@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 
+import java.util.List;
 import java.util.Set;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -16,7 +17,8 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor
 public class RoutePointInfoDto{
     String cityName;
-    Set<CargoInfoDto> cargoInfo;
+    String stationName;
+    List<CargoInfoDto> cargoInfo;
     String operationType;
-    Long distance;
+    Double distance;
 }

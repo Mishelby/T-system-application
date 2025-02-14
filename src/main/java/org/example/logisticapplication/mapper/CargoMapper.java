@@ -29,6 +29,7 @@ public interface CargoMapper {
     MainCargoInfoDto toMainInfo(CargoEntity cargo);
 
     @Mappings({
+            @Mapping(target = "id", ignore = true),
             @Mapping(target = "name", source = "cargoDto.name"),
             @Mapping(target = "weightKg", source = "cargoDto.weight"),
             @Mapping(target = "number", source = "uniqueNumber")
@@ -40,6 +41,7 @@ public interface CargoMapper {
 
 
     @Mappings({
+            @Mapping(target = "id", ignore = true),
             @Mapping(target = "number", source = "cargoInfoDto.number"),
             @Mapping(target = "name", source = "cargoInfoDto.name"),
             @Mapping(target = "weightKg", source = "cargoInfoDto.weightKg"),
@@ -59,6 +61,14 @@ public interface CargoMapper {
             String cargoName,
             String cargoStatus
     );
+
+    @Mappings({
+            @Mapping(target = "number", source = "cargoInfo.cargoNumber"),
+            @Mapping(target = "name", source = "cargoInfo.cargoName"),
+            @Mapping(target = "weightKg", source = "cargoInfo.weight"),
+            @Mapping(target = "status", source = "cargoInfo.cargoStatus")
+    })
+    CargoInfoDto toInfoDto(CargoInfoForDto cargoInfo);
 
     Cargo toDomain(CargoEntity entity);
 

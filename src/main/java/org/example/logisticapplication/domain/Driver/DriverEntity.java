@@ -43,7 +43,7 @@ public class DriverEntity extends UserEntity{
     @JoinColumn(name = "current_truck_id")
     private TruckEntity currentTruck;
 
-    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "driver", orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<DriverOrderEntity> driverOrders;
 
     public DriverEntity(

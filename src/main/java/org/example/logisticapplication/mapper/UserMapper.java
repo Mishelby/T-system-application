@@ -71,4 +71,9 @@ public interface UserMapper {
     @Mapping(target = "createdAt", expression = "java(dataToStringFormat())")
     UserInfoDto toInfoDto(UserEntity user);
 
+    @Mapping(target = "name", source = "user.username")
+    @Mapping(target = "createdAt", expression = "java(dataToStringFormat())")
+    @Mapping(target = "desiredDate", source = "desiredDate")
+    UserInfoDto toInfoDto(UserEntity user, String desiredDate);
+
 }

@@ -5,157 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Итоговый заказ</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        p {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #555;
-        }
-
-        strong {
-            color: #333;
-        }
-
-        .order-summary {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e9ecef;
-            border: 1px solid #ddd;
-        }
-
-        .order-summary h3 {
-            margin-bottom: 15px;
-            color: #007bff;
-        }
-
-        .order-summary p {
-            font-size: 16px;
-        }
-
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        a:hover {
-            background-color: #0056b3;
-        }
-
-        .order-summary ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .order-summary ul li {
-            background-color: #f8f9fa;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .order-summary ul li p {
-            margin: 5px 0;
-        }
-
+        /* Стили остаются без изменений */
     </style>
 </head>
-<body>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+    }
 
+    .container {
+        width: 80%;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+
+    p {
+        font-size: 18px;
+        margin: 10px 0;
+        color: #555;
+    }
+
+    strong {
+        color: #333;
+    }
+
+    .order-summary {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e9ecef;
+        border: 1px solid #ddd;
+    }
+
+    .order-summary h3 {
+        margin-bottom: 15px;
+        color: #007bff;
+    }
+
+    .order-summary p {
+        font-size: 16px;
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    a:hover {
+        background-color: #0056b3;
+    }
+
+    .order-summary ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .order-summary ul li {
+        background-color: #f8f9fa;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-summary ul li p {
+        margin: 5px 0;
+    }
+</style>
+<body>
 <div class="container">
     <h1>Ваш заказ</h1>
-
     <div class="order-summary">
-        <p><strong>Город отправления:</strong> <span id="cityFrom" th:text="${orderDto.cityFrom}"></span></p>
-        <p><strong>Город прибытия:</strong> <span id="cityTo" th:text="${orderDto.cityTo}"></span></p>
-        <p><strong>Расстояние:</strong> <span id="distance" th:text="${orderDto.distance}"></span> км</p>
+        <!-- Данные о пользователе -->
+        <h3>Данные о пользователе</h3>
+        <p><strong>Имя пользователя:</strong> <span id="userName" th:text="${orderDto.userInfoDto.name}"></span></p>
+        <p><strong>Дата создания:</strong> <span id="userCreatedAt" th:text="${orderDto.userInfoDto.createdAt}"></span></p>
 
-        <h3>Груз</h3>
-        <p><strong>Вес груза:</strong> <span id="weightKg" th:text="${orderDto.cargoDto.weightKg}"></span> кг</p>
+        <!-- Маршрут -->
+        <h3>Маршрут</h3>
+        <div class="route-point">
+            <p><strong>Город отправления:</strong> <span th:text="${orderDto.routePointInfo.cityFrom}"></span></p>
+            <p><strong>Станция отправления:</strong> <span th:text="${orderDto.routePointInfo.stationFrom}"></span></p>
+            <p><strong>Город прибытия:</strong> <span th:text="${orderDto.routePointInfo.cityTo}"></span></p>
+            <p><strong>Станция прибытия:</strong> <span th:text="${orderDto.routePointInfo.stationTo}"></span></p>
+            <p><strong>Вес груза:</strong> <span th:text="${orderDto.routePointInfo.weight}"></span> кг</p>
+            <p><strong>Расстояние:</strong> <span th:text="${orderDto.routePointInfo.distance}"></span> км</p>
+        </div>
 
+        <!-- Время доставки -->
         <h3>Примерное время доставки</h3>
-        <p><strong>Расчетное время в пути:</strong> <span id="calculatedTime" th:text="${calculatedTime}"></span></p>
+        <p><strong>Расчетное время в пути:</strong> <span th:text="${calculatedTime}"></span></p>
 
+        <!-- Информация о расстоянии -->
+        <h3>Дополнительная информация</h3>
+        <p><strong>Сообщение о расстоянии:</strong> <span th:text="${orderDto.distanceInfoDto.message}"></span></p>
+
+        <!-- Кнопка подтверждения -->
         <a href="javascript:void(0);" onclick="confirmAndCreateOrder()">Подтвердить заказ?</a>
     </div>
 </div>
 
 <script>
+    // Функция для отправки подтвержденного заказа
     function confirmAndCreateOrder() {
         // Собираем данные для запроса
-        const cityFrom = document.getElementById('cityFrom').textContent;
-        const cityTo = document.getElementById('cityTo').textContent;
-        const distance = document.getElementById('distance').textContent;
-        const weightKg = document.getElementById('weightKg').textContent;
-        const calculatedTime = document.getElementById('calculatedTime').textContent;
+        const userName = document.getElementById('userName').textContent;
+        const userCreatedAt = document.getElementById('userCreatedAt').textContent;
+        const routePoints = [];
 
-        // Создаем объект BaseRoutePoints для первого запроса
-        const routePoint = {
-            cityFrom: cityFrom,
-            cityTo: cityTo,
-            cargoDto: { weightKg: weightKg },
-            distance: distance
+        document.querySelectorAll('.route-point').forEach(routeElement => {
+            const route = {
+                cityName: routeElement.querySelector('p:nth-of-type(1) span').textContent,
+                stationName: routeElement.querySelector('p:nth-of-type(2) span').textContent,
+                operationType: routeElement.querySelector('p:nth-of-type(3) span').textContent,
+                distance: routeElement.querySelector('p:nth-of-type(4) span').textContent,
+                cargoInfo: []
+            };
+            routeElement.querySelectorAll('ul li').forEach(cargoElement => {
+                route.cargoInfo.push({
+                    weightKg: cargoElement.querySelector('p span').textContent
+                });
+            });
+            routePoints.push(route);
+        });
+
+        const calculatedTime = document.querySelector('span#calculatedTime').textContent;
+
+        const orderData = {
+            userInfoDto: {
+                name: userName,
+                createdAt: userCreatedAt
+            },
+            baseRoutePoints: routePoints,
+            calculatedTime: calculatedTime
         };
 
-        // Отправляем первый запрос на /confirm-order
-        fetch('/api/v1/orders/confirm', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(routePoint)
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Order confirmed:', data);
-
-                // После успешного подтверждения заказа, отправляем второй запрос на /create-order
-                const baseOrder = data; // Предполагаем, что метод /confirm-order возвращает объект CreateBaseOrder
-
-                fetch('/api/v1/orders', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(baseOrder)
-                })
-                    .then(response => response.json())
-                    .then(createOrderData => {
-                        console.log('Order created:', createOrderData);
-                        // Можно, например, перенаправить пользователя на страницу успешного завершения
-                        window.location.href = '/orders/success';
-                    })
-                    .catch(error => console.error('Error creating order:', error));
-            })
-            .catch(error => console.error('Error confirming order:', error));
+        // Здесь можно отправить orderData на сервер для дальнейшей обработки
+        console.log(orderData);
     }
 </script>
-
-
 </body>
 </html>
+

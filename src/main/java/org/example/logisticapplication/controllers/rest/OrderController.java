@@ -2,7 +2,7 @@ package org.example.logisticapplication.controllers.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.logisticapplication.controllers.mvc.OrderForSubmittingDto;
+import org.example.logisticapplication.domain.Order.OrderForSubmittingDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
@@ -29,6 +29,27 @@ public class OrderController {
         return ResponseEntity.ok().body(newOrder);
     }
 
+    @PostMapping("/send-for-submitting")
+    public ResponseEntity<OrderForSubmittingDto> sendOrderForSubmitting(
+            @RequestParam  SendOrderForSubmittingDto orderDto
+    ) {
+        log.info("Get request for submitting order {}",orderDto);
+        orderService.responseOrderForSubmitting(orderDto);
+
+        return ResponseEntity.ok(null);
+    }
+
+    @PostMapping("/{orderNumber}/finalize")
+    public ResponseEntity<Void> applyForOrder(
+            @PathVariable("orderNumber") String orderNumber,
+            ApplyOrderDto applyOrderDto
+    ) {
+        log.info("Post request for applying drivers and truck for order: {}", orderNumber);
+        orderService.applyForOrder(orderNumber, applyOrderDto);
+
+        return ResponseEntity.accepted().build();
+    }
+
     @PostMapping("/confirm")
     public ResponseEntity<CreateBaseOrder> confirmOrder(
             @RequestBody BaseRoutePoints routePoint
@@ -50,17 +71,6 @@ public class OrderController {
         return ResponseEntity.ok().body(truckForOrder);
     }
 
-    @PostMapping("/{orderNumber}/finalize")
-    public ResponseEntity<Void> applyForOrder(
-            @PathVariable("orderNumber") String orderNumber,
-            ApplyOrderDto applyOrderDto
-    ) {
-        log.info("Post request for applying drivers and truck for order: {}", orderNumber);
-        orderService.applyForOrder(orderNumber, applyOrderDto);
-
-        return ResponseEntity.accepted().build();
-    }
-
 
     @GetMapping("/{id}/status")
     public ResponseEntity<OrderStatusDto> getOrderStatusById(
@@ -72,15 +82,6 @@ public class OrderController {
         return ResponseEntity.ok().body(orderStatusById);
     }
 
-    @PostMapping("/send-for-submitting")
-    public ResponseEntity<OrderForSubmittingDto> sendOrderForSubmitting(
-            @RequestParam  SendOrderForSubmittingDto orderDto
-    ) {
-        log.info("Get request for submitting order {}",orderDto);
-        orderService.responseOrderForSubmitting(orderDto);
-
-        return ResponseEntity.ok(null);
-    }
 
     @GetMapping("/pending-submit")
     public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(

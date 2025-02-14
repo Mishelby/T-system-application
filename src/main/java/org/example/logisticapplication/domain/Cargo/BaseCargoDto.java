@@ -12,5 +12,5 @@ import static lombok.AccessLevel.PRIVATE;
 @Setter
 @AllArgsConstructor
 public class BaseCargoDto {
-    Long weightKg;
+    Double weightKg;
 }

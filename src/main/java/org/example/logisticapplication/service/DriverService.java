@@ -338,7 +338,7 @@ public class DriverService {
                 })
                 .toList();
 
-        routePointInfoDto.forEach(rp -> rp.setDistance(distanceEntity.getDistance()));
+        routePointInfoDto.forEach(rp -> rp.setDistance((double) distanceEntity.getDistance()));
 
         return routePointInfoDto;
     }
