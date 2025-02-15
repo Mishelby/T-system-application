@@ -60,12 +60,10 @@
   </style>
 </head>
 <body>
-
 <div class="container">
   <h1>Ваш заказ успешно создан!</h1>
   <p>Номер вашего заказа будет отображён в профиле!</p>
-  <a href="/logistic/get-start">Вернуться на главную</a>
+  <a th:href="@{/users/profile/{id}(id=${userId})}">Вернуться в профиль</a>
 </div>
-
 </body>
 </html>

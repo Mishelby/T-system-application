@@ -8,8 +8,6 @@ import org.example.logisticapplication.domain.Driver.DriverDefaultValues;
 import org.example.logisticapplication.domain.Order.OrderRequestDto;
 import org.example.logisticapplication.domain.Order.SendOrderForSubmittingDto;
 import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
-import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
-import org.example.logisticapplication.domain.User.UserInfoDto;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.service.OrderService;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -30,6 +27,8 @@ public class OrderViewController {
     private final UserRepository userRepository;
     private final OrderService orderService;
 
+    private static final String USER_ID = "userId";
+
     @GetMapping("/create")
     public String orders() {
         return "order";
@@ -38,12 +37,15 @@ public class OrderViewController {
     @PostMapping("/create")
     public String createOrder(
             @RequestParam("id") Long id,
-            Model model
+            Model model,
+            HttpSession session
     ) {
         var user = userRepository.findById(id).orElseThrow();
         var allCities = cityService.findAllCities();
         model.addAttribute("allCities", allCities);
-        model.addAttribute("userId", user.getId());
+        model.addAttribute(USER_ID, user.getId());
+
+        session.setAttribute(USER_ID, user.getId());
 
         log.info("All cities: {} ", allCities);
 
@@ -79,7 +81,12 @@ public class OrderViewController {
     }
 
     @GetMapping("/success")
-    public String showOrderSuccessPage() {
+    public String showOrderSuccessPage(
+            Model model,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute(USER_ID);
+        model.addAttribute(USER_ID, userId);
         return "order-success";
     }
 
