@@ -1,99 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Заявки на заказы</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      width: 80%;
-      margin: 20px auto;
-      padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #007bff;
-      color: white;
-    }
-
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-
-    .approve-btn {
-      background-color: #28a745;
-      color: white;
-      padding: 5px 10px;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-
-    .approve-btn:hover {
-      background-color: #218838;
-    }
-
-    .reject-btn {
-      background-color: #dc3545;
-      color: white;
-      padding: 5px 10px;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-
-    .reject-btn:hover {
-      background-color: #c82333;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказы</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
+
 <div class="container mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-6 text-center">Orders for Submission</h1>
-  <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-    <thead>
-    <tr>
-      <th class="py-2 px-4 border-b text-left">Order Number</th>
-      <th class="py-2 px-4 border-b text-left">Status</th>
-      <th class="py-2 px-4 border-b text-left">City</th>
-      <th class="py-2 px-4 border-b text-left">Operation Type</th>
-      <th class="py-2 px-4 border-b text-left">Distance</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="order : ${orders}">
-      <td class="py-2 px-4 border-b" th:text="${order.uniqueNumber}"></td>
-      <td class="py-2 px-4 border-b" th:text="${order.orderStatus}"></td>
-      <td class="py-2 px-4 border-b" th:text="${order.countyMapName}"></td>
-      <td class="py-2 px-4 border-b" th:text="${order.operationType}"></td>
-      <td class="py-2 px-4 border-b" th:text="${order.distance}"></td>
-    </tr>
-    </tbody>
-  </table>
+    <h1 class="text-3xl font-bold mb-6 text-center">Заказы</h1>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <button id="fetch-orders" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg">
+            Показать текущие заявки на заказ
+        </button>
+    </div>
+
+    <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md mt-6">
+    </div>
 </div>
+
+<script src="orders.js"></script>
+
 </body>
 </html>
+

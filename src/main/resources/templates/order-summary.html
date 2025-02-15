@@ -95,6 +95,7 @@
         <h3>Данные о пользователе</h3>
         <p><strong>Имя пользователя:</strong> <span id="userName" th:text="${orderDto.userInfoDto.name}"></span></p>
         <p><strong>Дата создания:</strong> <span id="userCreatedAt" th:text="${orderDto.userInfoDto.createdAt}"></span></p>
+        <p><strong>Желаемая дата отправки:</strong> <span id="userDesireDate" th:text="${orderDto.userInfoDto.desiredDate}"></span></p>
 
         <!-- Маршрут -->
         <h3>Маршрут</h3>
@@ -113,50 +114,77 @@
 
         <!-- Информация о расстоянии -->
         <h3>Дополнительная информация</h3>
-        <p><strong>Сообщение о расстоянии:</strong> <span th:text="${orderDto.distanceInfoDto.message}"></span></p>
+        <p><strong>Сообщение о расстоянии:</strong> <span id="distanceMessage" th:text="${orderDto.distanceInfoDto.message}"></span></p>
 
         <!-- Кнопка подтверждения -->
         <a href="javascript:void(0);" onclick="confirmAndCreateOrder()">Подтвердить заказ?</a>
     </div>
 </div>
-
 <script>
-    // Функция для отправки подтвержденного заказа
-    function confirmAndCreateOrder() {
-        // Собираем данные для запроса
-        const userName = document.getElementById('userName').textContent;
-        const userCreatedAt = document.getElementById('userCreatedAt').textContent;
-        const routePoints = [];
+    async function confirmAndCreateOrder() {
+        const userName = document.getElementById('userName')?.textContent;
+        const userCreatedAt = document.getElementById('userCreatedAt')?.textContent;
+        const desireTime = document.getElementById('userDesireDate')?.textContent;
+        const distanceMessage = document.getElementById('distanceMessage')?.textContent;
 
-        document.querySelectorAll('.route-point').forEach(routeElement => {
-            const route = {
-                cityName: routeElement.querySelector('p:nth-of-type(1) span').textContent,
-                stationName: routeElement.querySelector('p:nth-of-type(2) span').textContent,
-                operationType: routeElement.querySelector('p:nth-of-type(3) span').textContent,
-                distance: routeElement.querySelector('p:nth-of-type(4) span').textContent,
-                cargoInfo: []
-            };
-            routeElement.querySelectorAll('ul li').forEach(cargoElement => {
-                route.cargoInfo.push({
-                    weightKg: cargoElement.querySelector('p span').textContent
-                });
-            });
-            routePoints.push(route);
-        });
+        const routeElement = document.querySelector('.route-point');
+        if (!routeElement) {
+            console.error('Ошибка: Данные о маршруте не найдены.');
+            return;
+        }
 
-        const calculatedTime = document.querySelector('span#calculatedTime').textContent;
+        const cityFrom = routeElement.querySelector('p:nth-of-type(1) span')?.textContent;
+        const stationFrom = routeElement.querySelector('p:nth-of-type(2) span')?.textContent;
+        const cityTo = routeElement.querySelector('p:nth-of-type(3) span')?.textContent;
+        const stationTo = routeElement.querySelector('p:nth-of-type(4) span')?.textContent;
+        const weight = routeElement.querySelector('p:nth-of-type(5) span')?.textContent;
+        const distance = routeElement.querySelector('p:nth-of-type(6) span')?.textContent;
+
+        if (!cityFrom || !stationFrom || !cityTo || !stationTo || !weight || !distance) {
+            console.error('Ошибка: Не все данные маршрута найдены.');
+            return;
+        }
 
         const orderData = {
             userInfoDto: {
                 name: userName,
-                createdAt: userCreatedAt
+                createdAt: userCreatedAt,
+                desiredDate: desireTime,
             },
-            baseRoutePoints: routePoints,
-            calculatedTime: calculatedTime
+            routePointInfo: {
+                cityFrom,
+                stationFrom,
+                cityTo,
+                stationTo,
+                weight: parseFloat(weight),
+                distance: parseFloat(distance)
+            },
+            distanceInfoDto: {
+                message: distanceMessage
+            }
         };
 
-        // Здесь можно отправить orderData на сервер для дальнейшей обработки
-        console.log(orderData);
+        console.log("Отправляемый JSON:", JSON.stringify(orderData, null, 2));
+
+        try {
+            const response = await fetch('/api/v1/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) throw new Error('Ошибка при создании заказа');
+
+            const responseData = await response.json();
+            console.log('Заказ успешно создан:', responseData);
+
+            // Проверка перед редиректом
+            console.log("Редирект выполняется");
+            window.location.href = '/orders/success';  // Редирект на страницу успешного заказа
+
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
     }
 </script>
 </body>

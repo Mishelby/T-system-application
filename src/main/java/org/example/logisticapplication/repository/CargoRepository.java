@@ -46,7 +46,7 @@ public interface CargoRepository extends JpaRepository<CargoEntity, Long> {
     @Query(value = """
             SELECT c
             FROM CargoEntity c
-            LEFT JOIN OrderCargo oc ON c.id = oc.cargo.id
+            LEFT JOIN OrderCargoEntity oc ON c.id = oc.cargo.id
             WHERE oc.order.uniqueNumber = :orderNumber
             """)
     List<CargoEntity> findCargosForOrder(
@@ -55,7 +55,7 @@ public interface CargoRepository extends JpaRepository<CargoEntity, Long> {
 
     @Query("""
             SELECT oc.cargo
-            FROM OrderCargo oc
+            FROM OrderCargoEntity oc
             LEFT JOIN CargoEntity ce ON oc.cargo.id = ce.id
             WHERE oc.order.uniqueNumber = :number            
             """)

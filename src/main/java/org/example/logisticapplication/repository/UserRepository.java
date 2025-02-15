@@ -1,6 +1,7 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.User.UserEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +19,13 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             """)
     boolean existsByEmail(String email);
 
+    @Query("""
+            SELECT (COUNT(u) > 0)
+            FROM UserEntity u
+            WHERE u.username = :userName            
+            """)
+    boolean existsByUserName(String userName);
+
     @Query("SELECT u FROM UserEntity u WHERE u.email =:email")
     Optional<UserEntity> findUserIdEntityByEmail(String email);
 
@@ -34,7 +42,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findUserEntityByEmail(String email);
 
-    @Query("SELECT u FROM UserEntity u WHERE u.username = :name")
+    @Query("""
+            SELECT u 
+            FROM UserEntity u
+            LEFT JOIN FETCH u.roleEntities
+            WHERE u.username = :name
+            """)
     Optional<UserEntity> findByName(
            @Param("name") String username
     );

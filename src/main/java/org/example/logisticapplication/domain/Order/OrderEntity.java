@@ -1,12 +1,11 @@
 package org.example.logisticapplication.domain.Order;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
-import org.example.logisticapplication.domain.OrderCargo.OrderCargo;
+import org.example.logisticapplication.domain.OrderCargo.OrderCargoEntity;
 import org.example.logisticapplication.domain.OrderStatusEntity.OrderStatusEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
@@ -31,7 +30,7 @@ public class OrderEntity {
     @JoinColumn(name = "status_id")
     private OrderStatusEntity status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "country_map_id")
     private CountryMapEntity countryMap;
 
@@ -45,7 +44,7 @@ public class OrderEntity {
     private Set<TruckOrderEntity> truckOrders;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<OrderCargo> orderCargo;
+    private List<OrderCargoEntity> orderCargoEntities;
 
     @Column(name = "create_at")
     private LocalDateTime createAt;
@@ -56,14 +55,14 @@ public class OrderEntity {
             Set<RoutePointEntity> routePoints,
             Set<DriverOrderEntity> driverOrders,
             Set<TruckOrderEntity> truckOrders,
-            List<OrderCargo> cargo
+            List<OrderCargoEntity> cargo
     ) {
         this.uniqueNumber = uniqueNumber;
         this.countryMap = countryMap;
         this.routePoints = routePoints;
         this.driverOrders = driverOrders;
         this.truckOrders = truckOrders;
-        this.orderCargo = cargo;
+        this.orderCargoEntities = cargo;
     }
 
     public OrderEntity(

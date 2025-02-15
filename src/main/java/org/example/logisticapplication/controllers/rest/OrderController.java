@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Order.OrderForSubmittingDto;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
-import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
 import org.example.logisticapplication.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,20 +20,20 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<BaseOrderInfo> createOrder(
-            @RequestBody CreateBaseOrder baseOrder
+            @RequestBody OrderInfoForUserDto orderInfo
     ) {
-        log.info("Get request for creating order: {}", baseOrder);
-        var newOrder = orderService.createBaseOrder(baseOrder);
+        log.info("Get request for creating order: {}", orderInfo);
+        var newOrder = orderService.createBaseOrder(orderInfo);
 
         return ResponseEntity.ok().body(newOrder);
     }
 
     @PostMapping("/send-for-submitting")
     public ResponseEntity<OrderForSubmittingDto> sendOrderForSubmitting(
-            @RequestParam  SendOrderForSubmittingDto orderDto
+            @RequestBody BaseOrderInfo orderNumber
     ) {
-        log.info("Get request for submitting order {}",orderDto);
-        orderService.responseOrderForSubmitting(orderDto);
+        log.info("Get request for submitting order {}",orderNumber);
+        orderService.responseOrderForSubmitting(orderNumber);
 
         return ResponseEntity.ok(null);
     }
@@ -49,17 +48,6 @@ public class OrderController {
 
         return ResponseEntity.accepted().build();
     }
-
-    @PostMapping("/confirm")
-    public ResponseEntity<CreateBaseOrder> confirmOrder(
-            @RequestBody BaseRoutePoints routePoint
-    ) {
-        log.info("Get request for confirming order: {}", routePoint);
-        var createBaseOrder = orderService.sendBaseOrder(routePoint);
-
-        return ResponseEntity.ok().body(createBaseOrder);
-    }
-
 
     @GetMapping("/{orderNumber}/drivers-trucks")
     public ResponseEntity<DriversAndTrucksForOrderDto> getTruckAndDriversForOrder(

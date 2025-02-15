@@ -32,6 +32,7 @@ springdoc:
 driver:
   defaultAverageSpeed: 80
   defaultNumberOfHoursWorkedLimit: 176
+  recommendDistance: 800.0
 
 truck:
   default-seats: 4
@@ -39,6 +40,7 @@ truck:
 default:
   number-of-hours-worked: 0
   size-of-submitting-orders: 10
+
 
 jwt:
    secret: U29tZSBzZWN1cmUga2V5IHdpdGggY29tcGxleCBzZWFyY2ggbGVuZ3Ro

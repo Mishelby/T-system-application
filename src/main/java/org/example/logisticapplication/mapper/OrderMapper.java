@@ -143,23 +143,25 @@ public interface OrderMapper {
             List<RoutePointInfoDto> routePointInfoDto
     );
 
-    @Mappings({
-            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
-            @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
-            @Mapping(target = "routePoints", source = "routePointInfoDto")
-    })
-    BaseOrderInfo toBaseOrderInfo(
-            OrderEntity entity,
-            List<RoutePointInfoDto> routePointInfoDto
-    );
+//    @Mappings({
+//            @Mapping(target = "orderStatus", source = "entity.status.statusName"),
+//            @Mapping(target = "countyMapName", source = "entity.countryMap.countryName"),
+//            @Mapping(target = "routePoint", source = "routePointInfoDto"),
+//            @Mapping(target = "userInfoDto", source = "userInfoDto")
+//    })
+//    BaseOrderInfo toBaseOrderInfo(
+//            OrderEntity entity,
+//            RoutePointInfoForUserDto routePointInfoDto,
+//            UserInfoDto userInfoDto
+//    );
 
     default void defaultValueForOrderCargo(
             OrderEntity order
     ) {
-        if (order.getOrderCargo() == null) {
-            order.setOrderCargo(new ArrayList<>());
+        if (order.getOrderCargoEntities() == null) {
+            order.setOrderCargoEntities(new ArrayList<>());
         } else {
-            order.getOrderCargo().clear();
+            order.getOrderCargoEntities().clear();
         }
     }
 
@@ -181,7 +183,7 @@ public interface OrderMapper {
     @Mapping(target = "baseRoutePoints", source = "routePointInfoDto")
     OrderForSubmittingDto toDtoInfo(
             UserInfoDto userInfo,
-            List<RoutePointInfoDto> routePointInfoDto
+            RoutePointInfoForUserDto routePointInfoDto
     );
 
 }

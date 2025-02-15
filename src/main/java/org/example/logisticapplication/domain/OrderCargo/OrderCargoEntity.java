@@ -1,6 +1,7 @@
 package org.example.logisticapplication.domain.OrderCargo;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
@@ -10,7 +11,8 @@ import org.example.logisticapplication.domain.Order.OrderEntity;
 @Table(name = "order_cargo")
 @Getter
 @Setter
-public class OrderCargo {
+@EqualsAndHashCode(of = {"id", "order"})
+public class OrderCargoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,7 +25,7 @@ public class OrderCargo {
     @JoinColumn(name = "cargo_id", nullable = false)
     private CargoEntity cargo;
 
-    public OrderCargo(
+    public OrderCargoEntity(
             OrderEntity order,
             CargoEntity cargo
     ) {
@@ -31,6 +33,6 @@ public class OrderCargo {
         this.cargo = cargo;
     }
 
-    public OrderCargo() {
+    public OrderCargoEntity() {
     }
 }

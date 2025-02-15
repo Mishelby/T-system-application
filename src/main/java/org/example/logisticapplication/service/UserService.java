@@ -27,6 +27,8 @@ public class UserService  {
             CreateUserDto newUser
     ) {
         isUserExistsByEmail(newUser.email());
+        isUserExistsByUserName(newUser.username());
+
         var roles = roleService.findAll();
 
         var userEntity = userMapper.toEntity(
@@ -70,6 +72,15 @@ public class UserService  {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User with email = %s already exists"
                     .formatted(email));
+        }
+    }
+
+    private void isUserExistsByUserName(String username) {
+        boolean isExists = userRepository.existsByUserName(username);
+
+        if(isExists) {
+            throw new IllegalArgumentException("User with username = %s already exists"
+                    .formatted(username));
         }
     }
 

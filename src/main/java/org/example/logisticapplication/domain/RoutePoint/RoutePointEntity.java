@@ -2,6 +2,7 @@ package org.example.logisticapplication.domain.RoutePoint;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
@@ -16,6 +17,7 @@ import java.util.Objects;
 @Table(name = "route_point")
 @Getter
 @Setter
+@EqualsAndHashCode(of = {"id", "order"})
 public class RoutePointEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,6 +53,18 @@ public class RoutePointEntity {
         this.city = city;
         this.operationType = operationType;
         this.cargo = cargo;
+    }
+
+    public RoutePointEntity(
+            CityEntity city,
+            String operationType,
+            List<CargoEntity> cargo,
+            OrderEntity order
+    ) {
+        this.city = city;
+        this.operationType = operationType;
+        this.cargo = cargo;
+        this.order = order;
     }
 
     public RoutePointEntity() {

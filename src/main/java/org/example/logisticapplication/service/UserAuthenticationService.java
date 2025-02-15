@@ -32,7 +32,9 @@ public class UserAuthenticationService {
         }
 
         var userEntity = userRepository.findByName(loginUserDto.username())
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь с именем %s не найден!".formatted(loginUserDto.username())));
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Пользователь с именем %s не найден!".formatted(loginUserDto.username()))
+                );
 
         return new LoginResponse(jwtTokenProvider.generateToken(userEntity), userEntity.getId());
     }
