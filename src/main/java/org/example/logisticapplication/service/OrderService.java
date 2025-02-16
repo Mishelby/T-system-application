@@ -26,13 +26,14 @@ import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
+import org.example.logisticapplication.domain.User.UserInfoDto;
+import org.example.logisticapplication.domain.UserOrderInfo;
 import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +60,6 @@ public class OrderService {
     private final DriverDefaultValues defaultValues;
     private final CityRepository cityRepository;
     private final CityMapper cityMapper;
-    private final RoutePointMapper routePointMapper;
     private final CargoMapper cargoMapper;
     private final OrderDistanceRepository orderDistanceRepository;
     private final OrderCargoRepository orderCargoRepository;
@@ -70,14 +70,14 @@ public class OrderService {
     private final StationDistanceRepository stationDistanceRepository;
     private final RoutePointRepository routePointRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final UserOrderInfoRepository userOrderInfoRepository;
+    private final RoutePointMapper routePointMapper;
 
-    @Value("${default.size-of-submitting-orders}")
-    private int defaultSize;
     @Value("${driver.recommendDistance}")
     private Double RECOMMENDED_DISTANCE_FOR_ONE_DRIVER;
 
     private static final String LOADING_OPERATION = OperationType.LOADING.name();
-    private static final String UNLOADING_OPERATION = OperationType.UNLOADING.name();
+//    private static final String UNLOADING_OPERATION = OperationType.UNLOADING.name();
 
     @Transactional
     public BaseOrderInfo createBaseOrder(
@@ -90,6 +90,18 @@ public class OrderService {
         setUserOrderEntity(user, orderEntity);
         setRoutePointsForOrder(orderEntity, routePointEntities);
         var updatedOrder = orderRepository.save(orderEntity);
+        userOrderInfoRepository.save(
+                new UserOrderInfo(
+                        updatedOrder.getUniqueNumber(),
+                        user.getUsername(),
+                        orderInfo.routePointInfo().cityFrom(),
+                        orderInfo.routePointInfo().stationFrom(),
+                        orderInfo.routePointInfo().cityTo(),
+                        orderInfo.routePointInfo().stationTo(),
+                        orderInfo.routePointInfo().weight(),
+                        orderInfo.routePointInfo().distance(),
+                        orderInfo.distanceInfoDto().message()
+                ));
 
         return new BaseOrderInfo(
                 updatedOrder.getUniqueNumber(),
@@ -153,39 +165,6 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderInfo> gerOrdersForSubmit(
-            DefaultSubmittingSize defaultSubmittingSize
-    ) {
-
-        if (defaultSubmittingSize == null) {
-            defaultSubmittingSize = new DefaultSubmittingSize(0, defaultSize);
-        }
-
-        var pageRequest = PageRequest.of(
-                defaultSubmittingSize.page(),
-                defaultSubmittingSize.size() != null
-                        ? defaultSubmittingSize.size()
-                        : defaultSize,
-                Sort.by(Sort.Direction.ASC, "id")
-        );
-
-        var ordersForSubmit = orderRepository.findOrdersForSubmit(pageRequest);
-
-        if (ordersForSubmit.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return ordersForSubmit.stream()
-                .map(order -> {
-                    var distanceEntity = getDistanceEntity(order);
-                    var routePointInfoDto = getRoutePointInfoDto(order.getRoutePoints(), distanceEntity);
-
-                    return orderMapper.toOrderInfo(order, routePointInfoDto);
-                })
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public OrderInfoForUserDto sendOrderForUser(
             SendOrderForSubmittingDto orderDto
     ) {
@@ -233,98 +212,49 @@ public class OrderService {
         );
     }
 
-    private DistanceInfoDto distanceMessageForUser(
-            BiPredicate<Double, Double> biPredicate,
-            Double distance1,
-            Double distance2
-    ) {
-        return biPredicate.test(distance1, distance2)
-                ? new DistanceInfoDto(OrderDefaultMessages.MORE_DRIVER_FOR_ORDER.getDescription())
-                : new DistanceInfoDto(OrderDefaultMessages.ONE_DRIVER_FOR_ORDER.getDescription());
-    }
-
-    private UserEntity getUserEntity(
-            Long id
-    ) {
-        return userRepository.findById(id).orElseThrow(
-                () -> exception("User", id)
-        );
-    }
-
-
     @Transactional(readOnly = true)
-    public BaseOrderForSubmitDto responseOrderForSubmitting(
-            BaseOrderInfo orderInfo
+    public List<BaseOrderForSubmitDto> findOrdersForSubmit(
+            DefaultSubmittingSize defaultSubmittingSize
     ) {
-        var orderEntity = orderRepository.findOrderEntityByNumber(orderInfo.uniqueNumber()).orElseThrow(
-                () -> exception("Order", orderInfo.uniqueNumber())
+
+        if (defaultSubmittingSize == null) {
+            defaultSubmittingSize = new DefaultSubmittingSize(0, 5);
+        }
+
+        var pageable = PageRequest.of(
+                defaultSubmittingSize.page() != null
+                        ? defaultSubmittingSize.page()
+                        : 0,
+                defaultSubmittingSize.size() != null
+                        ? defaultSubmittingSize.size()
+                        : 5
         );
 
-        var stationFrom = getStationName(orderEntity, OperationType.LOADING);
-        var stationTo = getStationName(orderEntity, OperationType.UNLOADING);
+        var ordersForSubmit = orderRepository.findOrdersForSubmit(pageable);
+        var userOrderEntityMap = getUserOrderEntityMap(ordersForSubmit);
+        var userEntityMap = getUserEntityMap(userOrderEntityMap);;
 
-        var cityFrom = getCity(orderInfo, orderEntity, OperationType.LOADING);
-        var cityTo = getCity(orderInfo, orderEntity, OperationType.LOADING);
+        return ordersForSubmit.stream()
+                .map(order -> {
+                    var orderBaseInfoDto = orderRepository.findOrderDtoById(order.getId());
+                    var userOrderEntity = userOrderEntityMap.get(order.getUniqueNumber());
+                    var user = userEntityMap.get(userOrderEntity);
+                    var userOrderInfo = getUserOrderInfo(order, user);
 
-        var stationByCityNames = cityStationRepository.findStationByCityNames(
-                        List.of(
-                                cityFrom.getName(),
-                                cityTo.getName()
-                        )
-                ).stream()
-                .collect(Collectors.toMap(
-                        CityStationEntity::getName,
-                        Function.identity()
-                ));
+                    var userInfoDto = new UserInfoDto(
+                            user.getUsername(),
+                            order.getCreateAt().toString(),
+                            null
+                    );
 
-        var stations = stationByCityNames.entrySet().stream()
-                .filter(entry -> List.of(stationFrom, stationTo).contains(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .toList();
+                    return routePointMapper.toInfoDto(
+                            orderBaseInfoDto,
+                            userInfoDto,
+                            routePointMapper.toInfoDto(userOrderInfo),
+                            new DistanceInfoDto(userOrderInfo.getDistanceInfo())
+                    );
+                }).toList();
 
-        var distance = stationDistanceRepository.findDistancesByStationsIds(stations.stream().map(CityStationEntity::getId).toList());
-
-        var weightSum = orderEntity.getRoutePoints().stream()
-                .flatMap(rp -> rp.getCargo().stream())
-                .mapToDouble(CargoEntity::getWeightKg)
-                .sum();
-
-        return new BaseOrderForSubmitDto(
-                orderEntity.getUniqueNumber(),
-                orderEntity.getStatus().toString(),
-                orderEntity.getCountryMap().getCountryName(),
-                orderInfo.userInfoDto(),
-                new RoutePointInfoForUserDto(cityFrom.getName(), stationFrom, cityTo.getName(), stationTo, weightSum, distance.getDistance()),
-                new DistanceInfoDto(null)
-        );
-    }
-
-    private static String getStationName(OrderEntity orderEntity, OperationType operationType) {
-        return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(operationType.name()))
-                .flatMap(rp -> rp.getCity().getCityStation().stream())
-                .map(CityStationEntity::getName)
-                .findFirst()
-                .get();
-    }
-
-    private CityEntity getCity(
-            BaseOrderInfo orderInfo,
-            OrderEntity orderEntity,
-            OperationType operationType
-    ) {
-        var cityName = orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(operationType.name()))
-                .map(rp -> rp.getCity().getName())
-                .findFirst()
-                .orElseThrow(
-                        () -> new IllegalArgumentException("City with loading operation not found = %s"
-                                .formatted(orderInfo.uniqueNumber()))
-                );
-
-        return cityRepository.findCityEntityByName(cityName).orElseThrow(
-                () -> new IllegalArgumentException("City with loading operation not found = %s")
-        );
     }
 
     @Transactional(readOnly = true)
@@ -370,42 +300,60 @@ public class OrderService {
         userOrderRepository.save(userOrderEntity);
     }
 
-    private static List<Long> getStationsId(
-            CityEntity cityFromEntity,
-            CityEntity cityToEntity,
-            HashSet<String> stationNames
+    private UserOrderInfo getUserOrderInfo(
+            OrderEntity order,
+            UserEntity user
     ) {
-        return Stream.of(cityFromEntity, cityToEntity)
-                .flatMap(city -> city.getCityStation().stream())
-                .filter(station -> stationNames.contains(station.getName()))
-                .map(CityStationEntity::getId)
-                .toList();
-    }
-
-    private static HashMap<String, CityStationEntity> getStationEntityHashMap(
-            CityEntity cityFromEntity,
-            CityEntity cityToEntity,
-            HashSet<String> stationNames
-    ) {
-        return Stream.of(cityFromEntity, cityToEntity)
-                .flatMap(city -> city.getCityStation().stream())
-                .filter(station -> stationNames.contains(station.getName()))
-                .collect(Collectors.toMap(
-                        cityStation -> cityStation.getCity().getName(),
-                        Function.identity(),
-                        (existing, value) -> existing,
-                        HashMap::new));
-    }
-
-    private static CargoInfoForDto getCargoInfoForDto(
-            BaseCargoDto cargoDto
-    ) {
-        return new CargoInfoForDto(
-                BigDecimal.valueOf(cargoDto.getWeightKg()),
-                UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(),
-                CargoStatus.NOT_SHIPPED.name()
+        return userOrderInfoRepository.findUserOrderInfo(
+                user.getUsername(),
+                order.getUniqueNumber()
+        ).orElseThrow(
+                () -> new IllegalStateException("User order info for username = %s and order number = %s not found"
+                        .formatted(user.getUsername(), order.getUniqueNumber())
+                )
         );
+    }
+
+    private DistanceInfoDto distanceMessageForUser(
+            BiPredicate<Double, Double> biPredicate,
+            Double distance1,
+            Double distance2
+    ) {
+        return biPredicate.test(distance1, distance2)
+                ? new DistanceInfoDto(OrderDefaultMessages.MORE_DRIVER_FOR_ORDER.getDescription())
+                : new DistanceInfoDto(OrderDefaultMessages.ONE_DRIVER_FOR_ORDER.getDescription());
+    }
+
+    private UserEntity getUserEntity(
+            Long id
+    ) {
+        return userRepository.findById(id).orElseThrow(
+                () -> exception("User", id)
+        );
+    }
+
+    private static Map<UserOrderEntity, UserEntity> getUserEntityMap(
+            Map<String, UserOrderEntity> userOrderEntityMap
+    ) {
+        return userOrderEntityMap.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getValue,
+                        entry -> entry.getValue().getUser()
+                ));
+
+    }
+
+    private Map<String, UserOrderEntity> getUserOrderEntityMap(
+            List<OrderEntity> ordersForSubmit
+    ) {
+        return ordersForSubmit
+                .stream()
+                .collect(Collectors.toMap(
+                        OrderEntity::getUniqueNumber,
+                        order -> userOrderRepository.findByOrderId(order.getId())
+                                .orElseThrow(() -> exception("User order", order.getId()))
+                ));
     }
 
     private void addDriverToTruck(
@@ -452,30 +400,6 @@ public class OrderService {
     ) {
         orderEntity.getDriverOrders().clear();
         orderEntity.getTruckOrders().clear();
-    }
-
-    private DistanceEntity getDistanceEntity(
-            OrderEntity orderEntity
-    ) {
-        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId())
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
-                                .formatted(orderEntity.getId())
-                        ));
-    }
-
-    private List<RoutePointInfoDto> getRoutePointInfoDto(
-            Set<RoutePointEntity> routePointEntities,
-            DistanceEntity distanceEntity
-    ) {
-        return routePointEntities.stream()
-                .map(rp -> {
-                    var cargoList = rp.getCargo().stream()
-                            .map(cargoMapper::toDtoInfo)
-                            .collect(Collectors.toSet());
-
-                    return routePointMapper.toInfoDto(rp, cargoList, distanceEntity.getDistance());
-                }).toList();
     }
 
     public void setRoutePointsForOrder(
@@ -578,13 +502,13 @@ public class OrderService {
                 new RoutePointEntity(
                         getCityEntity(routePointInfoDto.cityFrom()),
                         OperationType.LOADING.name(),
-                        new ArrayList<>(Arrays.asList(cargo)),
+                        new ArrayList<>(Collections.singletonList(cargo)),
                         orderEntity
                 ),
                 new RoutePointEntity(
                         getCityEntity(routePointInfoDto.cityTo()),
                         OperationType.UNLOADING.name(),
-                        new ArrayList<>(Arrays.asList(cargo)),
+                        new ArrayList<>(Collections.singletonList(cargo)),
                         orderEntity
                 )
         ).toList();

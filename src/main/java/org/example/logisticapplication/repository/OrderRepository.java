@@ -1,6 +1,7 @@
 package org.example.logisticapplication.repository;
 
 import org.aspectj.weaver.ast.Or;
+import org.example.logisticapplication.domain.Order.OrderBaseInfoDto;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderStatusDto;
 import org.springframework.data.domain.Pageable;
@@ -58,18 +59,40 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             @Param("driverId") Long driverId
     );
 
-    @EntityGraph(attributePaths = {"countryMap", "countryMap.cities"})
-    @Query("""
-            SELECT o FROM OrderEntity o
-            LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
-            LEFT JOIN FETCH TruckOrderEntity toe ON o.id = toe.order.id
-            WHERE doe.driver.id IS NULL AND toe.truck.id IS NULL
-            ORDER BY o.id ASC
-            """)
-    List<OrderEntity> findOrdersForSubmit(Pageable pageable);
+//    @EntityGraph(attributePaths = {"countryMap", "countryMap.cities"})
+//    @Query("""
+//            SELECT o FROM OrderEntity o
+//            LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
+//            LEFT JOIN FETCH TruckOrderEntity toe ON o.id = toe.order.id
+//            WHERE doe.driver.id IS NULL AND toe.truck.id IS NULL
+//            ORDER BY o.id ASC
+//            """)
+//    List<OrderEntity> findOrdersForSubmit(Pageable pageable);
 
     @Query("SELECT o FROM OrderEntity o WHERE o.uniqueNumber = :number")
     Optional<OrderEntity> findOrderEntityByNumber(
             @Param("number") String number
+    );
+
+    @EntityGraph(attributePaths = {"routePoints", "orderCargoEntities"})
+    @Query("""
+            SELECT o 
+            FROM OrderEntity o
+            LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
+            LEFT JOIN FETCH TruckOrderEntity toe ON o.id = toe.order.id
+            WHERE doe.order.id IS NULL AND toe.truck.id IS NULL
+            ORDER BY o.id DESC
+            """)
+    List<OrderEntity> findOrdersForSubmit(Pageable pageable);
+
+    @Query("""
+            SELECT new org.example.logisticapplication.domain.Order.OrderBaseInfoDto(o.uniqueNumber, o.status.statusName, o.countryMap.countryName)
+            FROM OrderEntity o
+            LEFT JOIN o.status
+            LEFT JOIN o.countryMap  
+            WHERE o.id = :id            
+            """)
+    OrderBaseInfoDto findOrderDtoById(
+            @Param("id") Long orderId
     );
 }

@@ -1,4 +1,4 @@
-package org.example.logisticapplication.controllers.rest;
+package org.example.logisticapplication.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

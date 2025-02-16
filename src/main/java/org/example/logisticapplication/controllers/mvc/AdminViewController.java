@@ -21,6 +21,11 @@ public class AdminViewController {
         return "admin-panel";
     }
 
+    @GetMapping("/orders")
+    public String adminOrders() {
+        return "orders";
+    }
+
     @GetMapping("/orders/submit")
     public String submittingPage(Model model) {
         log.info("Get request for submitting orders");

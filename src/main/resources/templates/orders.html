@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,12 +17,71 @@
         </button>
     </div>
 
-    <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md mt-6">
-    </div>
+    <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md mt-6"></div>
 </div>
+<script>
+    document.getElementById("fetch-orders").addEventListener("click", async function () {
+        const ordersContainer = document.getElementById("orders-container");
+        ordersContainer.innerHTML = "<p>Загрузка...</p>";
 
-<script src="orders.js"></script>
+        try {
+            const response = await fetch("/api/v1/orders/pending-submit");
+            const orders = await response.json();
 
+            if (orders.length === 0) {
+                ordersContainer.innerHTML = "<p>Нет активных заказов.</p>";
+                return;
+            }
+
+            ordersContainer.innerHTML = orders.map(order => `
+            <div class="border p-4 mb-4 rounded-lg shadow">
+                <h3 class="text-xl font-bold">Заказ #${order.uniqueNumber}</h3>
+                <p><strong>Статус заказа:</strong> ${order.orderStatus}</p>
+                <p><strong>Название карты:</strong> ${order.countyMapName}</p>
+
+                <h4 class="font-semibold">Информация о пользователе:</h4>
+                <p><strong>Имя клиента:</strong> ${order.userInfoDto.name}</p>
+                <p><strong>Дата создания:</strong> ${order.userInfoDto.createdAt}</p>
+                <p><strong>Желаемая дата:</strong> ${order.userInfoDto.desiredDate}</p>
+
+                <h4 class="font-semibold">Маршрут:</h4>
+                <p><strong>Город отправления:</strong> ${order.routePointDto.cityFrom}</p>
+                <p><strong>Станция отправления:</strong> ${order.routePointDto.stationFrom}</p>
+                <p><strong>Город прибытия:</strong> ${order.routePointDto.cityTo}</p>
+                <p><strong>Станция прибытия:</strong> ${order.routePointDto.stationTo}</p>
+                <p><strong>Вес груза:</strong> ${order.routePointDto.weight} кг</p>
+                <p><strong>Расстояние:</strong> ${order.routePointDto.distance} км</p>
+
+                <h4 class="font-semibold">Информация о расстоянии:</h4>
+                <p><strong>Сообщение:</strong> ${order.distanceInfoDto.message}</p>
+
+                <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-3"
+                    onclick="completeOrder(${order.uniqueNumber})">Закончить оформление</button>
+            </div>
+        `).join("");
+        } catch (error) {
+            ordersContainer.innerHTML = "<p class='text-red-500'>Ошибка загрузки заказов</p>";
+        }
+    })
+
+    async function completeOrder(orderId) {
+        if (!confirm(`Вы уверены, что хотите завершить заказ #${orderId}?`)) return;
+
+        try {
+            const response = await fetch(`/api/v1/orders/complete/${orderId}`, { method: "POST" });
+
+            if (response.ok) {
+                alert(`Заказ #${orderId} завершен`);
+                document.getElementById("fetch-orders").click(); // Перезагрузка списка заказов
+            } else {
+                alert("Ошибка при завершении заказа");
+            }
+        } catch (error) {
+            alert("Ошибка сети");
+        }
+    }
+
+</script>
 </body>
 </html>
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
@@ -28,14 +29,15 @@ public class OrderController {
         return ResponseEntity.ok().body(newOrder);
     }
 
-    @PostMapping("/send-for-submitting")
-    public ResponseEntity<OrderForSubmittingDto> sendOrderForSubmitting(
-            @RequestBody BaseOrderInfo orderNumber
+    @GetMapping("/pending-submit")
+    public ResponseEntity<List<BaseOrderForSubmitDto>> getOrdersForSubmit(
+            @RequestParam(value = "defaultValue", required = false) DefaultSubmittingSize defaultSubmittingSize
     ) {
-        log.info("Get request for submitting order {}",orderNumber);
-        orderService.responseOrderForSubmitting(orderNumber);
+        log.info("Get request for submitting order {}",defaultSubmittingSize);
+        var ordersForSubmit = orderService.findOrdersForSubmit(defaultSubmittingSize);
+        log.info("Orders for submitting {}",ordersForSubmit);
 
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok().body(ordersForSubmit);
     }
 
     @PostMapping("/{orderNumber}/finalize")
@@ -71,14 +73,14 @@ public class OrderController {
     }
 
 
-    @GetMapping("/pending-submit")
-    public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(
-            @RequestParam(value = "defaultValue", required = false) DefaultSubmittingSize defaultSubmittingSize
-    ) {
-        log.info("Get request for submitting orders");
-        var orderInfo = orderService.gerOrdersForSubmit(defaultSubmittingSize);
-
-        return ResponseEntity.ok().body(orderInfo);
-    }
+//    @GetMapping("/pending-submit")
+//    public ResponseEntity<List<OrderInfo>> getOrdersForSubmit(
+//            @RequestParam(value = "defaultValue", required = false) DefaultSubmittingSize defaultSubmittingSize
+//    ) {
+//        log.info("Get request for submitting orders");
+//        var orderInfo = orderService.gerOrdersForSubmit(defaultSubmittingSize);
+//
+//        return ResponseEntity.ok().body(orderInfo);
+//    }
 
 }

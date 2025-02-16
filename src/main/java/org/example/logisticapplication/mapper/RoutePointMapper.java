@@ -4,7 +4,12 @@ import org.example.logisticapplication.domain.Cargo.CargoEntity;
 import org.example.logisticapplication.domain.Cargo.CargoInfoDto;
 import org.example.logisticapplication.domain.Cargo.MainCargoInfoDto;
 import org.example.logisticapplication.domain.City.CityEntity;
+import org.example.logisticapplication.domain.Distance.DistanceInfoDto;
+import org.example.logisticapplication.domain.Order.BaseOrderForSubmitDto;
+import org.example.logisticapplication.domain.Order.OrderBaseInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.*;
+import org.example.logisticapplication.domain.User.UserInfoDto;
+import org.example.logisticapplication.domain.UserOrderInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -92,12 +97,29 @@ public interface RoutePointMapper {
 
     RoutePoint toDomain(RoutePointEntity entity);
 
+    @Mappings({
+            @Mapping(target = "uniqueNumber", source = "orderBaseInfoDto.uniqueNumber"),
+            @Mapping(target = "orderStatus", source = "orderBaseInfoDto.status"),
+            @Mapping(target = "countyMapName", source = "orderBaseInfoDto.countryName"),
+            @Mapping(target = "userInfoDto", source = "userInfoDto"),
+            @Mapping(target = "routePointDto", source = "routePointInfoDto"),
+            @Mapping(target = "distanceInfoDto", source = "distanceInfoDto"),
+    })
+    BaseOrderForSubmitDto toInfoDto(
+            OrderBaseInfoDto orderBaseInfoDto,
+            UserInfoDto userInfoDto,
+            RoutePointInfoForUserDto routePointInfoDto,
+            DistanceInfoDto distanceInfoDto
+    );
 
-//    BaseRoutePointEntity toBaseEntity(
-//            List<BaseCargoEntity> cargoEntity,
-//            String cityFrom,
-//            String cityTo,
-//            Long distance
-//    );
+    @Mappings({
+            @Mapping(target = "cityFrom", source = "userOrderInfo.cityFromName"),
+            @Mapping(target = "stationFrom", source = "userOrderInfo.stationFromName"),
+            @Mapping(target = "cityTo", source = "userOrderInfo.cityToName"),
+            @Mapping(target = "stationTo", source = "userOrderInfo.stationToName"),
+            @Mapping(target = "weight", source = "weight"),
+            @Mapping(target = "distance", source = "distance"),
+    })
+    RoutePointInfoForUserDto toInfoDto(UserOrderInfo userOrderInfo);
 
 }

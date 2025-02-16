@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface OrderDistanceRepository extends JpaRepository<OrderDistanceEntity, Long> {
-
     @Query("""
             SELECT d
             FROM OrderDistanceEntity od  

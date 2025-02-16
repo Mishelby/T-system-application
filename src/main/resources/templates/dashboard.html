@@ -120,7 +120,7 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    fetch("/dashboard")
+    fetch("/api/v1/dashboard")
             .then(response => response.json())
             .then(data => renderDashboard(data))
             .catch(error => console.error("Ошибка:", error));

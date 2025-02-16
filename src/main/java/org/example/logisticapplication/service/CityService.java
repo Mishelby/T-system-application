@@ -6,6 +6,7 @@ import org.example.logisticapplication.domain.City.City;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.City.CityWithStationsDto;
 import org.example.logisticapplication.domain.CityStationEntity.CityStationEntity;
+import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 import org.example.logisticapplication.repository.CityRepository;
 import org.example.logisticapplication.repository.CountryMapRepository;
 import org.example.logisticapplication.mapper.CityMapper;
@@ -47,11 +48,7 @@ public class CityService {
             City city
     ) {
         validateCityDoesNotExist(city.name());
-
-        var countryMapEntity = countryMapRepository.findByCountryName(city.countryMapName())
-                .orElseThrow(
-                        () -> countryMapNotFound(city.countryMapName())
-                );
+        var countryMapEntity = getCountryMapEntity(city);
 
         var savedCity = cityRepository.save(
                 cityMapper.toEntity(city, countryMapEntity)
@@ -59,6 +56,14 @@ public class CityService {
 
 
         return cityMapper.toDomain(savedCity);
+    }
+
+    private CountryMapEntity getCountryMapEntity(City city) {
+        return countryMapRepository.findByCountryName(city.countryMapName())
+                .orElseThrow(
+                        () -> countryMapNotFound(city.countryMapName())
+                );
+
     }
 
     @Transactional(readOnly = true)
@@ -108,14 +113,6 @@ public class CityService {
         if (cityRepository.existsCityEntityByName(name)) {
             throw new EntityAlreadyExistsException("City", "name", name);
         }
-    }
-
-    private EntityNotFoundException entityNotFound(
-            String entityName,
-            Long id
-    ) {
-        return new EntityNotFoundException("%s with id=%s does not exist!"
-                .formatted(entityName, id));
     }
 
     private CountryMapNotFoundException countryMapNotFound(

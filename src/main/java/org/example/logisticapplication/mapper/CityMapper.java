@@ -17,7 +17,10 @@ public interface CityMapper {
             @Mapping(source = "countryMapEntity.id", target = "countryMap.id"),
             @Mapping(source = "city.id", target = "id")
     })
-    CityEntity toEntity(City city, CountryMapEntity countryMapEntity);
+    CityEntity toEntity(
+            City city,
+            CountryMapEntity countryMapEntity
+    );
 
     City toDomain(CityEntity entity);
 

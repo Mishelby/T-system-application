@@ -2,7 +2,7 @@ package org.example.logisticapplication.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.logisticapplication.controllers.rest.LoginResponse;
+import org.example.logisticapplication.utils.LoginResponse;
 import org.example.logisticapplication.domain.User.LoginUserDto;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.security.JwtTokenProvider;
