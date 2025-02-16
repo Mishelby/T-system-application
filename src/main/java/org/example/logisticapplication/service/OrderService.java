@@ -27,7 +27,7 @@ import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
 import org.example.logisticapplication.domain.User.UserInfoDto;
-import org.example.logisticapplication.domain.UserOrderInfo;
+import org.example.logisticapplication.domain.UserOrderInfoEntity;
 import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -74,15 +75,17 @@ public class OrderService {
     private final RoutePointMapper routePointMapper;
 
     @Value("${driver.recommendDistance}")
-    private Double RECOMMENDED_DISTANCE_FOR_ONE_DRIVER;
+    private Double oneDriverRecommendedDistance;
+    private final LocalDateTimeFormatter dateTimeFormatter;
 
     private static final String LOADING_OPERATION = OperationType.LOADING.name();
-//    private static final String UNLOADING_OPERATION = OperationType.UNLOADING.name();
 
     @Transactional
     public BaseOrderInfo createBaseOrder(
             OrderInfoForUserDto orderInfo
     ) {
+        isValidDateForOrder(dateTimeFormatter.convertToLocalDate(getDesiredDate(orderInfo)));
+
         var countryMapEntity = getCountryMapEntity(orderInfo);
         var orderEntity = createNewOrder(countryMapEntity);
         var routePointEntities = saveRoutePoints(orderInfo.routePointInfo(), orderEntity);
@@ -91,7 +94,7 @@ public class OrderService {
         setRoutePointsForOrder(orderEntity, routePointEntities);
         var updatedOrder = orderRepository.save(orderEntity);
         userOrderInfoRepository.save(
-                new UserOrderInfo(
+                new UserOrderInfoEntity(
                         updatedOrder.getUniqueNumber(),
                         user.getUsername(),
                         orderInfo.routePointInfo().cityFrom(),
@@ -107,6 +110,14 @@ public class OrderService {
                 updatedOrder.getUniqueNumber(),
                 orderInfo.userInfoDto()
         );
+    }
+
+    public void isValidDateForOrder(LocalDate date) {
+        var today = LocalDate.now();
+
+        if (date.isBefore(today)) {
+            throw new IllegalArgumentException("Date must be before today!");
+        }
     }
 
     private UserEntity getUserEntity(
@@ -207,7 +218,7 @@ public class OrderService {
                 distanceMessageForUser(
                         DistanceInfo::isRecommendDistance,
                         distance,
-                        RECOMMENDED_DISTANCE_FOR_ONE_DRIVER
+                        oneDriverRecommendedDistance
                 )
         );
     }
@@ -232,7 +243,7 @@ public class OrderService {
 
         var ordersForSubmit = orderRepository.findOrdersForSubmit(pageable);
         var userOrderEntityMap = getUserOrderEntityMap(ordersForSubmit);
-        var userEntityMap = getUserEntityMap(userOrderEntityMap);;
+        var userEntityMap = getUserEntityMap(userOrderEntityMap);
 
         return ordersForSubmit.stream()
                 .map(order -> {
@@ -254,7 +265,6 @@ public class OrderService {
                             new DistanceInfoDto(userOrderInfo.getDistanceInfo())
                     );
                 }).toList();
-
     }
 
     @Transactional(readOnly = true)
@@ -300,7 +310,7 @@ public class OrderService {
         userOrderRepository.save(userOrderEntity);
     }
 
-    private UserOrderInfo getUserOrderInfo(
+    private UserOrderInfoEntity getUserOrderInfo(
             OrderEntity order,
             UserEntity user
     ) {
@@ -564,5 +574,9 @@ public class OrderService {
         return new IllegalArgumentException("%s with value = %s not found!".formatted(object, value));
     }
 
-
+    private static String getDesiredDate(
+            OrderInfoForUserDto orderInfo
+    ) {
+        return orderInfo.userInfoDto().desiredDate();
+    }
 }

@@ -35,7 +35,6 @@ public class OrderController {
     ) {
         log.info("Get request for submitting order {}",defaultSubmittingSize);
         var ordersForSubmit = orderService.findOrdersForSubmit(defaultSubmittingSize);
-        log.info("Orders for submitting {}",ordersForSubmit);
 
         return ResponseEntity.ok().body(ordersForSubmit);
     }

@@ -9,7 +9,7 @@ import org.example.logisticapplication.domain.Order.BaseOrderForSubmitDto;
 import org.example.logisticapplication.domain.Order.OrderBaseInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.User.UserInfoDto;
-import org.example.logisticapplication.domain.UserOrderInfo;
+import org.example.logisticapplication.domain.UserOrderInfoEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -113,13 +113,13 @@ public interface RoutePointMapper {
     );
 
     @Mappings({
-            @Mapping(target = "cityFrom", source = "userOrderInfo.cityFromName"),
-            @Mapping(target = "stationFrom", source = "userOrderInfo.stationFromName"),
-            @Mapping(target = "cityTo", source = "userOrderInfo.cityToName"),
-            @Mapping(target = "stationTo", source = "userOrderInfo.stationToName"),
+            @Mapping(target = "cityFrom", source = "userOrderInfoEntity.cityFromName"),
+            @Mapping(target = "stationFrom", source = "userOrderInfoEntity.stationFromName"),
+            @Mapping(target = "cityTo", source = "userOrderInfoEntity.cityToName"),
+            @Mapping(target = "stationTo", source = "userOrderInfoEntity.stationToName"),
             @Mapping(target = "weight", source = "weight"),
             @Mapping(target = "distance", source = "distance"),
     })
-    RoutePointInfoForUserDto toInfoDto(UserOrderInfo userOrderInfo);
+    RoutePointInfoForUserDto toInfoDto(UserOrderInfoEntity userOrderInfoEntity);
 
 }

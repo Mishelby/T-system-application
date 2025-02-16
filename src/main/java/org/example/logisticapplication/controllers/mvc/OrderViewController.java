@@ -11,10 +11,13 @@ import org.example.logisticapplication.domain.RoutePoint.BaseRoutePoints;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.service.CityService;
 import org.example.logisticapplication.service.OrderService;
+import org.example.logisticapplication.utils.LocalDateTimeFormatter;
 import org.example.logisticapplication.utils.TimeFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 
 @Slf4j
@@ -26,6 +29,7 @@ public class OrderViewController {
     private final DriverDefaultValues defaultValues;
     private final UserRepository userRepository;
     private final OrderService orderService;
+    private final LocalDateTimeFormatter timeFormatter;
 
     private static final String USER_ID = "userId";
 
@@ -57,6 +61,8 @@ public class OrderViewController {
             @RequestBody OrderRequestDto orderRequestDto,
             HttpSession session
     ) {
+        orderService.isValidDateForOrder(orderRequestDto.departureDate());
+
         log.info("Submitting order {}", orderRequestDto);
         var sendOrderForSubmittingDto = getSendOrderForSubmittingDto(orderRequestDto);
         var orderDto = orderService.sendOrderForUser(sendOrderForSubmittingDto);

@@ -157,9 +157,9 @@ public class DriverService {
             Long driverId
     ) {
         var driverEntity = driverRepository.findById(driverId).orElseThrow();
-        var orderEntity = orderRepository.findOrderEntitiesByDriverId(driverEntity.getId()).orElse(null);
+        var orderEntity = orderRepository.findOrderEntitiesByDriverId(driverEntity.getId()).orElseThrow();
 
-        if (orderEntity == null) {
+        if (orderEntity.getDriverOrders().isEmpty() && orderEntity.getTruckOrders().isEmpty()) {
             return new DriverMainInfoWithoutOrder(
                     driverEntity.getName(),
                     driverEntity.getPersonNumber().toString(),

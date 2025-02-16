@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
-import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Role.RoleEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.User.UserEntity;

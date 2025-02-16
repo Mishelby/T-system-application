@@ -2,16 +2,14 @@ package org.example.logisticapplication.mapper;
 
 import org.example.logisticapplication.domain.Driver.DriverRegistrationInfo;
 import org.example.logisticapplication.domain.Role.RoleEntity;
-import org.example.logisticapplication.domain.User.CreateUserDto;
-import org.example.logisticapplication.domain.User.MainUserInfoDro;
-import org.example.logisticapplication.domain.User.UserEntity;
-import org.example.logisticapplication.domain.User.UserInfoDto;
+import org.example.logisticapplication.domain.User.*;
+import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.mapstruct.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -51,7 +49,7 @@ public interface UserMapper {
     }
 
     @Named("timeFormatter")
-    default String dataToStringFormat(){
+    default String dataToStringFormat() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     }
 
@@ -63,9 +61,22 @@ public interface UserMapper {
     CreateUserDto toDto(UserEntity user);
 
     @Mappings({
-            @Mapping(target = "createdAt", source = "user.createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss")
+            @Mapping(target = "userInfoDto.name", source = "user.username"),
+            @Mapping(target = "userInfoDto.email", source = "user.email"),
+            @Mapping(target = "userInfoDto.createdAt", source = "user.createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss"),
+            @Mapping(target = "userOrderInfo", expression = "java(null)")
     })
-    MainUserInfoDro toMainInfo(UserEntity user);
+    MainUserInfoWithoutOrdersDto toMainInfoWithoutOrders(UserEntity user);
+
+    MainUserInfoWithOrders toMainInfoWithOrders(
+            UserEntity userEntity,
+            List<UserOrderEntity> userOrders
+    );
+
+    @Condition
+    default List<UserOrderEntity> isUserHasOrders(List<UserOrderEntity> orders){
+        return orders.isEmpty() ? null : orders;
+    }
 
     @Mapping(target = "name", source = "user.username")
     @Mapping(target = "createdAt", expression = "java(dataToStringFormat())")

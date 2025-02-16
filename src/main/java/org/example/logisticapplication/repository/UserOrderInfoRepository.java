@@ -1,6 +1,6 @@
 package org.example.logisticapplication.repository;
 
-import org.example.logisticapplication.domain.UserOrderInfo;
+import org.example.logisticapplication.domain.UserOrderInfoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,15 +10,15 @@ import java.util.Optional;
 
 
 @Repository
-public interface UserOrderInfoRepository extends JpaRepository<UserOrderInfo, Long> {
+public interface UserOrderInfoRepository extends JpaRepository<UserOrderInfoEntity, Long> {
 
     @Query("""
             SELECT uoi 
-            FROM UserOrderInfo uoi
+            FROM UserOrderInfoEntity uoi
             WHERE uoi.userName = :userName   
             AND uoi.orderNumber = :orderNumber                  
             """)
-    Optional<UserOrderInfo> findUserOrderInfo(
+    Optional<UserOrderInfoEntity> findUserOrderInfo(
             @Param("userName") String userName,
             @Param("orderNumber") String orderNumber
     );

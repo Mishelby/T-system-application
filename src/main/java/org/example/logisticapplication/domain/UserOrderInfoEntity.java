@@ -8,7 +8,7 @@ import lombok.Setter;
 @Table(name = "user_order_info") // Исправил на корректное имя таблицы
 @Getter
 @Setter
-public class UserOrderInfo {
+public class UserOrderInfoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,7 +40,7 @@ public class UserOrderInfo {
     @Column(name = "distance_info")
     private String distanceInfo;
 
-    public UserOrderInfo(
+    public UserOrderInfoEntity(
             String orderNumber,
             String userName,
             String cityFromName,
@@ -62,7 +62,7 @@ public class UserOrderInfo {
         this.distanceInfo = distanceInfo;
     }
 
-    public UserOrderInfo() {
+    public UserOrderInfoEntity() {
     }
 }
 

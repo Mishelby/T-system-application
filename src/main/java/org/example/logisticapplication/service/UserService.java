@@ -2,25 +2,29 @@ package org.example.logisticapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.logisticapplication.domain.User.CreateUserDto;
-import org.example.logisticapplication.domain.User.MainUserInfoDro;
+import org.example.logisticapplication.domain.User.*;
+import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.UserMapper;
+import org.example.logisticapplication.repository.UserOrderRepository;
 import org.example.logisticapplication.repository.UserRepository;
 import org.example.logisticapplication.utils.RoleName;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 
 @Service
 @RequiredArgsConstructor
-public class UserService  {
+public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
+    private final UserOrderRepository userOrderRepository;
 
     @Transactional
     public CreateUserDto createNewUser(
@@ -43,19 +47,27 @@ public class UserService  {
     }
 
     @Transactional(readOnly = true)
-    public MainUserInfoDro getUserInfo(
+    public UserInfo getUserInfo(
             Long id
     ) {
-        var userEntity = userRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("User with id = %s not found"
-                        .formatted(id))
-        );
+        var userEntity = getUserEntity(id);
+        var userOrders = userOrderRepository.findByUserId(id);
 
-        return userMapper.toMainInfo(userEntity);
+        return getUserInfo(List::isEmpty, userOrders, userEntity);
+    }
+
+    private UserInfo getUserInfo(
+            Predicate<List<UserOrderEntity>> predicate,
+            List<UserOrderEntity> userOrders,
+            UserEntity userEntity
+    ) {
+        return predicate.test(userOrders)
+                ? userMapper.toMainInfoWithOrders(userEntity, userOrders)
+                : userMapper.toMainInfoWithoutOrders(userEntity);
     }
 
     @Transactional(readOnly = true)
-    public MainUserInfoDro getUserInfo(
+    public MainUserInfoWithoutOrdersDto getUserInfo(
             String email
     ) {
         var userEntity = userRepository.findUserIdEntityByEmail(email).orElseThrow(
@@ -63,7 +75,7 @@ public class UserService  {
                         .formatted(email))
         );
 
-        return userMapper.toMainInfo(userEntity);
+        return userMapper.toMainInfoWithoutOrders(userEntity);
     }
 
     private void isUserExistsByEmail(
@@ -78,7 +90,7 @@ public class UserService  {
     private void isUserExistsByUserName(String username) {
         boolean isExists = userRepository.existsByUserName(username);
 
-        if(isExists) {
+        if (isExists) {
             throw new IllegalArgumentException("User with username = %s already exists"
                     .formatted(username));
         }
@@ -91,6 +103,13 @@ public class UserService  {
                 () -> new EntityNotFoundException("User with email = %s not found"
                         .formatted(email))
         ).getId();
+    }
+
+    private UserEntity getUserEntity(Long id) {
+        return userRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("User with id = %s not found"
+                        .formatted(id))
+        );
     }
 
 }
