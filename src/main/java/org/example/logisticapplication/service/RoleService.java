@@ -20,7 +20,7 @@ public class RoleService {
     private final RoleRepository roleRepository;
 
     @Transactional
-    public synchronized ConcurrentMap<RoleName, RoleEntity> findAll() {
+    public synchronized ConcurrentMap<RoleName, RoleEntity> getAllRoles() {
         var allRoles = roleRepository.findAll()
                 .stream()
                 .collect(Collectors.toMap(

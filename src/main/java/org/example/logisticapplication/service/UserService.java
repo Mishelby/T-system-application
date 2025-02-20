@@ -4,8 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverInfoForUserDto;
-import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
-import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.User.*;
 import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.UserMapper;
@@ -44,7 +42,7 @@ public class UserService {
         isUserExistsByEmail(newUser.email());
         isUserExistsByUserName(newUser.username());
 
-        var roles = roleService.findAll();
+        var roles = roleService.getAllRoles();
 
         var userEntity = userMapper.toEntity(
                 newUser,
@@ -106,7 +104,7 @@ public class UserService {
                 : userMapper.toInfoWithOrdersAndDrivers(userEntity, orders);
     }
 
-    private void isUserExistsByEmail(
+    public void isUserExistsByEmail(
             String email
     ) {
         if (userRepository.existsByEmail(email)) {
@@ -115,7 +113,7 @@ public class UserService {
         }
     }
 
-    private void isUserExistsByUserName(String username) {
+    public void isUserExistsByUserName(String username) {
         boolean isExists = userRepository.existsByUserName(username);
 
         if (isExists) {

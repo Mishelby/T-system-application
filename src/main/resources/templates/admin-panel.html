@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,14 +11,23 @@
 <div class="container mx-auto p-8">
     <h1 class="text-3xl font-bold mb-6 text-center">Панель администратора</h1>
 
-    <div class="space-y-4">
-        <a href="create-truck.html" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-2">Информация об администраторе</h2>
+        <p><strong>Имя:</strong> <span th:text="${admin.name}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${admin.email}"></span></p>
+        <p class="mt-4 text-green-600 font-bold" th:if="${admin.message}">
+            <span th:text="${admin.message}"></span>
+        </p>
+    </div>
+
+    <div class="mt-6 space-y-4">
+        <a href="/admin/create-truck" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">
             Создать новый грузовик
         </a>
-        <a href="create-country.html" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">
+        <a href="/admin/create-country" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">
             Создать карту страны
         </a>
-        <a href="create-city.html" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">
+        <a href="/admin/create-city" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">
             Создать город
         </a>
         <a href="/admin/orders" class="block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md text-center">

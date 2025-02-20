@@ -6,14 +6,12 @@ import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
-import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
 import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
-import org.example.logisticapplication.domain.ShiftStatus.ShiftStatusEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
@@ -27,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,7 +54,7 @@ public class DriverService {
         isDriverExistsByPersonNumber(driverInfo.getPersonNumber());
         isDriverExistsByEmail(driverInfo.getEmail());
 
-        var roles = roleService.findAll();
+        var roles = roleService.getAllRoles();
         var driverStatusMap = driverStatusService.getDriverStatusMap();
         var shiftStatusMap = shiftStatusService.getShiftStatusMap();
 

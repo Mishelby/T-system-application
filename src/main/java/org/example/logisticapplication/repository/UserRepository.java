@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
+    @EntityGraph(attributePaths = {"roleEntities"})
     @Query("""
             SELECT (COUNT(u) > 0)
             FROM UserEntity u
@@ -19,6 +20,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             """)
     boolean existsByEmail(String email);
 
+    @EntityGraph(attributePaths = {"roleEntities"})
     @Query("""
             SELECT (COUNT(u) > 0)
             FROM UserEntity u

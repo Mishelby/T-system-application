@@ -1,12 +1,12 @@
-package org.example.logisticapplication.domain.User;
+package org.example.logisticapplication.domain.Admin;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record CreateUserDto(
-        Long id,
+public record CreateAdminDto(
         String username,
         String password,
-        String email
+        String email,
+        String name
 ) {
 }
