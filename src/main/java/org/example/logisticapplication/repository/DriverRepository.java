@@ -1,6 +1,7 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Driver.DriverEntity;
+import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -30,6 +31,15 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
     List<DriverEntity> findDriversWithoutTruck();
 
     boolean existsByPersonNumber(Long personNumber);
+
+    @Query("""
+            SELECT d
+            FROM DriverEntity d
+            LEFT JOIN FETCH DriverOrderEntity dor ON d.id = dor.driver.id  
+            LEFT JOIN FETCH OrderEntity oe ON oe.id = dor.order.id   
+            WHERE oe.id = :orderId                                       
+            """)
+    List<DriverEntity> findAllDriversForOrder(Long orderId);
 
     @Modifying
     @Query("UPDATE DriverEntity d SET d.currentTruck = NULL WHERE d.currentTruck = :truck")

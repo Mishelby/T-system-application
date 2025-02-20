@@ -19,12 +19,12 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(value = """
-            SELECT new org.example.logisticapplication.domain.Order.OrderStatusDto(o.uniqueNumber, os.statusName)
+            SELECT new org.example.logisticapplication.domain.Order.OrderStatusDto(o.uniqueNumber, os.status)
             FROM OrderEntity o
             LEFT JOIN o.status os
-            WHERE o.id = :order_id
+            WHERE o.id = :orderId
             """)
-    OrderStatusDto showOrderStatusByOrderId(@Param("order_id") Long orderId);
+    OrderStatusDto showOrderStatusByOrderId(@Param("orderId") Long orderId);
 
     @EntityGraph(attributePaths = {"countryMap"})
     @Query(value = """
@@ -86,9 +86,9 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findOrdersForSubmit(Pageable pageable);
 
     @Query("""
-            SELECT new org.example.logisticapplication.domain.Order.OrderBaseInfoDto(o.uniqueNumber, o.status.statusName, o.countryMap.countryName)
+            SELECT new org.example.logisticapplication.domain.Order.OrderBaseInfoDto(o.uniqueNumber, o.status.status, o.countryMap.countryName)
             FROM OrderEntity o
-            LEFT JOIN o.status
+            LEFT JOIN o.status.status
             LEFT JOIN o.countryMap  
             WHERE o.id = :id            
             """)

@@ -5,12 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.Driver.*;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
+import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
+import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Order.OrderMainInfo;
 import org.example.logisticapplication.domain.RoutePoint.MainRoutePointInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.OperationType;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.example.logisticapplication.domain.RoutePoint.RoutePointInfoDto;
+import org.example.logisticapplication.domain.ShiftStatus.ShiftStatusEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,18 +41,25 @@ public class DriverService {
     private final RoutePointMapper routePointMapper;
     private final CargoMapper cargoMapper;
     private final TruckMapper truckMapper;
+    private final DriverStatusService driverStatusService;
+    private final ShiftStatusService shiftStatusService;
 
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
     private final OrderDistanceRepository orderDistanceRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Transactional
     public DriverBaseInfoDto createDriver(
             DriverRegistrationInfo driverInfo
     ) {
-        isDriverExistsByPersonNumber(driverInfo);
+        isDriverExistsByPersonNumber(driverInfo.getPersonNumber());
+        isDriverExistsByEmail(driverInfo.getEmail());
+
         var roles = roleService.findAll();
+        var driverStatusMap = driverStatusService.getDriverStatusMap();
+        var shiftStatusMap = shiftStatusService.getShiftStatusMap();
 
         var cityEntity = cityRepository.findCityEntityByName(driverInfo.getCityName())
                 .orElseThrow();
@@ -57,7 +68,9 @@ public class DriverService {
                 getEncodePassword(driverInfo),
                 driverInfo,
                 cityEntity,
-                Set.of(roles.get(RoleName.DRIVER))
+                Set.of(roles.get(RoleName.DRIVER)),
+                driverStatusMap.get(DriverStatus.NOT_DRIVING),
+                shiftStatusMap.get(ShiftStatus.REST)
         );
 
         return driverMapper.toBaseDto(
@@ -65,13 +78,22 @@ public class DriverService {
         );
     }
 
+    private void isDriverExistsByEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException(
+                    "Driver with email = %s already exists!"
+                            .formatted(email)
+            );
+        }
+    }
+
     private void isDriverExistsByPersonNumber(
-            DriverRegistrationInfo driver
+            Long personNumber
     ) {
-        if (driverRepository.existsByPersonNumber(driver.getPersonNumber())) {
+        if (driverRepository.existsByPersonNumber(personNumber)) {
             throw new IllegalArgumentException(
                     "Driver already exists with person number=%s"
-                            .formatted(driver.getPersonNumber())
+                            .formatted(personNumber)
             );
         }
     }

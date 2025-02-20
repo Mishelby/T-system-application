@@ -9,7 +9,7 @@ import org.example.logisticapplication.domain.Order.BaseOrderForSubmitDto;
 import org.example.logisticapplication.domain.Order.OrderBaseInfoDto;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.User.UserInfoDto;
-import org.example.logisticapplication.domain.UserOrderInfoEntity;
+import org.example.logisticapplication.domain.UserOrderInfo.UserOrderInfoEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;

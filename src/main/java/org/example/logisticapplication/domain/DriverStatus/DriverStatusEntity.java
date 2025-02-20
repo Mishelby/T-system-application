@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.logisticapplication.domain.Driver.DriverStatus;
 
 @Entity
 @Table(name = "driver_status")
@@ -16,11 +17,13 @@ public class DriverStatusEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Pattern(regexp = "REST|ON_SHIFT|DRIVING|THE_SECOND_DRIVER|LOADING_UNLOADING_OPERATIONS", message = "Invalid driver status")
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private DriverStatus status;
 
-    public DriverStatusEntity(String status) {
+    public DriverStatusEntity(
+            DriverStatus status
+    ) {
         this.status = status;
     }
 

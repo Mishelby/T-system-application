@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record OrderBaseInfoDto(
         String uniqueNumber,
-        String status,
+        OrderStatus status,
         String countryName
 ) {
 }

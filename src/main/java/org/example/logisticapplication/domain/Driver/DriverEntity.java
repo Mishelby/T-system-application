@@ -7,6 +7,7 @@ import org.example.logisticapplication.domain.City.CityEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
 import org.example.logisticapplication.domain.Role.RoleEntity;
+import org.example.logisticapplication.domain.ShiftStatus.ShiftStatusEntity;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
 
@@ -17,7 +18,7 @@ import java.util.Set;
 @PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public class DriverEntity extends UserEntity{
+public class DriverEntity extends UserEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -31,8 +32,12 @@ public class DriverEntity extends UserEntity{
     private Double numberOfHoursWorked;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "status_id")
+    @JoinColumn(name = "driver_status_id")
     private DriverStatusEntity driverStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "shift_status_id")
+    private ShiftStatusEntity shiftStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_city_id")
@@ -76,6 +81,7 @@ public class DriverEntity extends UserEntity{
         this.currentCity = currentCity;
     }
 
-    public DriverEntity() {}
+    public DriverEntity() {
+    }
 
 }

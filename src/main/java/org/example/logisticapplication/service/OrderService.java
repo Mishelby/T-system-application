@@ -18,7 +18,6 @@ import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntit
 import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.OrderCargo.OrderCargoEntity;
-import org.example.logisticapplication.domain.OrderStatusEntity.OrderStatusEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.Truck.Truck;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
@@ -27,7 +26,7 @@ import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
 import org.example.logisticapplication.domain.User.UserInfoDto;
-import org.example.logisticapplication.domain.UserOrderInfoEntity;
+import org.example.logisticapplication.domain.UserOrderInfo.UserOrderInfoEntity;
 import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
@@ -41,7 +40,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,7 +68,7 @@ public class OrderService {
     private final CityStationRepository cityStationRepository;
     private final StationDistanceRepository stationDistanceRepository;
     private final RoutePointRepository routePointRepository;
-    private final OrderStatusRepository orderStatusRepository;
+    private final OrderStatusService orderStatusService;
     private final UserOrderInfoRepository userOrderInfoRepository;
     private final RoutePointMapper routePointMapper;
 
@@ -477,17 +475,11 @@ public class OrderService {
     private OrderEntity createNewOrder(
             CountryMapEntity countryMapEntity
     ) {
-        var ordersStatus = orderStatusRepository.findAll()
-                .stream()
-                .collect(Collectors.toMap(
-                                OrderStatusEntity::getStatusName,
-                                Function.identity()
-                        )
-                );
+        var ordersStatus = orderStatusService.getOrderStatus();
 
         var orderEntity = new OrderEntity(
                 UUID.randomUUID().toString(),
-                ordersStatus.get(OrderStatus.NOT_COMPLETED.getName()),
+                ordersStatus.get(OrderStatus.NOT_COMPLETED),
                 countryMapEntity
         );
 
@@ -537,7 +529,7 @@ public class OrderService {
                 name,
                 number,
                 weight,
-                status.name()
+                status.getName()
         );
     }
 

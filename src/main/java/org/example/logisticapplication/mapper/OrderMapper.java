@@ -36,15 +36,9 @@ public interface OrderMapper {
             List<RoutePointEntity> routePointEntities
     );
 
-    @AfterMapping
-    default void ensureStatus(@MappingTarget OrderEntity orderEntity) {
-        if(orderEntity.getStatus() == null) {
-            orderEntity.setStatus(new OrderStatusEntity(OrderStatus.NOT_COMPLETED.getName()));
-        }
-    }
 
     @Mappings({
-            @Mapping(target = "status.statusName", source = "status"),
+            @Mapping(target = "status.status", source = "status"),
             @Mapping(target = "countryMap", source = "countryMapEntity"),
             @Mapping(target = "routePoints", source = "routePointEntities"),
             @Mapping(target = "driverOrders", source = "driverOrderEntity"),
@@ -62,7 +56,7 @@ public interface OrderMapper {
     @Mappings({
             @Mapping(target = "countryMap.id", source = "countryMapEntity.id"),
             @Mapping(target = "uniqueNumber", source = "baseOrder.uniqueNumber"),
-            @Mapping(target = "status.statusName", source = "baseOrder.orderStatus"),
+            @Mapping(target = "status.status", source = "baseOrder.orderStatus"),
             @Mapping(target = "routePoints", source = "routePointEntities"),
             @Mapping(target = "countryMap", source = "countryMapEntity")
     })
@@ -74,7 +68,7 @@ public interface OrderMapper {
 
     @Mappings({
             @Mapping(target = "uniqueNumber", source = "orderEntity.uniqueNumber"),
-            @Mapping(target = "orderStatus", source = "orderEntity.status.statusName"),
+            @Mapping(target = "orderStatus", source = "orderEntity.status.status"),
             @Mapping(target = "countyMapName", source = "orderEntity.countryMap.countryName"),
             @Mapping(target = "mainRoutePointInfo", source = "routePointInfo"),
             @Mapping(target = "mainDriverInfo", source = "driverInfo"),

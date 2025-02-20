@@ -61,6 +61,7 @@ public interface UserMapper {
     CreateUserDto toDto(UserEntity user);
 
     @Mappings({
+            @Mapping(target = "userInfoDto.id", source = "user.id"),
             @Mapping(target = "userInfoDto.name", source = "user.username"),
             @Mapping(target = "userInfoDto.email", source = "user.email"),
             @Mapping(target = "userInfoDto.createdAt", source = "user.createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss"),
@@ -68,9 +69,17 @@ public interface UserMapper {
     })
     MainUserInfoWithoutOrdersDto toMainInfoWithoutOrders(UserEntity user);
 
-    MainUserInfoWithOrders toMainInfoWithOrders(
-            UserEntity userEntity,
-            List<UserOrderEntity> userOrders
+
+    @Mappings({
+            @Mapping(target = "userInfoDto.id", source = "user.id"),
+            @Mapping(target = "userInfoDto.name", source = "user.username"),
+            @Mapping(target = "userInfoDto.email", source = "user.email"),
+            @Mapping(target = "userInfoDto.createdAt", source = "user.createdAt", dateFormat = "yyyy-MM-dd HH:mm:ss"),
+            @Mapping(target = "userOrderInfo", source = "orders")
+    })
+    MainUserInfoWithOrders toInfoWithOrdersAndDrivers(
+            UserEntity user,
+            List<UserOrderInfo> orders
     );
 
     @Condition

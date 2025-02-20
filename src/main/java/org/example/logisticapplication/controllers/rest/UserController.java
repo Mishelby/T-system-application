@@ -17,16 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserInfo> getUserInfoById(
-            @PathVariable("id") Long id
-    ) {
-        log.info("Get request for user info by id: {}", id);
-        var userInfo = userService.getUserInfo(id);
-
-        return ResponseEntity.ok().body(userInfo);
-    }
-
     @PostMapping
     public ResponseEntity<CreateUserDto> createUser(
             @RequestBody CreateUserDto newUser
@@ -36,5 +26,15 @@ public class UserController {
         log.info("Saved user!: {}", savedUser);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserInfo> getUserInfoById(
+            @PathVariable("id") Long id
+    ) {
+        log.info("Get request for user info by id: {}", id);
+        var userInfo = userService.getUserInfo(id);
+
+        return ResponseEntity.ok().body(userInfo);
     }
 }

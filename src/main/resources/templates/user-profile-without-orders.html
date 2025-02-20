@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <style>
+        /* Общие стили для страницы */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            font-size: 24px;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Стили для профиля пользователя */
+        .user-profile {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-profile p {
+            margin: 10px 0;
+        }
+
+        .user-profile .user-info {
+            margin-bottom: 20px;
+        }
+
+        /* Стили для кнопок */
+        .button-group {
+            margin-top: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .button[type="submit"] {
+            background-color: #28a745;
+        }
+
+        .button[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+        /* Стили для сообщения об отсутствии заказов */
+        .no-orders-message {
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 18px;
+            color: #ff6347; /* Красный цвет для сообщения */
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="container user-profile">
+    <h1>Профиль пользователя: <span th:text="${user.userInfoDto.name}"></span></h1>
+    <p>Email: <span th:text="${user.userInfoDto.email}"></span></p>
+    <p>Дата регистрации: <span th:text="${user.userInfoDto.createdAt}"></span></p>
+
+    <div class="button-group">
+        <a href="/users/view/edit" class="button">Редактировать профиль</a>
+        <form action="/orders/create" method="post">
+            <input type="hidden" name="id" th:value="${user.id}">
+            <button type="submit" class="button">Оформить заказ</button>
+        </form>
+        <a href="/logistic/welcome" class="button">Вернуться на главную страницу</a>
+    </div>
+
+    <div class="no-orders-message">
+        <h2>У вас пока нет активных заказов</h2>
+    </div>
+</div>
+</body>
+</html>
+

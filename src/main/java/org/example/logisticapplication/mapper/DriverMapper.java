@@ -9,6 +9,7 @@ import org.example.logisticapplication.domain.DriverShift.ShiftStatus;
 import org.example.logisticapplication.domain.DriverStatus.DriverStatusEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 import org.example.logisticapplication.domain.Role.RoleEntity;
+import org.example.logisticapplication.domain.ShiftStatus.ShiftStatusEntity;
 import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.User.UserEntity;
 import org.mapstruct.*;
@@ -43,6 +44,27 @@ public interface DriverMapper {
     );
 
     @Mappings({
+            @Mapping(target = "id", ignore = true),
+            @Mapping(target = "name", expression = "java(driverInfo.getName())"),
+            @Mapping(target = "username", expression = "java(driverInfo.getUserName())"),
+            @Mapping(target = "password", source = "password"),
+            @Mapping(target = "secondName", expression = "java(driverInfo.getSecondName())"),
+            @Mapping(target = "personNumber", expression = "java(driverInfo.getPersonNumber())"),
+            @Mapping(target = "currentCity", source = "currentCity"),
+            @Mapping(target = "roleEntities", source = "rolesSet"),
+            @Mapping(target = "driverStatus", source = "driverStatusEntity"),
+            @Mapping(target = "shiftStatus", source = "shiftStatusEntity"),
+    })
+    DriverEntity toEntity(
+            String password,
+            DriverRegistrationInfo driverInfo,
+            CityEntity currentCity,
+            Set<RoleEntity> rolesSet,
+            DriverStatusEntity driverStatusEntity,
+            ShiftStatusEntity shiftStatusEntity
+    );
+
+    @Mappings({
             @Mapping(target = "name", source = "driver.name"),
             @Mapping(target = "secondName", source = "driver.secondName"),
             @Mapping(target = "personNumber", source = "driver.personNumber"),
@@ -66,29 +88,41 @@ public interface DriverMapper {
 
     @AfterMapping
     default void ensureHoursOfWorked(@MappingTarget DriverEntity driverEntity) {
-        if(driverEntity.getNumberOfHoursWorked() == null) {
+        if (driverEntity.getNumberOfHoursWorked() == null) {
             driverEntity.setNumberOfHoursWorked(0.0);
         }
     }
 
     @AfterMapping
-    default void ensureStatus(@MappingTarget DriverEntity driver) {
-        if(driver.getDriverStatus() == null) {
-            driver.setDriverStatus(new DriverStatusEntity(ShiftStatus.REST.getStatusName()));
+    default void ensureDriverStatus(@MappingTarget DriverEntity driver) {
+        if (driver.getDriverStatus() == null) {
+            driver.setDriverStatus(new DriverStatusEntity(DriverStatus.NOT_DRIVING));
+        }
+    }
+
+    @AfterMapping
+    default void ensureShiftStatus(@MappingTarget DriverEntity driver) {
+        if (driver.getShiftStatus() == null) {
+            driver.setShiftStatus(new ShiftStatusEntity(ShiftStatus.REST));
         }
     }
 
     @AfterMapping
     default void ensureRoles(@MappingTarget DriverEntity driver) {
-        if(driver.getRoleEntities() == null) {
+        if (driver.getRoleEntities() == null) {
             driver.setRoleEntities(new HashSet<>());
         }
     }
 
-    @Named("defaultDriverStatus")
-    default DriverStatusEntity getDefaultDriverStatus() {
-        return new DriverStatusEntity(ShiftStatus.REST.getStatusName());
-    }
+//    @Named("defaultDriverStatus")
+//    default DriverStatusEntity getDefaultDriverStatus() {
+//        return new DriverStatusEntity(DriverStatus.NOT_DRIVING);
+//    }
+//
+//    @Named("defaultShiftStatus")
+//    default ShiftStatusEntity getDefaultShiftStatus() {
+//        return new ShiftStatusEntity(ShiftStatus.REST);
+//    }
 
     @Named("defaultNumberOfHoursWorked")
     default Double getDefaultNumberOfHoursWorked() {
@@ -121,7 +155,11 @@ public interface DriverMapper {
     );
 
     default String statusToString(DriverStatusEntity status) {
-        return status != null ? status.getStatus() : ShiftStatus.REST.getStatusName();
+        if (status.getStatus().getStatusName() != null) {
+            return status.getStatus().getStatusName();
+        }
+
+        return null;
     }
 
     @Mappings({

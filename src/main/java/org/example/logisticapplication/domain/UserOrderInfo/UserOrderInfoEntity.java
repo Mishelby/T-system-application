@@ -1,4 +1,4 @@
-package org.example.logisticapplication.domain;
+package org.example.logisticapplication.domain.UserOrderInfo;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -39,6 +39,9 @@ public class UserOrderInfoEntity {
 
     @Column(name = "distance_info")
     private String distanceInfo;
+
+    @Column(name = "desired_date")
+    private String desiredDate;
 
     public UserOrderInfoEntity(
             String orderNumber,

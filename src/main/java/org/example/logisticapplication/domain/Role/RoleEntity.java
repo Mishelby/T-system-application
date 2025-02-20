@@ -1,6 +1,7 @@
 package org.example.logisticapplication.domain.Role;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.logisticapplication.utils.RoleName;
@@ -10,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 @Table(name = "roles")
 @Getter
 @Setter
+@EqualsAndHashCode(of = "name")
 public class RoleEntity implements GrantedAuthority{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +21,9 @@ public class RoleEntity implements GrantedAuthority{
     @Column(name = "name", nullable = false, unique = true)
     private RoleName name;
 
-    public RoleEntity(RoleName name) {
+    public RoleEntity(
+            RoleName name
+    ) {
         this.name = name;
     }
 

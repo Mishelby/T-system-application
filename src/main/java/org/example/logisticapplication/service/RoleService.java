@@ -20,21 +20,28 @@ public class RoleService {
     private final RoleRepository roleRepository;
 
     @Transactional
-    public ConcurrentMap<RoleName, RoleEntity> findAll() {
-        var allRoles = roleRepository.findAll();
+    public synchronized ConcurrentMap<RoleName, RoleEntity> findAll() {
+        var allRoles = roleRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(
+                                RoleEntity::getName,
+                                Function.identity(),
+                                (existing, replacement) -> existing,
+                                ConcurrentHashMap::new
+                        )
+                );
 
-        if(allRoles.size() < RoleName.values().length) {
+        var ordersStatus = RoleName.values();
+
+        if (allRoles.size() < ordersStatus.length) {
             Arrays.stream(RoleName.values())
-                    .filter(roleName -> allRoles.stream().noneMatch(role -> role.getName().equals(roleName)))
-                    .forEach(roleName -> allRoles.add(roleRepository.save(new RoleEntity(roleName))));
+                    .filter(roleName -> !allRoles.containsKey(roleName))
+                    .forEach(roleName -> {
+                        var savedRole = roleRepository.save(new RoleEntity(roleName));
+                        allRoles.put(roleName, savedRole);
+                    });
         }
 
-        return  allRoles.stream()
-                .collect(Collectors.toMap(
-                        RoleEntity::getName,
-                        Function.identity(),
-                        (existing, replacement) -> existing,
-                        ConcurrentHashMap::new
-                ));
+        return allRoles;
     }
 }
