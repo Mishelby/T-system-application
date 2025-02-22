@@ -21,9 +21,7 @@ public interface CountryMapMapper {
     CountryMapEntity toEntity(CountryMap domain);
 
     @Mappings({
-            @Mapping(target = "name", source = "entity.countryName"),
-            @Mapping(target = "citiesId", source = "entity.cities", qualifiedByName = "toCityIds"),
-            @Mapping(target = "distancesId", source = "entity.distances", qualifiedByName = "toDistanceIds")
+            @Mapping(target = "name", source = "entity.countryName")
     })
     CountryMap toDomain(CountryMapEntity entity);
 

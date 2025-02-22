@@ -29,10 +29,7 @@ public class CityStationService {
         var stationEntity = cityStationMapper.toEntity(stationDto.stationName(), cityEntity);
         cityEntity.getCityStation().add(stationEntity);
 
-        return new CreatedStationDto(
-                cityEntity.getId(),
-                stationEntity.getName()
-        );
+        return cityStationMapper.toDto(cityEntity.getId(), stationEntity.getName());
     }
 
     @Transactional(readOnly = true)

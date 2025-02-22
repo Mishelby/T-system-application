@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -154,4 +155,19 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
 
     @Query("SELECT d FROM DriverEntity d WHERE d.name = :username")
     DriverEntity findByName(String username);
+
+    @Query("""
+            SELECT de
+            FROM DriverEntity de
+            LEFT JOIN DriverOrderEntity dor ON dor.driver.id = de.id    
+            WHERE dor.driver.id IS NULL
+            AND de.currentCity.id IN (:truckId)
+            AND de.numberOfHoursWorked + :timeForOrder <= :allowedTimeForDriver                                                    
+            """)
+    List<DriverEntity> findDriversForOrder(
+            Long orderId,
+            List<Long> truckIds,
+            Double timeForOrder,
+            Double allowedTimeForDriver
+    );
 }

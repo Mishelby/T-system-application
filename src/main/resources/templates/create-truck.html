@@ -1,49 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Создать новый грузовик</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать новый грузовик</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
-
 <div class="container mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-6 text-center">Создать новый грузовик</h1>
-
-  <div class="bg-white p-6 rounded-lg shadow-md">
-    <form id="truck-form" class="space-y-4">
-      <div>
-        <label class="block mb-2 font-semibold">Количество мест:</label>
-        <input type="number" id="numberOfSeats" required min="1" class="w-full p-2 border rounded-md mb-4">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold">Город:</label>
-        <select id="cityList" required class="w-full p-2 border rounded-md mb-4">
-          <option value="">Загрузка...</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold">Грузоподъемность:</label>
-        <input type="number" id="capacity" required step="0.01" class="w-full p-2 border rounded-md mb-4">
-      </div>
-      <div>
-        <label class="block mb-2 font-semibold">Статус:</label>
-        <select id="status" required class="w-full p-2 border rounded-md mb-4">
-          <option value="SERVICEABLE">SERVICEABLE</option>
-          <option value="FAULTY">FAULTY</option>
-        </select>
-      </div>
-      <div>
-        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md w-full">
-          Создать грузовик
-        </button>
-      </div>
-    </form>
-  </div>
+    <h1 class="text-3xl font-bold mb-6 text-center">Создать новый грузовик</h1>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <form id="truck-form" class="space-y-4">
+            <div>
+                <label class="block mb-2 font-semibold">Количество мест:</label>
+                <input type="number" id="numberOfSeats" required min="1" class="w-full p-2 border rounded-md mb-4">
+            </div>
+            <div>
+                <label class="block mb-2 font-semibold">Город:</label>
+                <select id="cityList" required class="w-full p-2 border rounded-md mb-4">
+                    <option value="">Загрузка...</option>
+                </select>
+            </div>
+            <div>
+                <label class="block mb-2 font-semibold">Грузоподъемность:</label>
+                <input type="number" id="capacity" required step="0.01" class="w-full p-2 border rounded-md mb-4">
+            </div>
+            <div>
+                <label class="block mb-2 font-semibold">Статус:</label>
+                <select id="status" required class="w-full p-2 border rounded-md mb-4">
+                    <option value="SERVICEABLE">SERVICEABLE</option>
+                    <option value="FAULTY">FAULTY</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md w-full">
+                    Создать грузовик
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-
-<script src="create-truck.js"></script>
-
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("truck-form");
+        const cityList = document.getElementById("cityList");
+
+        // Загружаем список городов
+        fetch("/api/v1/cities")
+            .then(response => response.json())
+            .then(cities => {
+                cityList.innerHTML = "";
+                cities.forEach(city => {
+                    const option = document.createElement("option");
+                    option.value = city.name;
+                    option.textContent = city.name;
+                    cityList.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Ошибка загрузки городов:", error));
+
+        // Обработчик отправки формы
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const truckData = {
+                numberOfSeats: parseInt(document.getElementById("numberOfSeats").value, 10),
+                currentCityName: document.getElementById("cityList").value,
+                capacity: parseFloat(document.getElementById("capacity").value),
+                status: document.getElementById("status").value
+            };
+
+            fetch("/api/v1/trucks", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(truckData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Ошибка при создании грузовика");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert("Грузовик успешно создан!");
+                    form.reset();
+                })
+                .catch(error => {
+                    console.error("Ошибка:", error);
+                    alert("Ошибка при создании грузовика");
+                });
+        });
+    });
+</script>
 </html>

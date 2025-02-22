@@ -7,16 +7,12 @@ import jakarta.validation.constraints.NotNull;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record CreateTruckDto(
         @NotNull
-        Integer numberOfSeats,
-
+        Integer countOfSeats,
         @NotNull
         String currentCityName,
-
         @NotNull
         Double capacity,
-
         @NotNull
         String status
-
 ) {
 }

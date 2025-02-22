@@ -59,4 +59,13 @@ public interface CityRepository extends JpaRepository<CityEntity, Long> {
     List<CityEntity> findCitiesByNames(
             @Param("names") List<String> cityNames
     );
+
+    @Query("""
+            SELECT c
+            FROM CityEntity c
+            WHERE c.countryMap.countryName = :name                        
+            """)
+    List<CityEntity> findAllCitiesByCountryName(
+            @Param("name") String countryName
+    );
 }

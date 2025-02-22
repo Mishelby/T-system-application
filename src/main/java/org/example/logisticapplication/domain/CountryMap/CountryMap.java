@@ -1,14 +1,9 @@
 package org.example.logisticapplication.domain.CountryMap;
 
-import jakarta.validation.constraints.Null;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.List;
-import java.util.Set;
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record CountryMap(
-        Long id,
-        String name,
-        Set<Long> citiesId,
-        Set<Long> distancesId
+        String name
 ) {
 }

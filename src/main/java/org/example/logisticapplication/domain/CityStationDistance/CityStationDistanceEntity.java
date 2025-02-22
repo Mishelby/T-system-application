@@ -1,4 +1,4 @@
-package org.example.logisticapplication.domain.StationDistance;
+package org.example.logisticapplication.domain.CityStationDistance;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
 @Table(name = "station_distance")
 @Getter
 @Setter
-public class StationDistanceEntity {
+public class CityStationDistanceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,7 +30,7 @@ public class StationDistanceEntity {
     @JoinColumn(name = "country_map_id", nullable = false)
     private CountryMapEntity countryMap;
 
-    public StationDistanceEntity(
+    public CityStationDistanceEntity(
             CityStationEntity stationFrom,
             CityStationEntity stationTo,
             Double distance,
@@ -42,5 +42,5 @@ public class StationDistanceEntity {
         this.countryMap = countryMap;
     }
 
-    public StationDistanceEntity() {}
+    public CityStationDistanceEntity() {}
 }

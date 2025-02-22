@@ -66,13 +66,25 @@ public class CityController {
             @RequestParam(value = "countryId", required = false)
             Long countryId
     ) {
-        log.info("Get request for get cities");
+        log.info("Get request for get cities with stations by country id: {}", countryId);
         var allCities = cityService.findAllCitiesByCountryId(countryId);
 
         return ResponseEntity.ok(
                 allCities.stream()
                         .map(cityMapper::toDto)
                         .toList());
+    }
+
+    @GetMapping("/by-country-name")
+    public ResponseEntity<List<CityWithStationsDto>> getAllCitiesByCountry(
+            @RequestParam(value = "countryName", required = false)
+            String countryName
+    ){
+        log.info("Get request for get cities with stations by country name: {}", countryName);
+
+        return ResponseEntity.ok().body(
+                cityService.findAllCitiesWithStations(countryName)
+        );
     }
 
 }

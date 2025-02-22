@@ -7,10 +7,8 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
-
 <div class="container mx-auto p-8">
   <h1 class="text-3xl font-bold mb-6 text-center">Создание карты страны</h1>
-
   <div class="bg-white p-6 rounded-lg shadow-md">
     <form id="countryForm" class="space-y-4">
       <div>
@@ -25,8 +23,40 @@
     </form>
   </div>
 </div>
-
-<script src="create-country.js"></script>
-
 </body>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("countryForm");
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const countryData = {
+        name: document.getElementById("countryName").value.trim()
+      };
+
+      fetch("/api/v1/countries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(countryData)
+      })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error("Ошибка при создании карты страны");
+                }
+                return response.json();
+              })
+              .then(data => {
+                alert("Карта страны успешно создана!");
+                form.reset();
+              })
+              .catch(error => {
+                console.error("Ошибка:", error);
+                alert("Ошибка при создании карты страны");
+              });
+    });
+  });
+</script>
 </html>

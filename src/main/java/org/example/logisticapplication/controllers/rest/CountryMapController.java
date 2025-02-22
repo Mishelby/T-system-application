@@ -24,7 +24,7 @@ public class CountryMapController {
     private final DistanceMapper distanceMapper;
 
     @GetMapping
-    public ResponseEntity<List<CountryMapDto>> findAll() {
+    public ResponseEntity<List<CountryMapDto>> getAllCountries() {
         log.info("Get request for all CountryMaps");
         var countryMaps = countryMapService.findAll();
 

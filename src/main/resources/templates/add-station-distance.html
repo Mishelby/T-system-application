@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление дистанции между станциями</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    label, select, input, button {
+        display: block;
+        margin: 10px auto;
+        width: 50%;
+    }
+
+    button {
+        background-color: #007BFF;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+</style>
+<body>
+
+<h1>Добавление дистанции между станциями</h1>
+
+<label for="country-select">Выберите страну:</label>
+<select id="country-select" onchange="loadCities()">
+    <option value="">Выберите страну</option>
+</select>
+
+<label for="city-from">Выберите первый город:</label>
+<select id="city-from" onchange="loadStations('from')">
+    <option value="">Выберите город</option>
+</select>
+
+<label for="station-from">Выберите станцию первого города:</label>
+<select id="station-from">
+    <option value="">Выберите станцию</option>
+</select>
+
+<label for="city-to">Выберите второй город:</label>
+<select id="city-to" onchange="loadStations('to')">
+    <option value="">Выберите город</option>
+</select>
+
+<label for="station-to">Выберите станцию второго города:</label>
+<select id="station-to">
+    <option value="">Выберите станцию</option>
+</select>
+
+<label for="distance">Введите расстояние:</label>
+<input type="number" id="distance" placeholder="Введите расстояние (км)">
+
+<button onclick="addDistance()">Добавить дистанцию</button>
+
+<script>
+    document.addEventListener("DOMContentLoaded", loadCountries);
+
+    async function loadCountries() {
+        try {
+            const response = await fetch("/api/v1/countries");
+            const countries = await response.json();
+
+            const countrySelect = document.getElementById("country-select");
+            countrySelect.innerHTML = '<option value="">Выберите страну</option>';
+            countries.forEach(country => {
+                const option = document.createElement("option");
+                option.value = country.name;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки списка стран:", error);
+        }
+    }
+
+    async function loadCities() {
+        const country = document.getElementById("country-select").value;
+        if (!country) return;
+
+        try {
+            const response = await fetch(`/api/v1/cities/by-country-name?countryName=${encodeURIComponent(country)}`);
+            const cities = await response.json();
+
+            ["city-from", "city-to"].forEach(cityId => {
+                const citySelect = document.getElementById(cityId);
+                citySelect.innerHTML = '<option value="">Выберите город</option>';
+                cities.forEach(city => {
+                    const option = document.createElement("option");
+                    option.value = city.cityName;
+                    option.textContent = city.cityName;
+                    citySelect.appendChild(option);
+                });
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки городов:", error);
+        }
+    }
+
+    async function loadStations(cityType) {
+        const city = document.getElementById(`city-${cityType}`).value;
+        if (!city) return;
+
+        try {
+            const country = document.getElementById("country-select").value;
+            const response = await fetch(`/api/v1/cities/by-country-name?countryName=${encodeURIComponent(country)}`);
+            const cities = await response.json();
+            const cityData = cities.find(c => c.cityName === city);
+
+            const stationSelect = document.getElementById(`station-${cityType}`);
+            stationSelect.innerHTML = '<option value="">Выберите станцию</option>';
+            if (cityData && cityData.stationsNames.length > 0) {
+                cityData.stationsNames.forEach(station => {
+                    const option = document.createElement("option");
+                    option.value = station;
+                    option.textContent = station;
+                    stationSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error(`Ошибка загрузки станций для ${city}:`, error);
+        }
+    }
+
+    async function addDistance() {
+        const country = document.getElementById("country-select").value;
+        const stationFrom = document.getElementById("station-from").value;
+        const stationTo = document.getElementById("station-to").value;
+        const distance = document.getElementById("distance").value;
+
+        if (!country || !stationFrom || !stationTo || !distance) {
+            alert("Заполните все поля");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/v1/stations-distances", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    countryMapName: country,
+                    stationFrom,
+                    stationTo,
+                    distance: parseFloat(distance)
+                })
+            });
+
+            if (response.ok) {
+                alert("Дистанция успешно добавлена!");
+            } else {
+                alert("Ошибка при добавлении дистанции");
+            }
+        } catch (error) {
+            console.error("Ошибка при добавлении дистанции:", error);
+        }
+    }
+</script>
+
+</body>
+</html>

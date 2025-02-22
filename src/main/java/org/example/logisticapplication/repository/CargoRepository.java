@@ -1,12 +1,14 @@
 package org.example.logisticapplication.repository;
 
 import org.example.logisticapplication.domain.Cargo.CargoEntity;
+import org.example.logisticapplication.domain.RoutePoint.RoutePointEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -70,4 +72,14 @@ public interface CargoRepository extends JpaRepository<CargoEntity, Long> {
             WHERE c.number = :number
             """)
     int updateCargoStatusByNumber(String number, String status);
+
+    @Query("""
+            SELECT SUM(c.weightKg)
+            FROM CargoEntity c
+            LEFT JOIN OrderCargoEntity oc ON c.id = oc.cargo.id
+            WHERE oc.order.uniqueNumber = :number
+            """)
+    BigDecimal getCargoOrderTotalWeight(
+            @Param("number") String orderNumber
+    );
 }

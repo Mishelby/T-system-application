@@ -114,15 +114,13 @@ public interface DriverMapper {
         }
     }
 
-//    @Named("defaultDriverStatus")
-//    default DriverStatusEntity getDefaultDriverStatus() {
-//        return new DriverStatusEntity(DriverStatus.NOT_DRIVING);
-//    }
-//
-//    @Named("defaultShiftStatus")
-//    default ShiftStatusEntity getDefaultShiftStatus() {
-//        return new ShiftStatusEntity(ShiftStatus.REST);
-//    }
+    @Mappings({
+            @Mapping(target = "id", source = "driverEntity.id"),
+            @Mapping(target = "name", source = "driverEntity.name"),
+            @Mapping(target = "currenCityName", source = "driverEntity.currentCity.name"),
+            @Mapping(target = "numOfHoursWorked", source = "driverEntity.numberOfHoursWorked"),
+    })
+    DriverInfoForOrderDto toDriverInfoDto(DriverEntity driverEntity);
 
     @Named("defaultNumberOfHoursWorked")
     default Double getDefaultNumberOfHoursWorked() {

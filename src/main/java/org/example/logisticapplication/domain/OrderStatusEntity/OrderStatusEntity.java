@@ -17,7 +17,6 @@ public class OrderStatusEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Pattern(regexp = "COMPLETED|NOT_COMPLETED", message = "Invalid driver status")
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private OrderStatus status;

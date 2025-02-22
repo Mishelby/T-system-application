@@ -33,10 +33,10 @@ public class AdminViewController {
         log.info("Admin id for redirect: {}", adminId);
         redirectAttributes.addFlashAttribute("message", "Пользователь успешно создан!");
 
-        return "redirect:/admin/page/" + adminId;
+        return "redirect:/admin/" + adminId;
     }
 
-    @GetMapping("/page/{id}")
+    @GetMapping("/{id}")
     public String adminPage(
             @PathVariable("id") Long id,
             Model model
@@ -51,9 +51,33 @@ public class AdminViewController {
         return "orders";
     }
 
+    @GetMapping("/create-truck")
+    public String createTruckPage() {
+        return "create-truck";
+    }
+
+    @GetMapping("/create-country")
+    public String createCountyMap() {
+        return "create-country";
+    }
+
+    @GetMapping("/create-city")
+    public String createCity() {
+        return "create-city";
+    }
+
+    @GetMapping("/create-station")
+    public String createStation() {
+        return "create-station";
+    }
+
+    @GetMapping("/add-distance")
+    public String addDistance(Model model) {
+        return "add-station-distance";
+    }
+
     @GetMapping("/orders/submit")
     public String submittingPage() {
-        log.info("Get request for submitting orders");
         return "orders";
     }
 

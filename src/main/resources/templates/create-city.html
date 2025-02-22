@@ -1,38 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Создание города</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание города</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
-
 <div class="container mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-6 text-center">Создание города</h1>
-
-  <div class="bg-white p-6 rounded-lg shadow-md">
-    <form id="city-form" class="space-y-4">
-      <div>
-        <label for="city-name" class="block mb-2 font-semibold">Название города:</label>
-        <input type="text" id="city-name" class="w-full p-2 border rounded-md mb-4" placeholder="Введите название города">
-      </div>
-      <div>
-        <label for="country-select" class="block mb-2 font-semibold">Выберите страну:</label>
-        <select id="country-select" class="w-full p-2 border rounded-md mb-4">
-          <option value="">Загрузка...</option>
-        </select>
-      </div>
-      <div>
-        <button type="button" onclick="createCity()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md w-full">
-          Создать город
-        </button>
-      </div>
-    </form>
-  </div>
+    <h1 class="text-3xl font-bold mb-6 text-center">Создание города</h1>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <form id="city-form" class="space-y-4">
+            <div>
+                <label for="city-name" class="block mb-2 font-semibold">Название города:</label>
+                <input type="text" id="city-name" class="w-full p-2 border rounded-md mb-4"
+                       placeholder="Введите название города">
+            </div>
+            <div>
+                <label for="country-select" class="block mb-2 font-semibold">Выберите страну:</label>
+                <select id="country-select" class="w-full p-2 border rounded-md mb-4">
+                    <option value="">Загрузка...</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" onclick="createCity()"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md w-full">
+                    Создать город
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-
-<script src="create-city.js"></script>
-
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("city-form");
+        const countrySelect = document.getElementById("country-select");
+
+        fetch("/api/v1/countries")
+            .then(response => response.json())
+            .then(countries => {
+                countrySelect.innerHTML = "";
+                countries.forEach(country => {
+                    const option = document.createElement("option");
+                    option.value = country.name;
+                    option.textContent = country.name;
+                    countrySelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Ошибка загрузки списка стран:", error));
+    });
+</script>
 </html>

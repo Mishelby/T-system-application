@@ -31,7 +31,7 @@ public class TruckEntity {
     private Integer driversShift;
 
     @Column(name = "seats", nullable = false)
-    private Integer numberOfSeats;
+    private Integer countOfSeats;
 
     @Column(name = "condition")
     @Pattern(regexp = "SERVICEABLE|FAULTY", message = "Invalid truck condition")
@@ -43,6 +43,9 @@ public class TruckEntity {
 
     @Column(name = "capacity")
     private Double capacity;
+
+    @Column(name = "average_speed")
+    private Double averageSpeed;
 
     @OneToMany(mappedBy = "currentTruck", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DriverEntity> drivers;

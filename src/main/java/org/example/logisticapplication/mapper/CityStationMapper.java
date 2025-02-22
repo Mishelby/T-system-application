@@ -23,4 +23,13 @@ public interface CityStationMapper {
             @Mapping(target = "stationName" , source = "entity.name")
     })
     CreatedStationDto toDto(CityStationEntity entity);
+
+    @Mappings({
+            @Mapping(target = "cityId", source = "cityId"),
+            @Mapping(target = "stationName", source = "stationName"),
+    })
+    CreatedStationDto toDto(
+            Long cityId,
+            String stationName
+    );
 }

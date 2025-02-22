@@ -88,11 +88,18 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     @Query("""
             SELECT new org.example.logisticapplication.domain.Order.OrderBaseInfoDto(o.uniqueNumber, o.status.status, o.countryMap.countryName)
             FROM OrderEntity o
-            LEFT JOIN o.status.status
+            LEFT JOIN o.status
             LEFT JOIN o.countryMap  
             WHERE o.id = :id            
             """)
     OrderBaseInfoDto findOrderDtoById(
             @Param("id") Long orderId
     );
+
+    @Query("""
+            SELECT (COUNT(o) > 0) 
+            FROM OrderEntity o
+            WHERE o.id = :orderId
+            """)
+    boolean isExistsById(Long orderId);
 }

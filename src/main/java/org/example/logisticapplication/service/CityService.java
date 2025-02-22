@@ -43,6 +43,16 @@ public class CityService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<CityWithStationsDto> findAllCitiesWithStations(
+            String countryName
+    ) {
+        return cityRepository.findAllCitiesByCountryName(countryName)
+                .stream()
+                .map(cityMapper::toWithStationsDto)
+                .toList();
+    }
+
     @Transactional
     public City addNewCity(
             City city
@@ -53,7 +63,6 @@ public class CityService {
         var savedCity = cityRepository.save(
                 cityMapper.toEntity(city, countryMapEntity)
         );
-
 
         return cityMapper.toDomain(savedCity);
     }

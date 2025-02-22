@@ -21,4 +21,6 @@ public interface RoutePointRepository extends JpaRepository<RoutePointEntity, Lo
            @Param("id") Long id,
            @Param("type") String type
     );
+
+
 }
