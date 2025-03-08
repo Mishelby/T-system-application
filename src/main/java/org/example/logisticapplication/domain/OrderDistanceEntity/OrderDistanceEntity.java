@@ -3,6 +3,7 @@ package org.example.logisticapplication.domain.OrderDistanceEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.logisticapplication.domain.CityStationDistance.CityStationDistanceEntity;
 import org.example.logisticapplication.domain.Distance.DistanceEntity;
 import org.example.logisticapplication.domain.Order.OrderEntity;
 
@@ -20,12 +21,12 @@ public class OrderDistanceEntity {
     private OrderEntity order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "distance_id", nullable = false)
-    private DistanceEntity distance;
+    @JoinColumn(name = "station_distance_id", nullable = false)
+    private CityStationDistanceEntity distance;
 
     public OrderDistanceEntity(
             OrderEntity order,
-            DistanceEntity distance
+            CityStationDistanceEntity distance
     ) {
         this.order = order;
         this.distance = distance;

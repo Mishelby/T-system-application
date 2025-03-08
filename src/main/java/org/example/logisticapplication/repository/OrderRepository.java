@@ -51,7 +51,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @EntityGraph(attributePaths = {"countryMap"})
     @Query("""
-            SELECT o FROM OrderEntity o
+            SELECT o 
+            FROM OrderEntity o
             LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
             WHERE doe.driver.id = :driverId
             """)

@@ -17,4 +17,11 @@ public interface OrderDistanceRepository extends JpaRepository<OrderDistanceEnti
             WHERE od.order.id = :orderId          
             """)
     Optional<DistanceEntity> findDistanceEntityByOrder(Long orderId);
+
+    @Query("""
+            SELECT od
+            FROM OrderDistanceEntity od
+            WHERE od.order.id = :orderId                        
+            """)
+    Optional<OrderDistanceEntity> findOrderDistanceEntity(Long orderId);
 }

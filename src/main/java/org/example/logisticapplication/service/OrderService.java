@@ -3,25 +3,24 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.logisticapplication.domain.CityStationDistance.CityStationDistanceEntity;
 import org.example.logisticapplication.domain.Distance.DistanceInfo;
 import org.example.logisticapplication.domain.Distance.DistanceInfoDto;
 import org.example.logisticapplication.domain.Driver.DriversAndTrucksForOrder;
 import org.example.logisticapplication.domain.Driver.OrderDefaultMessages;
 import org.example.logisticapplication.domain.Cargo.*;
 import org.example.logisticapplication.domain.City.CityEntity;
-import org.example.logisticapplication.domain.CityStationEntity.CityStationEntity;
 import org.example.logisticapplication.domain.CountryMap.CountryMapEntity;
-import org.example.logisticapplication.domain.Distance.DistanceEntity;
-import org.example.logisticapplication.domain.Driver.DriverAllInfoDto;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.DriverOrderEntity.DriverOrderEntity;
 import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.OrderCargo.OrderCargoEntity;
+import org.example.logisticapplication.domain.OrderDistanceEntity.OrderDistanceEntity;
 import org.example.logisticapplication.domain.OrderInfo.OrderInfoEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
-import org.example.logisticapplication.domain.Truck.TruckInfoDto;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
+import org.example.logisticapplication.domain.Truck.TrucksForOrderDto;
 import org.example.logisticapplication.domain.TruckOrderEntity.TruckOrderEntity;
 import org.example.logisticapplication.domain.User.UserEntity;
 import org.example.logisticapplication.domain.User.UserInfoDto;
@@ -31,6 +30,7 @@ import org.example.logisticapplication.mapper.*;
 import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +54,7 @@ public class OrderService {
     private final DriverRepository driverRepository;
     private final DriverMapper driverMapper;
     private final CityRepository cityRepository;
-    private final CityMapper cityMapper;
     private final CargoMapper cargoMapper;
-    private final OrderDistanceRepository orderDistanceRepository;
     private final OrderCargoRepository orderCargoRepository;
     private final UserRepository userRepository;
     private final UserOrderRepository userOrderRepository;
@@ -69,12 +67,14 @@ public class OrderService {
     private final RoutePointMapper routePointMapper;
     private final CargoRepository cargoRepository;
     private final OrderInfoRepository orderInfoRepository;
+    private final UserOrderInfoMapper userOrderInfoMapper;
+    private final OrderInfoMapper orderInfoMapper;
+    private final ApplicationEventPublisher eventPublisher;
+    private final OrderDistanceRepository orderDistanceRepository;
 
     @Value("${driver.recommendDistance}")
     private Double oneDriverRecommendedDistance;
     private final LocalDateTimeFormatter dateTimeFormatter;
-
-    private static final String LOADING_OPERATION = OperationType.LOADING.name();
 
     @Transactional
     public BaseOrderInfo createBaseOrder(
@@ -90,27 +90,24 @@ public class OrderService {
         setRoutePointsForOrder(orderEntity, routePointEntities);
         var updatedOrder = orderRepository.save(orderEntity);
 
+
         userOrderInfoRepository.save(
-                new UserOrderInfoEntity(
-                        updatedOrder.getUniqueNumber(),
-                        user.getUsername(),
-                        orderInfo.routePointInfo().cityFrom(),
-                        orderInfo.routePointInfo().stationFrom(),
-                        orderInfo.routePointInfo().cityTo(),
-                        orderInfo.routePointInfo().stationTo(),
-                        orderInfo.routePointInfo().weight(),
-                        orderInfo.routePointInfo().distance(),
-                        orderInfo.distanceInfoDto().message()
-                ));
+                getUserOrderInfoEntity(orderInfo, updatedOrder, user)
+        );
+
+        var distancesEntity = cityStationDistanceRepository.findDistancesByStationsNames(
+                orderInfo.routePointInfo().stationFrom(),
+                orderInfo.routePointInfo().stationTo()
+        );
+
+        orderDistanceRepository.save(new OrderDistanceEntity(
+                orderEntity,
+                distancesEntity
+        ));
 
         orderInfoRepository.save(
-                new OrderInfoEntity(
-                        updatedOrder,
-                        cityRepository.findCityEntityByName(orderInfo.routePointInfo().cityFrom()).orElseThrow(),
-                        cityStationRepository.findByStationName(orderInfo.routePointInfo().stationFrom()).orElseThrow(),
-                        cityRepository.findCityEntityByName(orderInfo.routePointInfo().cityTo()).orElseThrow(),
-                        cityStationRepository.findByStationName(orderInfo.routePointInfo().stationTo()).orElseThrow()
-                ));
+                getOrderInfoEntity(orderInfo, updatedOrder)
+        );
 
         return new BaseOrderInfo(
                 updatedOrder.getUniqueNumber(),
@@ -119,17 +116,68 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public TrucksForOrderDto getTrucksForOrder(
+            String orderNumber
+    ) {
+        var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
+        var cityFromId = orderInfoRepository.findCityFrom(orderEntity.getId()).orElseThrow(
+                () -> new IllegalArgumentException("City not found for order with id = %s"
+                        .formatted(orderEntity.getId()))
+        ).getId();
+
+        var weightSum = orderEntity.getRoutePoints().stream()
+                .flatMap(rp -> rp.getCargo().stream())
+                .map(CargoEntity::getWeightKg)
+                .mapToLong(Long::longValue)
+                .sum();
+
+
+        var trucksForOrder = truckRepository.getTrucksForOrder(
+                TruckStatus.SERVICEABLE.name(),
+                cityFromId,
+                weightSum
+        );
+
+        return truckMapper.toDto(
+                trucksForOrder
+                        .stream()
+                        .map(truckMapper::toTruckInfoDto)
+                        .toList()
+        );
+    }
+
+    @Transactional
+    public void applyTrucksForOrder(
+            String orderNumber,
+            List<Long> trucksId
+    ) {
+        var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
+        var trucksById = truckRepository.findTrucksById(trucksId);
+
+        var truckOrderEntities = trucksById.stream()
+                .map(truck -> new TruckOrderEntity(orderEntity, truck))
+                .collect(Collectors.toSet());
+
+        orderEntity.setTruckOrders(truckOrderEntities);
+        orderRepository.save(orderEntity);
+
+        eventPublisher.publishEvent(new TrucksSelectedEvent(this, orderNumber));
+    }
+
+    @Transactional(readOnly = true)
     public DriversAndTrucksForOrder findTrucksAndDriversForOrder(
             String orderNumber
     ) {
         var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
         var totalWeight = cargoRepository.getCargoOrderTotalWeight(orderNumber);
-        var cityFrom = orderInfoRepository.findCityFrom(orderEntity.getId()).orElseThrow();
+        var cityFrom = orderInfoRepository.findCityFrom(orderEntity.getId()).orElseThrow(
+                () -> new EntityNotFoundException("City for order id = %s not found"
+                        .formatted(orderEntity.getId()))
+        );
         var timeForOrder = calculateTimeForOrder(orderEntity);
 
         var trucksForOrder = truckRepository.findTrucksForOrder(cityFrom.getId(), TruckStatus.SERVICEABLE.name(), totalWeight);
         var driversForOrder = driverRepository.findDriversForOrder(
-                orderEntity.getId(),
                 getTruckIds(trucksForOrder),
                 timeForOrder,
                 176.0
@@ -143,6 +191,140 @@ public class OrderService {
                         .map(truckMapper::toTruckInfoDto)
                         .toList()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<BaseOrderForSubmitDto> findOrdersForSubmit(
+            DefaultSubmittingSize defaultSubmittingSize
+    ) {
+
+        if (defaultSubmittingSize == null) {
+            defaultSubmittingSize = new DefaultSubmittingSize(0, 5);
+        }
+
+        var pageable = PageRequest.of(
+                defaultSubmittingSize.page() != null
+                        ? defaultSubmittingSize.page()
+                        : 0,
+                defaultSubmittingSize.size() != null
+                        ? defaultSubmittingSize.size()
+                        : 5
+        );
+
+        var ordersForSubmit = orderRepository.findOrdersForSubmit(pageable);
+        var userOrderEntityMap = getUserOrderEntityMap(ordersForSubmit);
+        var userEntityMap = getUserEntityMap(userOrderEntityMap);
+
+        return ordersForSubmit.stream()
+                .sorted(Comparator.comparing(order -> order.getCreateAt().toLocalDate()))
+                .map(order -> {
+                    var orderBaseInfoDto = orderRepository.findOrderDtoById(order.getId());
+                    var userOrderEntity = userOrderEntityMap.get(order.getUniqueNumber());
+                    var user = userEntityMap.get(userOrderEntity);
+                    var userOrderInfo = getUserOrderInfo(order, user);
+
+                    var userInfoDto = new UserInfoDto(
+                            user.getUsername(),
+                            order.getCreateAt().toString(),
+                            null
+                    );
+
+                    return routePointMapper.toInfoDto(
+                            orderBaseInfoDto,
+                            userInfoDto,
+                            routePointMapper.toInfoDto(userOrderInfo),
+                            new DistanceInfoDto(userOrderInfo.getDistanceInfo())
+                    );
+                }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderInfoForUserDto sendOrderForUser(
+            SendOrderForSubmittingDto orderDto
+    ) {
+        var infoDto = userMapper.toInfoDto(
+                getUserEntity(orderDto.userId()),
+                orderDto.departureDate().toString()
+        );
+        var cityFrom = orderDto.routePoint().getCityFrom();
+        var cityTo = orderDto.routePoint().getCityTo();
+        var cityNames = List.of(orderDto.routePoint().getCityFrom(), orderDto.routePoint().getCityTo());
+        var stationByCityNames = cityStationRepository.findStationByCityNames(cityNames);
+
+        var distancesByStationsIds = cityStationDistanceRepository.findDistancesByStationsId(
+                stationByCityNames.getFirst().getId(),
+                stationByCityNames.getLast().getId()
+        );
+
+//        var stationsByCityNames = stationByCityNames
+//                .stream()
+//                .collect(Collectors.toMap(
+//                        station -> station.getCity().getName(),
+//                        CityStationEntity::getName
+//                ));
+
+        var distance = distancesByStationsIds.getDistance();
+        var routePointInfo = new RoutePointInfoForUserDto(
+                cityFrom,
+                orderDto.routePoint().getStations().getFirst(),
+                cityTo,
+                orderDto.routePoint().getStations().getLast(),
+                orderDto.routePoint().getCargoDto().getWeightKg(),
+                distance
+        );
+
+        return new OrderInfoForUserDto(
+                infoDto,
+                routePointInfo,
+                distanceMessageForUser(
+                        DistanceInfo::isRecommendDistance,
+                        distance,
+                        oneDriverRecommendedDistance
+                )
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderStatusDto getOrderStatusById(
+            Long orderId
+    ) {
+        isExistsByOrderIf(orderId);
+        return orderRepository.showOrderStatusByOrderId(orderId);
+    }
+
+    @Transactional
+    public void applyForOrder(
+            String orderNumber,
+            ApplyOrderDto applyOrderDto
+    ) {
+        var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
+        var driversById = driverRepository.findDriversById(applyOrderDto.driversAndTrucks().driverIds());
+        var trucksById = truckRepository.findTrucksById(applyOrderDto.driversAndTrucks().truckIds());
+        var userEntity = userRepository.findById(applyOrderDto.userId()).orElseThrow();
+
+        var driverOrderEntities = driversById.stream()
+                .map(driver -> new DriverOrderEntity(orderEntity, driver))
+                .collect(Collectors.toSet());
+
+        var truckOrderEntities = trucksById.stream()
+                .map(truck -> new TruckOrderEntity(orderEntity, truck))
+                .collect(Collectors.toSet());
+
+        var userOrderEntity = new UserOrderEntity(userEntity, orderEntity);
+
+        orderEntity.getRoutePoints()
+                .stream()
+                .flatMap(rp -> rp.getCargo().stream())
+                .forEach(cargo -> orderEntity.getOrderCargoEntities().add(new OrderCargoEntity(orderEntity, cargo)));
+
+        orderCargoRepository.saveAll(orderEntity.getOrderCargoEntities());
+
+        addDriverToTruck(trucksById, driversById);
+        clearOrderDriversAndTruckInfo(orderEntity);
+
+        orderEntity.getDriverOrders().addAll(driverOrderEntities);
+        orderEntity.getTruckOrders().addAll(truckOrderEntities);
+        userOrderRepository.save(userOrderEntity);
     }
 
     private Double calculateTimeForOrder(
@@ -205,139 +387,28 @@ public class OrderService {
         return time;
     }
 
-    @Transactional(readOnly = true)
-    public List<BaseOrderForSubmitDto> findOrdersForSubmit(
-            DefaultSubmittingSize defaultSubmittingSize
+    private UserOrderInfoEntity getUserOrderInfoEntity(
+            OrderInfoForUserDto orderInfo,
+            OrderEntity updatedOrder,
+            UserEntity user
     ) {
-
-        if (defaultSubmittingSize == null) {
-            defaultSubmittingSize = new DefaultSubmittingSize(0, 5);
-        }
-
-        var pageable = PageRequest.of(
-                defaultSubmittingSize.page() != null
-                        ? defaultSubmittingSize.page()
-                        : 0,
-                defaultSubmittingSize.size() != null
-                        ? defaultSubmittingSize.size()
-                        : 5
-        );
-
-        var ordersForSubmit = orderRepository.findOrdersForSubmit(pageable);
-        var userOrderEntityMap = getUserOrderEntityMap(ordersForSubmit);
-        var userEntityMap = getUserEntityMap(userOrderEntityMap);
-
-        return ordersForSubmit.stream()
-                .map(order -> {
-                    var orderBaseInfoDto = orderRepository.findOrderDtoById(order.getId());
-                    var userOrderEntity = userOrderEntityMap.get(order.getUniqueNumber());
-                    var user = userEntityMap.get(userOrderEntity);
-                    var userOrderInfo = getUserOrderInfo(order, user);
-
-                    var userInfoDto = new UserInfoDto(
-                            user.getUsername(),
-                            order.getCreateAt().toString(),
-                            null
-                    );
-
-                    return routePointMapper.toInfoDto(
-                            orderBaseInfoDto,
-                            userInfoDto,
-                            routePointMapper.toInfoDto(userOrderInfo),
-                            new DistanceInfoDto(userOrderInfo.getDistanceInfo())
-                    );
-                }).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public OrderInfoForUserDto sendOrderForUser(
-            SendOrderForSubmittingDto orderDto
-    ) {
-        var infoDto = userMapper.toInfoDto(
-                getUserEntity(orderDto.userId()),
-                orderDto.departureDate().toString()
-        );
-        var cityFrom = orderDto.routePoint().getCityFrom();
-        var cityTo = orderDto.routePoint().getCityTo();
-        var cityNames = List.of(orderDto.routePoint().getCityFrom(), orderDto.routePoint().getCityTo());
-        var stationByCityNames = cityStationRepository.findStationByCityNames(cityNames);
-
-        var distancesByStationsIds = cityStationDistanceRepository.findDistancesByStationsIds(
-                stationByCityNames
-                        .stream()
-                        .map(CityStationEntity::getId)
-                        .toList()
-        );
-
-        var stationsByCityNames = stationByCityNames
-                .stream()
-                .collect(Collectors.toMap(
-                        station -> station.getCity().getName(),
-                        CityStationEntity::getName
-                ));
-
-        var distance = distancesByStationsIds.getDistance();
-        var routePointInfo = new RoutePointInfoForUserDto(
-                cityFrom,
-                stationsByCityNames.get(cityFrom),
-                cityTo,
-                stationsByCityNames.get(cityTo),
-                orderDto.routePoint().getCargoDto().getWeightKg(),
-                distance
-        );
-
-        return new OrderInfoForUserDto(
-                infoDto,
-                routePointInfo,
-                distanceMessageForUser(
-                        DistanceInfo::isRecommendDistance,
-                        distance,
-                        oneDriverRecommendedDistance
-                )
+        return userOrderInfoMapper.toEntity(
+                updatedOrder.getUniqueNumber(),
+                user.getUsername(),
+                orderInfo
         );
     }
 
-    @Transactional(readOnly = true)
-    public OrderStatusDto getOrderStatusById(
-            Long orderId
+    private OrderInfoEntity getOrderInfoEntity(
+            OrderInfoForUserDto orderInfo,
+            OrderEntity updatedOrder
     ) {
-        isExistsByOrderIf(orderId);
-        return orderRepository.showOrderStatusByOrderId(orderId);
-    }
-
-    @Transactional
-    public void applyForOrder(
-            String orderNumber,
-            ApplyOrderDto applyOrderDto
-    ) {
-        var orderEntity = orderRepository.findOrderEntityByNumber(orderNumber).orElseThrow();
-        var driversById = driverRepository.findDriversById(applyOrderDto.driversAndTrucks().driverIds());
-        var trucksById = truckRepository.findTrucksById(applyOrderDto.driversAndTrucks().truckIds());
-        var userEntity = userRepository.findById(applyOrderDto.userId()).orElseThrow();
-
-        var driverOrderEntities = driversById.stream()
-                .map(driver -> new DriverOrderEntity(orderEntity, driver))
-                .collect(Collectors.toSet());
-
-        var truckOrderEntities = trucksById.stream()
-                .map(truck -> new TruckOrderEntity(orderEntity, truck))
-                .collect(Collectors.toSet());
-
-        var userOrderEntity = new UserOrderEntity(userEntity, orderEntity);
-
-        orderEntity.getRoutePoints()
-                .stream()
-                .flatMap(rp -> rp.getCargo().stream())
-                .forEach(cargo -> orderEntity.getOrderCargoEntities().add(new OrderCargoEntity(orderEntity, cargo)));
-
-        orderCargoRepository.saveAll(orderEntity.getOrderCargoEntities());
-
-        addDriverToTruck(trucksById, driversById);
-        clearOrderDriversAndTruckInfo(orderEntity);
-
-        orderEntity.getDriverOrders().addAll(driverOrderEntities);
-        orderEntity.getTruckOrders().addAll(truckOrderEntities);
-        userOrderRepository.save(userOrderEntity);
+        return orderInfoMapper.toEntity(updatedOrder,
+                cityRepository.findCityEntityByName(orderInfo.routePointInfo().cityFrom()).orElseThrow(),
+                cityRepository.findCityEntityByName(orderInfo.routePointInfo().cityTo()).orElseThrow(),
+                cityStationRepository.findByStationName(orderInfo.routePointInfo().stationFrom()).orElseThrow(),
+                cityStationRepository.findByStationName(orderInfo.routePointInfo().stationTo()).orElseThrow()
+        );
     }
 
     public void isValidDateForOrder(LocalDate date) {
@@ -507,40 +578,6 @@ public class OrderService {
         orderEntity.setTruckOrders(null);
     }
 
-    private DistanceEntity findDistanceEntityByOrderId(OrderEntity orderEntity) {
-        return orderDistanceRepository.findDistanceEntityByOrder(orderEntity.getId()).orElseThrow(
-                () -> new EntityNotFoundException("Distance entity for order with id = %s not found"
-                        .formatted(orderEntity.getId()))
-        );
-    }
-
-    private static long totalWeight(OrderEntity orderEntity) {
-        return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
-                .flatMap(rp -> rp.getCargo().stream())
-                .map(CargoEntity::getWeightKg)
-                .mapToLong(Long::longValue)
-                .sum();
-    }
-
-    private static Long getOperationCityId(OrderEntity orderEntity) {
-        return orderEntity.getRoutePoints().stream()
-                .filter(rp -> rp.getOperationType().equals(LOADING_OPERATION))
-                .map(RoutePointEntity::getCity)
-                .findFirst()
-                .get()
-                .getId();
-    }
-
-    private List<TruckInfoDto> mapTrucksToDto(
-            List<TruckEntity> trucksForOrderByWeight
-    ) {
-        return trucksForOrderByWeight
-                .stream()
-                .map(truckMapper::toInfoDto)
-                .toList();
-    }
-
     private CountryMapEntity getCountryMapEntity(
             OrderInfoForUserDto orderInfo
     ) {
@@ -615,20 +652,6 @@ public class OrderService {
         return cityRepository.findCityEntityByName(cityName).orElseThrow(
                 () -> exception("City", cityName)
         );
-    }
-
-    private List<DriverAllInfoDto> mapDriversToDto(
-            List<DriverEntity> driversForOrder
-    ) {
-        return driversForOrder.stream()
-                .map(driver ->
-                        driverMapper.toDtoInfo(
-                                driver,
-                                cityMapper.toInfoDto(driver.getCurrentCity()),
-                                truckMapper.toInfoDto(driver.getCurrentTruck())
-                        )
-                )
-                .toList();
     }
 
     public static Double calculationTimeToOrder(

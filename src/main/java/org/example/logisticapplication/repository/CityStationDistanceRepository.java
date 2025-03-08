@@ -14,10 +14,30 @@ public interface CityStationDistanceRepository extends JpaRepository<CityStation
             SELECT DISTINCT std 
             FROM CityStationDistanceEntity std
             WHERE (std.stationFrom.id IN (:ids) AND std.stationTo.id IN (:ids))
+            OR(std.stationTo.id IN (:ids) AND std.stationFrom.id IN (:ids))
             """)
     CityStationDistanceEntity findDistancesByStationsIds(
             @Param("ids") List<Long> cityStationIds
     );
+
+    @Query("""
+            SELECT DISTINCT std
+            FROM CityStationDistanceEntity std
+            WHERE (std.stationFrom.name = :stationFrom AND std.stationTo.name = :stationTo)      
+            OR(std.stationFrom.name = :stationTo AND std.stationTo.name = :stationFrom)                                
+            """)
+    CityStationDistanceEntity findDistancesByStationsNames(
+            String stationFrom,
+            String stationTo
+    );
+
+    @Query("""
+            SELECT DISTINCT std
+            FROM CityStationDistanceEntity std
+            WHERE (std.stationFrom.id =:stationFromId AND std.stationTo.id =:stationToId) 
+            OR(std.stationTo.id =:stationFromId AND std.stationFrom.id =:stationToId)                                   
+            """)
+    CityStationDistanceEntity findDistancesByStationsId(Long stationFromId, Long stationToId);
 
     @Query("""
             SELECT (COUNT(sd) > 0)

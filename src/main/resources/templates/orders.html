@@ -19,7 +19,32 @@
 
     <div id="orders-container" class="bg-white p-6 rounded-lg shadow-md mt-6"></div>
 </div>
+
+<!-- Модальное окно -->
+<div id="modal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-xl font-bold mb-4">Выберите водителей и траки</h2>
+
+        <div id="drivers-list" class="mb-4">
+            <h3 class="font-semibold">Водители:</h3>
+            <div id="driver-options"></div>
+        </div>
+
+        <div id="trucks-list" class="mb-4">
+            <h3 class="font-semibold">Грузовики:</h3>
+            <div id="truck-options"></div>
+        </div>
+
+        <div class="flex justify-end">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded mr-2" onclick="closeModal()">Отмена</button>
+            <button class="bg-green-500 text-white px-4 py-2 rounded" id="confirm-selection">Подтвердить</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    let currentOrderId = null;
+
     document.getElementById("fetch-orders").addEventListener("click", async function () {
         const ordersContainer = document.getElementById("orders-container");
         ordersContainer.innerHTML = "<p>Загрузка...</p>";
@@ -52,35 +77,84 @@
                 <p><strong>Вес груза:</strong> ${order.routePointDto.weight} кг</p>
                 <p><strong>Расстояние:</strong> ${order.routePointDto.distance} км</p>
 
-                <h4 class="font-semibold">Информация о расстоянии:</h4>
-                <p><strong>Сообщение:</strong> ${order.distanceInfoDto.message}</p>
-
                 <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-3"
-                    onclick="completeOrder(${order.uniqueNumber})">Закончить оформление</button>
+                        onclick="completeOrder('${order.uniqueNumber}')">Закончить оформление</button>
+
             </div>
         `).join("");
         } catch (error) {
             ordersContainer.innerHTML = "<p class='text-red-500'>Ошибка загрузки заказов</p>";
         }
-    })
+    });
 
-    async function completeOrder(orderId) {
-        if (!confirm(`Вы уверены, что хотите завершить заказ #${orderId}?`)) return;
+    async function completeOrder(orderNumber) {
+        currentOrderId = orderNumber;
 
         try {
-            const response = await fetch(`/api/v1/orders/complete/${orderId}`, { method: "POST" });
+            const response = await fetch(`/api/v1/orders/${currentOrderId}/trucks`);
+
+            // Проверяем, если ответ не OK, выбрасываем ошибку
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки данных: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            // Заполняем данные о грузовиках
+            document.getElementById("truck-options").innerHTML = data.truckInfo.map(truck => `
+            <label class="block">
+                <input type="checkbox" name="trucks" value="${truck.id}">
+                ${truck.truckNumber} (Город: ${truck.currentCityName}, Мест: ${truck.countOfSeats})
+            </label>
+        `).join("");
+
+            openModal();
+        } catch (error) {
+            // Выводим полное описание ошибки в консоль
+            console.error("Ошибка при выполнении запроса:", error);
+            alert("Ошибка загрузки данных о водителях и грузовиках. Посмотрите в консоль для подробностей.");
+        }
+    }
+
+
+    function openModal() {
+        document.getElementById("modal").classList.remove("hidden"); // Убирает класс hidden
+        document.getElementById("modal").classList.add("flex"); // Добавляет класс для отображения
+    }
+
+    function closeModal() {
+        document.getElementById("modal").classList.add("hidden");
+    }
+
+    document.getElementById("confirm-selection").addEventListener("click", async function () {
+        const selectedDrivers = Array.from(document.querySelectorAll('input[name="drivers"]:checked'))
+            .map(input => input.value);
+        const selectedTrucks = Array.from(document.querySelectorAll('input[name="trucks"]:checked'))
+            .map(input => input.value);
+
+        if (selectedDrivers.length === 0 || selectedTrucks.length === 0) {
+            alert("Выберите хотя бы одного водителя и грузовик!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/v1/orders/complete/${currentOrderId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ driverIds: selectedDrivers, truckIds: selectedTrucks })
+            });
 
             if (response.ok) {
-                alert(`Заказ #${orderId} завершен`);
-                document.getElementById("fetch-orders").click(); // Перезагрузка списка заказов
+                alert(`Заказ #${currentOrderId} завершен`);
+                closeModal();
+                document.getElementById("fetch-orders").click();
             } else {
                 alert("Ошибка при завершении заказа");
             }
         } catch (error) {
             alert("Ошибка сети");
         }
-    }
-
+    });
 </script>
 </body>
 </html>

@@ -161,11 +161,10 @@ public interface DriverRepository extends JpaRepository<DriverEntity, Long> {
             FROM DriverEntity de
             LEFT JOIN DriverOrderEntity dor ON dor.driver.id = de.id    
             WHERE dor.driver.id IS NULL
-            AND de.currentCity.id IN (:truckId)
+            AND de.currentCity.id IN (:truckIds)
             AND de.numberOfHoursWorked + :timeForOrder <= :allowedTimeForDriver                                                    
             """)
     List<DriverEntity> findDriversForOrder(
-            Long orderId,
             List<Long> truckIds,
             Double timeForOrder,
             Double allowedTimeForDriver

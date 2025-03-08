@@ -24,6 +24,21 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
     boolean existsByRegistrationNumber(String registrationNumber);
 
     @Query("""
+            SELECT t
+            FROM TruckEntity t
+            LEFT JOIN FETCH TruckOrderEntity tor ON tor.truck.id = t.id
+            WHERE t.currentCity.id = :cityId  
+            AND t.capacity >= :weight        
+            AND t.status = :condition      
+            AND tor.truck.id IS NULL                                          
+            """)
+    List<TruckEntity> getTrucksForOrder(
+            @Param("condition") String condition,
+            @Param("cityId") Long cityId,
+            @Param("weight") Long cargoWeight
+    );
+
+    @Query("""
             SELECT t 
             FROM TruckEntity t
             LEFT JOIN FETCH TruckOrderEntity tor ON t.id = tor.truck.id
@@ -31,7 +46,7 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             AND t.status = :status            
             AND tor.truck.id IS NULL            
             """)
-    List<TruckEntity>findTruckForDriver(
+    List<TruckEntity> findTruckForDriver(
             @Param("cityId") Long cityId,
             @Param("status") String truckStatus
     );
@@ -80,7 +95,7 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             SELECT t
             FROM TruckEntity t
             LEFT JOIN TruckOrderEntity tor ON t.id = tor.truck.id
-            WHERE t.status = :status
+            WHERE t.status = :condition
             AND tor.truck.id IS NULL
             AND t.currentCity.id = :cityId
             AND t.capacity >= :weight                   
@@ -92,7 +107,7 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
     );
 
     @Query("SELECT t FROM TruckEntity t WHERE t.registrationNumber = :truckNumber")
-    Optional<TruckEntity> findByNumber(@Param("truckNumber")String truckNumber);
+    Optional<TruckEntity> findByNumber(@Param("truckNumber") String truckNumber);
 
     @Query("""
             SELECT t FROM TruckEntity t 

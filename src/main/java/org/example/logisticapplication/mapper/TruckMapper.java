@@ -74,6 +74,10 @@ public interface TruckMapper {
     })
     TruckInfoForOrderDto toTruckInfoDto(TruckEntity truckEntity);
 
+    default TrucksForOrderDto toDto(List<TruckInfoForOrderDto> truckInfo) {
+        return new TrucksForOrderDto(truckInfo);
+    }
+
     @Mappings({
             @Mapping(target = "id", source = "entity.id"),
             @Mapping(target = "registrationNumber", source = "entity.registrationNumber"),

@@ -3,8 +3,8 @@ package org.example.logisticapplication.controllers.rest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.logisticapplication.domain.Driver.DriversAndTrucksForOrder;
-import org.example.logisticapplication.domain.DriverOrderEntity.DriversAndTrucksForOrderDto;
 import org.example.logisticapplication.domain.Order.*;
+import org.example.logisticapplication.domain.Truck.TrucksForOrderDto;
 import org.example.logisticapplication.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +48,17 @@ public class OrderController {
 
         return ResponseEntity.ok().body(truckForOrder);
     }
+
+    @GetMapping("/{orderNumber}/trucks")
+    public ResponseEntity<TrucksForOrderDto> getTrucksForOrder(
+            @PathVariable String orderNumber
+    ){
+        log.info("Get request for getting trucks for order with number: {}", orderNumber);
+        var trucksForOrder = orderService.getTrucksForOrder(orderNumber);
+
+        return ResponseEntity.ok().body(trucksForOrder);
+    }
+
 
     @PostMapping("/{orderNumber}/finalize")
     public ResponseEntity<Void> applyForOrder(

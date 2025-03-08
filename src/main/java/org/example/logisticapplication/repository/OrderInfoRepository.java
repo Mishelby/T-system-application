@@ -13,7 +13,7 @@ public interface OrderInfoRepository extends JpaRepository<OrderInfoEntity, Long
 
     @Query("""
             SELECT c.cityFrom
-            FROM OrderInfoEntity c  
+            FROM OrderInfoEntity c 
             WHERE c.order.id = :orderId                      
             """)
     Optional<CityEntity> findCityFrom(Long orderId);
