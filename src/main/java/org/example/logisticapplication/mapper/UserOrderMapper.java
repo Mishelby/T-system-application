@@ -26,7 +26,7 @@ public interface UserOrderMapper {
 
     @Condition
     default String messageForOrder(OrderEntity order) {
-        return order.getDriverOrders().isEmpty() && order.getTruckOrders().isEmpty()
+        return order.getDriverOrders().isEmpty() || order.getTruckOrders().isEmpty()
                 ? "Водитель ещё не был назначен!"
                 : "Информацию о водителе вы можете увидеть ниже";
     }

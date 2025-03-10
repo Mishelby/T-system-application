@@ -33,6 +33,10 @@
                 </select>
             </div>
             <div>
+                <label class="block mb-2 font-semibold">Средняя скорость:</label>
+                <input type="number" id="averageSpeed" required step="0.01" class="w-full p-2 border rounded-md mb-4">
+            </div>
+            <div>
                 <button type="submit"
                         class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md w-full">
                     Создать грузовик
@@ -69,7 +73,8 @@
                 numberOfSeats: parseInt(document.getElementById("numberOfSeats").value, 10),
                 currentCityName: document.getElementById("cityList").value,
                 capacity: parseFloat(document.getElementById("capacity").value),
-                status: document.getElementById("status").value
+                status: document.getElementById("status").value,
+                averageSpeed: document.getElementById("averageSpeed").value,
             };
 
             fetch("/api/v1/trucks", {

@@ -81,7 +81,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             FROM OrderEntity o
             LEFT JOIN FETCH DriverOrderEntity doe ON o.id = doe.order.id
             LEFT JOIN FETCH TruckOrderEntity toe ON o.id = toe.order.id
-            WHERE doe.order.id IS NULL AND toe.truck.id IS NULL
+            WHERE doe.order.id IS NULL OR toe.truck.id IS NULL
             ORDER BY o.id DESC
             """)
     List<OrderEntity> findOrdersForSubmit(Pageable pageable);

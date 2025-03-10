@@ -4,14 +4,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.logisticapplication.domain.Driver.DriverEntity;
 import org.example.logisticapplication.domain.Driver.DriverInfoForUserDto;
+import org.example.logisticapplication.domain.OrderProfileInfo.UserProfileInfoEntity;
 import org.example.logisticapplication.domain.User.*;
 import org.example.logisticapplication.domain.UserOrders.UserOrderEntity;
 import org.example.logisticapplication.mapper.UserMapper;
 import org.example.logisticapplication.mapper.UserOrderMapper;
-import org.example.logisticapplication.repository.DriverRepository;
-import org.example.logisticapplication.repository.UserOrderInfoRepository;
-import org.example.logisticapplication.repository.UserOrderRepository;
-import org.example.logisticapplication.repository.UserRepository;
+import org.example.logisticapplication.mapper.UserProfileMapper;
+import org.example.logisticapplication.repository.*;
 import org.example.logisticapplication.utils.RoleName;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +33,8 @@ public class UserService {
     private final UserOrderMapper userOrderMapper;
     private final DriverRepository driverRepository;
     private final UserOrderInfoRepository userOrderInfoRepository;
+    private final UserProfileInfoRepository userProfileInfoRepository;
+    private final UserProfileMapper userProfileMapper;
 
     @Transactional
     public CreateUserDto createNewUser(
@@ -55,7 +56,7 @@ public class UserService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public UserInfo getUserInfo(
             Long id
     ) {
@@ -79,7 +80,24 @@ public class UserService {
                 })
                 .toList();
 
-        return getUserInfo(userOrders, userOrderInfo, userEntity);
+        var savedUserProfile = getUserProfileInfoEntity(userEntity);
+
+        return getUserInfo(userOrders, userOrderInfo, savedUserProfile.getUser());
+    }
+
+    private UserProfileInfoEntity getUserProfileInfoEntity(
+            UserEntity userEntity
+    ) {
+        boolean isExists = userProfileInfoRepository.existsById(userEntity.getId());
+
+        if (!isExists) {
+            return userProfileInfoRepository.save(
+                    userProfileMapper.toEntity(userEntity)
+            );
+        }
+
+        return userProfileInfoRepository.getUserProfileInfoById(userEntity.getId())
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     private static Map<List<String>, List<Long>> getDriversInfo(

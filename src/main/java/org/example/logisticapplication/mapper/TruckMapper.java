@@ -40,10 +40,11 @@ public interface TruckMapper {
     @Mappings({
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "registrationNumber", source = "generatedNumber"),
-            @Mapping(target = "countOfSeats", source = "truckDto.countOfSeats"),
+            @Mapping(target = "countOfSeats", source = "truckDto.numberOfSeats"),
             @Mapping(target = "status", source = "truckDto.status"),
             @Mapping(target = "currentCity", source = "city"),
-            @Mapping(target = "capacity", source = "truckDto.capacity")
+            @Mapping(target = "capacity", source = "truckDto.capacity"),
+            @Mapping(target = "averageSpeed", source = "truckDto.averageSpeed")
     })
     TruckEntity toEntity(
             CreateTruckDto truckDto,

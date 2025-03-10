@@ -23,12 +23,7 @@
 <!-- Модальное окно -->
 <div id="modal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 class="text-xl font-bold mb-4">Выберите водителей и траки</h2>
-
-        <div id="drivers-list" class="mb-4">
-            <h3 class="font-semibold">Водители:</h3>
-            <div id="driver-options"></div>
-        </div>
+        <h2 class="text-xl font-bold mb-4">Выберите траки</h2>
 
         <div id="trucks-list" class="mb-4">
             <h3 class="font-semibold">Грузовики:</h3>
@@ -78,7 +73,7 @@
                 <p><strong>Расстояние:</strong> ${order.routePointDto.distance} км</p>
 
                 <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mt-3"
-                        onclick="completeOrder('${order.uniqueNumber}')">Закончить оформление</button>
+                        onclick="fetchTrucks('${order.uniqueNumber}')">Выбрать траки</button>
 
             </div>
         `).join("");
@@ -87,20 +82,18 @@
         }
     });
 
-    async function completeOrder(orderNumber) {
+    async function fetchTrucks(orderNumber) {
         currentOrderId = orderNumber;
 
         try {
             const response = await fetch(`/api/v1/orders/${currentOrderId}/trucks`);
 
-            // Проверяем, если ответ не OK, выбрасываем ошибку
             if (!response.ok) {
                 throw new Error(`Ошибка загрузки данных: ${response.status} ${response.statusText}`);
             }
 
             const data = await response.json();
 
-            // Заполняем данные о грузовиках
             document.getElementById("truck-options").innerHTML = data.truckInfo.map(truck => `
             <label class="block">
                 <input type="checkbox" name="trucks" value="${truck.id}">
@@ -110,16 +103,14 @@
 
             openModal();
         } catch (error) {
-            // Выводим полное описание ошибки в консоль
             console.error("Ошибка при выполнении запроса:", error);
-            alert("Ошибка загрузки данных о водителях и грузовиках. Посмотрите в консоль для подробностей.");
+            alert("Ошибка загрузки данных о грузовиках.");
         }
     }
 
-
     function openModal() {
-        document.getElementById("modal").classList.remove("hidden"); // Убирает класс hidden
-        document.getElementById("modal").classList.add("flex"); // Добавляет класс для отображения
+        document.getElementById("modal").classList.remove("hidden");
+        document.getElementById("modal").classList.add("flex");
     }
 
     function closeModal() {
@@ -127,31 +118,30 @@
     }
 
     document.getElementById("confirm-selection").addEventListener("click", async function () {
-        const selectedDrivers = Array.from(document.querySelectorAll('input[name="drivers"]:checked'))
-            .map(input => input.value);
         const selectedTrucks = Array.from(document.querySelectorAll('input[name="trucks"]:checked'))
             .map(input => input.value);
 
-        if (selectedDrivers.length === 0 || selectedTrucks.length === 0) {
-            alert("Выберите хотя бы одного водителя и грузовик!");
+        if (selectedTrucks.length === 0) {
+            alert("Выберите хотя бы один грузовик!");
             return;
         }
 
         try {
-            const response = await fetch(`/api/v1/orders/complete/${currentOrderId}`, {
+            const response = await fetch(`/api/v1/orders/${currentOrderId}/trucks`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ driverIds: selectedDrivers, truckIds: selectedTrucks })
+                body: JSON.stringify(selectedTrucks)
             });
 
             if (response.ok) {
-                alert(`Заказ #${currentOrderId} завершен`);
+                alert(`Грузовики успешно применены к заказу #${currentOrderId}`);
                 closeModal();
                 document.getElementById("fetch-orders").click();
             } else {
-                alert("Ошибка при завершении заказа");
+                alert("Ошибка при применении грузовиков к заказу");
             }
         } catch (error) {
+            console.error("Ошибка сети:", error);
             alert("Ошибка сети");
         }
     });

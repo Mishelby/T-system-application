@@ -3,7 +3,6 @@ package org.example.logisticapplication.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.logisticapplication.domain.CityStationDistance.CityStationDistanceEntity;
 import org.example.logisticapplication.domain.Distance.DistanceInfo;
 import org.example.logisticapplication.domain.Distance.DistanceInfoDto;
 import org.example.logisticapplication.domain.Driver.DriversAndTrucksForOrder;
@@ -17,7 +16,9 @@ import org.example.logisticapplication.domain.Order.*;
 import org.example.logisticapplication.domain.OrderCargo.OrderCargoEntity;
 import org.example.logisticapplication.domain.OrderDistanceEntity.OrderDistanceEntity;
 import org.example.logisticapplication.domain.OrderInfo.OrderInfoEntity;
+import org.example.logisticapplication.domain.OrderTimeEntity.OrderTimeEntity;
 import org.example.logisticapplication.domain.RoutePoint.*;
+import org.example.logisticapplication.domain.Truck.ApplyingTrucksForOrderDto;
 import org.example.logisticapplication.domain.Truck.TruckEntity;
 import org.example.logisticapplication.domain.Truck.TruckStatus;
 import org.example.logisticapplication.domain.Truck.TrucksForOrderDto;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
@@ -71,6 +73,7 @@ public class OrderService {
     private final OrderInfoMapper orderInfoMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final OrderDistanceRepository orderDistanceRepository;
+    private final OrderTimeRepository orderTimeRepository;
 
     @Value("${driver.recommendDistance}")
     private Double oneDriverRecommendedDistance;
@@ -129,7 +132,7 @@ public class OrderService {
                 .flatMap(rp -> rp.getCargo().stream())
                 .map(CargoEntity::getWeightKg)
                 .mapToLong(Long::longValue)
-                .sum();
+                .sum() / 2;
 
 
         var trucksForOrder = truckRepository.getTrucksForOrder(
@@ -158,7 +161,12 @@ public class OrderService {
                 .map(truck -> new TruckOrderEntity(orderEntity, truck))
                 .collect(Collectors.toSet());
 
-        orderEntity.setTruckOrders(truckOrderEntities);
+        if (!orderEntity.getTruckOrders().isEmpty()) {
+            throw new IllegalArgumentException("Order with number = %s already exists trucks"
+                    .formatted(orderNumber)
+            );
+        }
+        orderEntity.getTruckOrders().addAll(truckOrderEntities);
         orderRepository.save(orderEntity);
 
         eventPublisher.publishEvent(new TrucksSelectedEvent(this, orderNumber));
@@ -216,7 +224,7 @@ public class OrderService {
         var userEntityMap = getUserEntityMap(userOrderEntityMap);
 
         return ordersForSubmit.stream()
-                .sorted(Comparator.comparing(order -> order.getCreateAt().toLocalDate()))
+                .sorted(Comparator.<OrderEntity, LocalTime>comparing(order -> order.getCreateAt().toLocalTime()))
                 .map(order -> {
                     var orderBaseInfoDto = orderRepository.findOrderDtoById(order.getId());
                     var userOrderEntity = userOrderEntityMap.get(order.getUniqueNumber());
@@ -369,6 +377,7 @@ public class OrderService {
                     return time + 2.0;
                 }
             }
+
             case 2 -> {
                 var countOfDriversFirstTruck = mapTrucksAndCountOfDrivers.get(trucksForOrder.getFirst());
                 var countOfDriversSecondTruck = mapTrucksAndCountOfDrivers.get(trucksForOrder.getLast());

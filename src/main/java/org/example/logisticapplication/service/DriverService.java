@@ -40,6 +40,7 @@ public class DriverService {
     private final TruckMapper truckMapper;
     private final DriverStatusService driverStatusService;
     private final ShiftStatusService shiftStatusService;
+    private final UserProfileInfoRepository userProfileInfoRepository;
 
     public static final String NO_CURRENT_ORDERS_MESSAGE = "No current orders";
     private final OrderDistanceRepository orderDistanceRepository;
